@@ -73,6 +73,17 @@ export async function getMatchesBetween(from: string, to: string) {
     .where(and(gte(matches.matchDate, from), lte(matches.matchDate, to)))
 }
 
+export async function getNextUpcomingMatch() {
+  const now = new Date().toISOString()
+  const rows = await db
+    .select()
+    .from(matches)
+    .where(and(gte(matches.matchDate, now), eq(matches.status, "scheduled")))
+    .orderBy(matches.matchDate)
+    .limit(1)
+  return rows[0] ?? null
+}
+
 // Notifications
 
 export async function getNotifications(filters?: { channel?: string; status?: string }) {
