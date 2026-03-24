@@ -1,0 +1,1 @@
+ALTER TABLE `matches` ADD `team_key` text DEFAULT 'chelsea' NOT NULL;
