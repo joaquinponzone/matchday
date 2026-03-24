@@ -1,12 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/sync-matches",
-      "schedule": "43 20 * * *"
-    },
-    {
-      "path": "/api/cron/send-notifications",
-      "schedule": "45 20 * * *"
+      "path": "/api/cron/daily",
+      "schedule": "0 21 * * *"
     }
   ]
 }

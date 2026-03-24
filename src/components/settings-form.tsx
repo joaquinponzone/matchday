@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { useDebounce } from "@/hooks/use-debounce"
 import { cn } from "@/lib/utils"
 import { TEAM_META } from "@/lib/teams"
-import { toggleTeam, testTelegramNotification } from "@/app/settings/actions"
+import { toggleTeam, testTelegramNotification } from "@/app/(app)/settings/actions"
 import type { Settings } from "@/server/db/schema"
 
 const TIMEZONES = [
@@ -33,11 +33,6 @@ const TIMEZONES = [
   "Pacific/Auckland",
   "UTC",
 ]
-
-const HOURS = Array.from({ length: 24 }, (_, i) => ({
-  value: String(i),
-  label: `${String(i).padStart(2, "0")}:00`,
-}))
 
 async function saveSettings(data: Partial<Settings>) {
   await fetch("/api/settings", {
@@ -186,66 +181,25 @@ export function SettingsForm({ settings, followedTeams }: { settings: Settings; 
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium">Notification timing</h2>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Day before match</Label>
-            <Switch
-              checked={Boolean(values.notifyDayBefore)}
-              onCheckedChange={(v) => update("notifyDayBefore", v ? 1 : 0)}
-            />
-          </div>
-          {values.notifyDayBefore ? (
-            <div className="flex items-center gap-2">
-              <Label className="w-16 text-muted-foreground">At hour</Label>
-              <Select
-                value={String(values.dayBeforeHour)}
-                onValueChange={(v) => update("dayBeforeHour", Number(v))}
-              >
-                <SelectTrigger className="w-28">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {HOURS.map((h) => (
-                    <SelectItem key={h.value} value={h.value}>
-                      {h.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
+        <div>
+          <h2 className="text-sm font-medium">Notification timing</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">Runs once daily at 17:45 (Argentina time)</p>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Match day</Label>
-            <Switch
-              checked={Boolean(values.notifyMatchDay)}
-              onCheckedChange={(v) => update("notifyMatchDay", v ? 1 : 0)}
-            />
-          </div>
-          {values.notifyMatchDay ? (
-            <div className="flex items-center gap-2">
-              <Label className="w-16 text-muted-foreground">At hour</Label>
-              <Select
-                value={String(values.matchDayHour)}
-                onValueChange={(v) => update("matchDayHour", Number(v))}
-              >
-                <SelectTrigger className="w-28">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {HOURS.map((h) => (
-                    <SelectItem key={h.value} value={h.value}>
-                      {h.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
+        <div className="flex items-center justify-between">
+          <Label>Day before match</Label>
+          <Switch
+            checked={Boolean(values.notifyDayBefore)}
+            onCheckedChange={(v) => update("notifyDayBefore", v ? 1 : 0)}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Label>Match day</Label>
+          <Switch
+            checked={Boolean(values.notifyMatchDay)}
+            onCheckedChange={(v) => update("notifyMatchDay", v ? 1 : 0)}
+          />
         </div>
       </section>
     </div>
