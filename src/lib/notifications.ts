@@ -15,17 +15,17 @@ interface NotificationContent {
 
 export function buildNotificationContent(match: Match, settings: Settings): NotificationContent {
   const team = TEAM_META[match.teamKey as TeamKey]
-  const venue = match.venue ?? "TBC"
+  const venue = match.venue ?? "To be confirmed"
   const homeAway = match.isHome ? "vs" : "@"
   const dateStr = formatMatchDate(match.matchDate, settings.timezone)
 
   const title = `${team.shortName} ${homeAway} ${match.opponent} — ${match.competition}`
-  const body = `${match.competition}\n${team.shortName} ${homeAway} ${match.opponent}\n${dateStr}\n${venue}`
+  const body = `${match.competition}\n${team.shortName} ${homeAway} ${match.opponent}\n📅 ${dateStr}\n📍 ${venue}`
   const html = `
-    <p><strong>${match.competition}</strong></p>
-    <p>${team.shortName} ${homeAway} <strong>${match.opponent}</strong></p>
-    <p>${dateStr}</p>
-    <p>${venue}</p>
+    <p><strong>🏆 ${match.competition}</strong></p>
+    <p>ℹ️ ${team.shortName} ${homeAway} <strong>${match.opponent}</strong></p>
+    <p>📅 ${dateStr}</p>
+    <p>📍 ${venue}</p>
   `
 
   return { title, body, html }
@@ -80,14 +80,14 @@ function buildNextMatchContent(match: Match, settings: Settings): NotificationCo
   const venue = match.venue ?? "TBC"
 
   const title = `Next: ${team.shortName} ${homeAway} ${match.opponent} — ${match.competition}`
-  const body = `No match today or tomorrow.\n\nNext up:\n${match.competition}\n${team.shortName} ${homeAway} ${match.opponent}\n${dateStr}\n${venue}`
+  const body = `No match today or tomorrow.\n\nNext up:\n${match.competition}\n${team.shortName} ${homeAway} ${match.opponent}\n📅 ${dateStr}\n📍 ${venue}`
   const html = `
     <p>No match today or tomorrow.</p>
     <p><strong>Next up:</strong></p>
     <p><strong>${match.competition}</strong></p>
     <p>${team.shortName} ${homeAway} <strong>${match.opponent}</strong></p>
-    <p>${dateStr}</p>
-    <p>${venue}</p>
+    <p>📅 ${dateStr}</p>
+    <p>📍 ${venue}</p>
   `
 
   return { title, body, html }

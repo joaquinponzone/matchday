@@ -183,7 +183,7 @@ export function SettingsForm({ settings, followedTeams }: { settings: Settings; 
       <section className="space-y-4">
         <div>
           <h2 className="text-sm font-medium">Notification timing</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">Runs once daily at 17:45 (Argentina time)</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Runs once daily at 8:00 AM (Argentina time)</p>
         </div>
 
         <div className="flex items-center justify-between">

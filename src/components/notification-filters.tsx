@@ -19,9 +19,9 @@ export function NotificationFilters() {
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 w-full">
       <Select defaultValue={params.get("channel") ?? "all"} onValueChange={(v) => set("channel", v)}>
-        <SelectTrigger className="w-36">
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Channel" />
         </SelectTrigger>
         <SelectContent>
@@ -33,7 +33,7 @@ export function NotificationFilters() {
       </Select>
 
       <Select defaultValue={params.get("status") ?? "all"} onValueChange={(v) => set("status", v)}>
-        <SelectTrigger className="w-32">
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
