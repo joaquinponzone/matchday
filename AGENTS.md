@@ -18,6 +18,19 @@
 - **Components**: Use shadcn/ui from `@/components/ui/`. Custom components go in `@/components/`. Prefer Server Components; add `"use client"` only for interactivity.
 - **shadcn CLI**: `bunx shadcn@latest add <component>` to install new components.
 
+## Documentation Commands
+
+Dedicated commands exist to keep project docs in sync with the codebase:
+
+- **Update specs**: Review the codebase and update `specs/IDEA.md` (feature checklists) and `specs/SPECS.md` (full technical spec) to reflect current implementation.
+- **Update worklog**: Create or update `specs/worklog/YYYYMMDD-chores.md` with today's commits and work summary.
+
+These are available as:
+- Claude Code: `/update-specs`, `/update-worklog` (skills in `.claude/skills/`)
+- Cursor: rules triggered on demand (`.cursor/rules/update-specs.mdc`, `.cursor/rules/update-worklog.mdc`)
+
+Run these at end of day or after significant implementation work.
+
 ## Environment
 
 - Runtime: `bun` (used as execution environment, not just package manager)
