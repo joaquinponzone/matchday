@@ -26,7 +26,6 @@ export function NotificationFilters() {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All channels</SelectItem>
-          <SelectItem value="email">Email</SelectItem>
           <SelectItem value="telegram">Telegram</SelectItem>
           <SelectItem value="in_app">In-app</SelectItem>
         </SelectContent>

@@ -1,16 +1,14 @@
 import { TEAM_META } from "@/lib/teams"
 import { formatMatchDate } from "@/lib/utils"
-import { createNotification, getMatchesBetween, getNextUpcomingMatch, getSettings, notificationExists } from "@/server/db/queries"
+import { createNotification, getMatchesBetween, getSettings, notificationExists } from "@/server/db/queries"
 import type { Match, Settings } from "@/server/db/schema"
 import type { TeamKey } from "@/lib/football-data"
 
-import { sendEmail } from "./resend"
 import { sendTelegramMessage } from "./telegram"
 
 interface NotificationContent {
   title: string
   body: string
-  html: string
 }
 
 export function buildNotificationContent(match: Match, settings: Settings): NotificationContent {
@@ -21,17 +19,11 @@ export function buildNotificationContent(match: Match, settings: Settings): Noti
 
   const title = `${team.shortName} ${homeAway} ${match.opponent} — ${match.competition}`
   const body = `${match.competition}\n${team.shortName} ${homeAway} ${match.opponent}\n📅 ${dateStr}\n📍 ${venue}`
-  const html = `
-    <p><strong>🏆 ${match.competition}</strong></p>
-    <p>ℹ️ ${team.shortName} ${homeAway} <strong>${match.opponent}</strong></p>
-    <p>📅 ${dateStr}</p>
-    <p>📍 ${venue}</p>
-  `
 
-  return { title, body, html }
+  return { title, body }
 }
 
-type Channel = "email" | "telegram" | "in_app"
+type Channel = "telegram" | "in_app"
 type Timing = "day_before" | "match_day"
 
 async function dispatchNotification(
@@ -44,15 +36,13 @@ async function dispatchNotification(
 
   if (await notificationExists(idempotencyKey)) return
 
-  const { title, body, html } = buildNotificationContent(match, settings)
+  const { title, body } = buildNotificationContent(match, settings)
   let status: "sent" | "failed" = "sent"
   let error: string | undefined
 
   try {
     if (channel === "telegram" && settings.telegramChatId) {
       await sendTelegramMessage(settings.telegramChatId, body)
-    } else if (channel === "email" && settings.email) {
-      await sendEmail(settings.email, title, html)
     }
     // in_app: just persisted in DB, no external send needed
   } catch (err) {
@@ -73,26 +63,6 @@ async function dispatchNotification(
   })
 }
 
-function buildNextMatchContent(match: Match, settings: Settings): NotificationContent {
-  const team = TEAM_META[match.teamKey as TeamKey]
-  const homeAway = match.isHome ? "vs" : "@"
-  const dateStr = formatMatchDate(match.matchDate, settings.timezone)
-  const venue = match.venue ?? "TBC"
-
-  const title = `Next: ${team.shortName} ${homeAway} ${match.opponent} — ${match.competition}`
-  const body = `No match today or tomorrow.\n\nNext up:\n${match.competition}\n${team.shortName} ${homeAway} ${match.opponent}\n📅 ${dateStr}\n📍 ${venue}`
-  const html = `
-    <p>No match today or tomorrow.</p>
-    <p><strong>Next up:</strong></p>
-    <p><strong>${match.competition}</strong></p>
-    <p>${team.shortName} ${homeAway} <strong>${match.opponent}</strong></p>
-    <p>📅 ${dateStr}</p>
-    <p>📍 ${venue}</p>
-  `
-
-  return { title, body, html }
-}
-
 export async function processNotificationsForHour(): Promise<{
   processed: number
   errors: string[]
@@ -111,7 +81,6 @@ export async function processNotificationsForHour(): Promise<{
 
   const channels: Channel[] = []
   if (settings.inAppEnabled) channels.push("in_app")
-  if (settings.emailEnabled && settings.email) channels.push("email")
   if (settings.telegramEnabled && settings.telegramChatId) channels.push("telegram")
 
   if (settings.notifyMatchDay) {
@@ -144,43 +113,6 @@ export async function processNotificationsForHour(): Promise<{
         } catch (err) {
           errors.push(`${channel}/${match.id}: ${err instanceof Error ? err.message : err}`)
         }
-      }
-    }
-  }
-
-  if (processed === 0) {
-    const nextMatch = await getNextUpcomingMatch()
-    if (nextMatch) {
-      const { title, body, html } = buildNextMatchContent(nextMatch, settings)
-      const idempotencyKey = `${nextMatch.id}_next_match_${todayStart}`
-
-      for (const channel of channels) {
-        const key = `${idempotencyKey}_${channel}`
-        if (await notificationExists(key)) continue
-        let status: "sent" | "failed" = "sent"
-        let error: string | undefined
-        try {
-          if (channel === "telegram" && settings.telegramChatId) {
-            await sendTelegramMessage(settings.telegramChatId, body)
-          } else if (channel === "email" && settings.email) {
-            await sendEmail(settings.email, title, html)
-          }
-        } catch (err) {
-          status = "failed"
-          error = err instanceof Error ? err.message : "Unknown error"
-        }
-        await createNotification({
-          matchId: nextMatch.id,
-          channel,
-          timing: "next_match",
-          idempotencyKey: key,
-          status,
-          title,
-          body,
-          error: error ?? null,
-          sentAt: new Date().toISOString(),
-        })
-        processed++
       }
     }
   }

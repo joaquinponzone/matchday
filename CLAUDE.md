@@ -22,7 +22,7 @@ bun run db:studio    # Drizzle Studio
 - Tailwind CSS 4 + shadcn/ui (radix-maia style)
 - Turso (SQLite) + Drizzle ORM
 - Vercel (hosting + cron jobs)
-- Resend (email), Telegram Bot API (messaging)
+- Telegram Bot API (messaging)
 - Bun (runtime + package manager)
 
 ## Project Structure

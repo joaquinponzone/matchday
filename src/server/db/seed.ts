@@ -9,7 +9,6 @@ async function seed() {
     .values({
       id: 1,
       timezone: "America/Argentina/Buenos_Aires",
-      emailEnabled: 0,
       telegramEnabled: 0,
       inAppEnabled: 1,
       notifyDayBefore: 1,

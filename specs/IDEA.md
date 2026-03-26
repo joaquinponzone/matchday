@@ -3,16 +3,12 @@
 ## Features
 
 - [x] Config your preferences
-    - [x] Your email
-    - [ ] Your phone number
     - [x] Your Telegram chat ID
-    - [x] Your preferred notification channels (email, Telegram, in-app)
+    - [x] Your preferred notification channels (Telegram, in-app)
     - [x] Your timezone
     - [x] Notification timing (day before / match day)
 - [x] Get notified about next 5 Chelsea FC matches
-    - [x] Through email (Resend)
     - [x] Through Telegram Bot API
-    - [ ] Through WhatsApp/SMS (Twilio) — Phase 3
     - [x] In app-notifications
 - [x] Dashboard with next match countdown and upcoming matches
 - [x] Notifications page with filters (channel, status) and mark-as-read
@@ -29,15 +25,11 @@
 - [x] Vercel
 - [x] Vercel Cron (daily at 12:00 UTC)
 - [x] Turso
-- [ ] Twilio — Phase 3
-- [x] Resend
 
 ## Integrations
 
 - [x] football-data.org: https://www.football-data.org/documentation/quickstart
 - [x] Turso: https://turso.tech/
-- [ ] Twilio: https://www.twilio.com/
-- [x] Resend: https://resend.com/
 - [x] Telegram Bot API
 
 # Future Enhancements

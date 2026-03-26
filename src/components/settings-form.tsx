@@ -117,24 +117,6 @@ export function SettingsForm({ settings, followedTeams }: { settings: Settings; 
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Email</Label>
-              <Switch
-                checked={Boolean(values.emailEnabled)}
-                onCheckedChange={(v) => update("emailEnabled", v ? 1 : 0)}
-              />
-            </div>
-            {values.emailEnabled ? (
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={values.email ?? ""}
-                onChange={(e) => update("email", e.target.value)}
-              />
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
               <Label>Telegram</Label>
               <div className="flex items-center gap-2">
                 {values.telegramEnabled && values.telegramChatId ? (

@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-Personal notification system for Chelsea FC and Argentina national team matches. Syncs fixtures from football-data.org, stores them in Turso (SQLite), and dispatches notifications via Telegram, email, and in-app.
+Personal notification system for Chelsea FC and Argentina national team matches. Syncs fixtures from football-data.org, stores them in Turso (SQLite), and dispatches notifications via Telegram and in-app.
 
 Single-user system with password-based login (iron-session).
 
@@ -14,7 +14,6 @@ Single-user system with password-based login (iron-session).
 - **Database**: Turso (SQLite) + Drizzle ORM
 - **Hosting**: Vercel
 - **Cron**: Vercel Cron Jobs
-- **Email**: Resend
 - **Messaging**: Telegram Bot API
 
 ---
@@ -26,7 +25,7 @@ Single-user system with password-based login (iron-session).
 - [x] Sync Chelsea FC + Argentina fixtures from football-data.org
 - [x] Dashboard showing next match hero + upcoming 4 matches
 - [x] Upcoming matches page with full list + manual sync
-- [x] Settings page (email, Telegram chat ID, timezone, notification preferences, followed teams)
+- [x] Settings page (Telegram chat ID, timezone, notification preferences, followed teams)
 - [x] Cron-based notification dispatch (day before + match day)
 - [x] In-app notification history with filters and mark-as-read
 - [x] Password-based login (iron-session)
@@ -44,7 +43,6 @@ Single-user system with password-based login (iron-session).
 
 ### Phase 3
 
-- [ ] WhatsApp/SMS via Twilio
 - [ ] Push notifications
 - [ ] Multi-team support (choose from all API teams, not just hardcoded two)
 - [ ] Multi-tenant support (multiple users with separate settings)
@@ -58,10 +56,8 @@ Single-user system with password-based login (iron-session).
 | Column                    | Type    | Description                              |
 | ------------------------- | ------- | ---------------------------------------- |
 | `id`                      | integer | Primary key (always 1)                   |
-| `email`                   | text    | Email address for notifications          |
 | `telegram_chat_id`        | text    | Telegram chat ID                         |
 | `timezone`                | text    | User timezone (e.g. `America/Argentina/Buenos_Aires`) |
-| `email_enabled`           | integer | Toggle email channel (0/1)               |
 | `telegram_enabled`        | integer | Toggle Telegram channel (0/1)            |
 | `in_app_enabled`          | integer | Toggle in-app notifications (0/1)        |
 | `notify_day_before`       | integer | Toggle day-before notification (0/1)     |
@@ -97,8 +93,8 @@ Single-user system with password-based login (iron-session).
 | ----------------- | ------- | ---------------------------------------- |
 | `id`              | integer | Primary key                              |
 | `match_id`        | integer | FK to `matches.id`                       |
-| `channel`         | text    | `email`, `telegram`, or `in_app`         |
-| `timing`          | text    | `day_before`, `match_day`, or `next_match` |
+| `channel`         | text    | `telegram` or `in_app`                   |
+| `timing`          | text    | `day_before` or `match_day`              |
 | `idempotency_key` | text    | Unique: `{match_id}_{channel}_{timing}`  |
 | `status`          | text    | `sent`, `failed`, `read`                 |
 | `title`           | text    | Notification title                       |
@@ -135,13 +131,6 @@ Single-user system with password-based login (iron-session).
 - **Endpoint**: `POST https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage`
 - **Body**: `{ chat_id, text, parse_mode: "HTML" }`
 - **Setup**: User creates a bot via @BotFather, starts a conversation, and provides the chat ID in settings.
-
-### Resend
-
-- **Endpoint**: `POST https://api.resend.com/emails`
-- **Headers**: `Authorization: Bearer {RESEND_API_KEY}`
-- **Body**: `{ from: "Matchday <notifications@{RESEND_FROM_DOMAIN}>", to: [email], subject, html }`
-- **Docs**: https://resend.com/docs/api-reference/emails/send-email
 
 ---
 
@@ -203,7 +192,6 @@ Consider splitting back to separate crons with higher frequency:
 ```
 
 The same content is adapted per channel:
-- **Email**: HTML formatted with team logos
 - **Telegram**: HTML parse mode with bold/italic
 - **In-app**: Stored in `notifications` table, displayed in UI
 
@@ -233,7 +221,6 @@ The same content is adapted per channel:
 
 - **Followed teams**: Team crests with enable/disable toggles
 - **Timezone**: Dropdown with 15 timezone options
-- **Email**: Input field + enable/disable toggle
 - **Telegram**: Chat ID input + enable/disable toggle + "Test notification" button
 - **In-app**: Enable/disable toggle
 - **Timing**: Day-before toggle + hour select, match-day toggle + hour select
@@ -242,7 +229,7 @@ The same content is adapted per channel:
 ### `/notifications` — History (route group: `(app)`)
 
 - **List**: All sent notifications, newest first
-- **Filters**: By channel (`email`, `telegram`, `in_app`), by status (`sent`, `failed`, `read`)
+- **Filters**: By channel (`telegram`, `in_app`), by status (`sent`, `failed`, `read`)
 - **Mark as read**: Click to mark in-app notifications as read
 - **Badge**: Unread count in navigation bar
 
@@ -257,8 +244,6 @@ The same content is adapted per channel:
 | `DATABASE_URL`          | Fallback database URL              |
 | `TURSO_AUTH_TOKEN`      | Turso auth token                   |
 | `TELEGRAM_BOT_TOKEN`    | Telegram Bot API token             |
-| `RESEND_API_KEY`        | Resend API key                     |
-| `RESEND_FROM_DOMAIN`    | Domain for sending emails          |
 | `CRON_SECRET`           | Secret for Vercel cron auth        |
 | `SESSION_SECRET`        | iron-session encryption secret     |
 | `LOGIN_PASSWORD`        | Password for single-user login     |
@@ -327,7 +312,6 @@ src/
 ├── lib/
 │   ├── football-data.ts                    # football-data.org client
 │   ├── notifications.ts                    # Notification dispatch logic
-│   ├── resend.ts                           # Resend email client
 │   ├── session.ts                          # iron-session config
 │   ├── teams.ts                            # Team definitions + IDs
 │   ├── telegram.ts                         # Telegram Bot client
@@ -351,7 +335,7 @@ src/
 2. ~~**API Football integration** — Client + sync cron endpoint~~
 3. ~~**Dashboard UI** — Hero card + upcoming matches list + countdown~~
 4. ~~**Settings page** — Form + API route + auto-save + followed teams~~
-5. ~~**Notification dispatch** — Telegram + email + in-app clients, cron endpoint~~
+5. ~~**Notification dispatch** — Telegram + in-app clients, cron endpoint~~
 6. ~~**Notification history UI** — List + filters + mark as read~~
 7. ~~**Auth** — Login page + iron-session + route protection~~
 8. ~~**Deploy + verify** — Environment variables, cron jobs~~
@@ -361,4 +345,3 @@ src/
 9. **Match results** — Display scores for finished matches, sync final scores in cron
 10. **Postponement alerts** — Detect status changes and notify user
 11. **Cron frequency** — Split daily cron into separate sync (3x/day) + notifications (hourly)
-12. **Twilio integration** — WhatsApp/SMS channel (Phase 3)

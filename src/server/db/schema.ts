@@ -2,10 +2,8 @@ import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core
 
 export const settings = sqliteTable("settings", {
   id: integer("id").primaryKey(),
-  email: text("email"),
   telegramChatId: text("telegram_chat_id"),
   timezone: text("timezone").notNull().default("America/Argentina/Buenos_Aires"),
-  emailEnabled: integer("email_enabled").notNull().default(0),
   telegramEnabled: integer("telegram_enabled").notNull().default(0),
   inAppEnabled: integer("in_app_enabled").notNull().default(1),
   notifyDayBefore: integer("notify_day_before").notNull().default(1),
