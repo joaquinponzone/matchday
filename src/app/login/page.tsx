@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useActionState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { login } from "./actions"
 
 export default function LoginPage() {
-  const [state, action, pending] = useActionState(login, { error: "" })
+  const [state, action, pending] = useActionState(login, {})
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -19,12 +20,23 @@ export default function LoginPage() {
         <CardContent>
           <form action={action} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                autoFocus
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                autoFocus
+                autoComplete="current-password"
                 required
               />
             </div>
@@ -35,6 +47,22 @@ export default function LoginPage() {
               {pending ? "Signing in…" : "Sign in"}
             </Button>
           </form>
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <Link
+              href="/register"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Create an account
+            </Link>
+            {state?.emailConfigured && (
+              <Link
+                href="/forgot-password"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Forgot password?
+              </Link>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

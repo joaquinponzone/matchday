@@ -2,10 +2,15 @@ export const dynamic = "force-dynamic"
 
 import { MatchCard } from "@/components/match-card"
 import { MatchHero } from "@/components/match-hero"
+import { verifySession } from "@/lib/dal"
 import { getSettings, getUpcomingMatches } from "@/server/db/queries"
 
 export default async function DashboardPage() {
-  const [settings, upcoming] = await Promise.all([getSettings(), getUpcomingMatches(10)])
+  const { userId } = await verifySession()
+  const [settings, upcoming] = await Promise.all([
+    getSettings(userId),
+    getUpcomingMatches(10),
+  ])
 
   const timezone = settings?.timezone ?? "UTC"
   const [hero, ...rest] = upcoming

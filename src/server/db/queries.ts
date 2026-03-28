@@ -1,41 +1,144 @@
 import { and, desc, eq, gte, lte, or } from "drizzle-orm"
 
 import { db } from "./index"
-import { type InsertMatch, type InsertNotification, followedTeams, matches, notifications, settings } from "./schema"
+import {
+  type InsertMatch,
+  type InsertNotification,
+  followedTeams,
+  matches,
+  notifications,
+  settings,
+  users,
+} from "./schema"
 
-// Settings
+// Users
 
-export async function getSettings() {
-  const rows = await db.select().from(settings).where(eq(settings.id, 1)).limit(1)
+export async function getUserByEmail(email: string) {
+  const rows = await db.select().from(users).where(eq(users.email, email)).limit(1)
   return rows[0] ?? null
 }
 
-export async function updateSettings(data: Partial<typeof settings.$inferInsert>) {
+export async function getUserByResetToken(tokenHash: string) {
+  const rows = await db
+    .select()
+    .from(users)
+    .where(eq(users.resetToken, tokenHash))
+    .limit(1)
+  return rows[0] ?? null
+}
+
+export async function getAllUsers() {
+  return db.select().from(users).orderBy(desc(users.createdAt))
+}
+
+export async function updateUserStatus(userId: number, status: string) {
+  await db
+    .update(users)
+    .set({ status, updatedAt: new Date().toISOString() })
+    .where(eq(users.id, userId))
+}
+
+export async function updateUserRole(userId: number, role: string) {
+  await db
+    .update(users)
+    .set({ role, updatedAt: new Date().toISOString() })
+    .where(eq(users.id, userId))
+}
+
+export async function getAllActiveUsersWithSettings() {
+  return db
+    .select({
+      userId: users.id,
+      email: users.email,
+      name: users.name,
+      telegramChatId: settings.telegramChatId,
+      timezone: settings.timezone,
+      telegramEnabled: settings.telegramEnabled,
+      inAppEnabled: settings.inAppEnabled,
+      notifyDayBefore: settings.notifyDayBefore,
+      notifyMatchDay: settings.notifyMatchDay,
+      dayBeforeHour: settings.dayBeforeHour,
+      matchDayHour: settings.matchDayHour,
+    })
+    .from(users)
+    .innerJoin(settings, eq(users.id, settings.userId))
+    .where(eq(users.status, "active"))
+}
+
+export async function getAllFollowedTeamKeys(): Promise<string[]> {
+  const rows = await db
+    .select({ teamKey: followedTeams.teamKey })
+    .from(followedTeams)
+    .innerJoin(users, eq(followedTeams.userId, users.id))
+    .where(and(eq(followedTeams.enabled, 1), eq(users.status, "active")))
+  const unique = [...new Set(rows.map((r) => r.teamKey))]
+  return unique
+}
+
+// Settings
+
+export async function getSettings(userId: number) {
+  const rows = await db.select().from(settings).where(eq(settings.userId, userId)).limit(1)
+  return rows[0] ?? null
+}
+
+export async function updateSettings(userId: number, data: Partial<typeof settings.$inferInsert>) {
   await db
     .update(settings)
     .set({ ...data, updatedAt: new Date().toISOString() })
-    .where(eq(settings.id, 1))
-  return getSettings()
+    .where(eq(settings.userId, userId))
+  return getSettings(userId)
+}
+
+export async function createUserSettings(userId: number) {
+  const now = new Date().toISOString()
+  await db
+    .insert(settings)
+    .values({
+      userId,
+      timezone: "America/Argentina/Buenos_Aires",
+      telegramEnabled: 0,
+      inAppEnabled: 1,
+      notifyDayBefore: 1,
+      notifyMatchDay: 1,
+      dayBeforeHour: 20,
+      matchDayHour: 9,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoNothing()
 }
 
 // Followed Teams
 
-export async function getFollowedTeams(): Promise<string[]> {
-  const rows = await db.select().from(followedTeams).where(eq(followedTeams.enabled, 1))
+export async function getFollowedTeams(userId: number): Promise<string[]> {
+  const rows = await db
+    .select()
+    .from(followedTeams)
+    .where(and(eq(followedTeams.userId, userId), eq(followedTeams.enabled, 1)))
   return rows.map((r) => r.teamKey)
 }
 
-export async function setTeamEnabled(teamKey: string, enabled: boolean) {
+export async function setTeamEnabled(userId: number, teamKey: string, enabled: boolean) {
   await db
     .insert(followedTeams)
-    .values({ teamKey, enabled: enabled ? 1 : 0 })
+    .values({ userId, teamKey, enabled: enabled ? 1 : 0 })
     .onConflictDoUpdate({
-      target: followedTeams.teamKey,
+      target: [followedTeams.userId, followedTeams.teamKey],
       set: { enabled: enabled ? 1 : 0 },
     })
 }
 
-// Matches
+export async function createDefaultFollowedTeams(userId: number) {
+  for (const key of ["chelsea", "argentina"]) {
+    await db
+      .insert(followedTeams)
+      .values({ userId, teamKey: key, enabled: 1 })
+      .onConflictDoNothing()
+  }
+}
+
+// Matches (global — no userId)
 
 export async function getUpcomingMatches(limit = 5) {
   const now = new Date().toISOString()
@@ -86,37 +189,43 @@ export async function getNextUpcomingMatch() {
 
 // Notifications
 
-export async function getNotifications(filters?: { channel?: string; status?: string }) {
-  const conditions = []
+export async function getNotifications(
+  userId: number,
+  filters?: { channel?: string; status?: string },
+) {
+  const conditions = [eq(notifications.userId, userId)]
   if (filters?.channel) conditions.push(eq(notifications.channel, filters.channel))
   if (filters?.status) conditions.push(eq(notifications.status, filters.status))
 
-  const query = db
+  return db
     .select()
     .from(notifications)
+    .where(and(...conditions))
     .orderBy(desc(notifications.createdAt))
-
-  if (conditions.length === 0) return query
-  if (conditions.length === 1) return query.where(conditions[0])
-  return query.where(and(...conditions))
 }
 
 export async function createNotification(data: InsertNotification) {
   return db.insert(notifications).values(data).onConflictDoNothing()
 }
 
-export async function markNotificationRead(id: number) {
+export async function markNotificationRead(userId: number, id: number) {
   await db
     .update(notifications)
     .set({ status: "read", readAt: new Date().toISOString() })
-    .where(eq(notifications.id, id))
+    .where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
 }
 
-export async function getUnreadCount() {
+export async function getUnreadCount(userId: number) {
   const rows = await db
     .select()
     .from(notifications)
-    .where(and(eq(notifications.channel, "in_app"), eq(notifications.status, "sent")))
+    .where(
+      and(
+        eq(notifications.userId, userId),
+        eq(notifications.channel, "in_app"),
+        eq(notifications.status, "sent"),
+      ),
+    )
   return rows.length
 }
 

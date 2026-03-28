@@ -1,10 +1,15 @@
 export const dynamic = "force-dynamic"
 
 import { SettingsForm } from "@/components/settings-form"
+import { verifySession } from "@/lib/dal"
 import { getFollowedTeams, getSettings } from "@/server/db/queries"
 
 export default async function SettingsPage() {
-  const [settings, followed] = await Promise.all([getSettings(), getFollowedTeams()])
+  const { userId } = await verifySession()
+  const [settings, followed] = await Promise.all([
+    getSettings(userId),
+    getFollowedTeams(userId),
+  ])
 
   if (!settings) {
     return (

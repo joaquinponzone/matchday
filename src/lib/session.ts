@@ -7,5 +7,5 @@ export const sessionOptions: SessionOptions = {
 }
 
 export type SessionData = {
-  isLoggedIn: boolean
+  userId: number
 }

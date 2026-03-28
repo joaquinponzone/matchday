@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { fetchUpcomingFixtures, mapFixtureToMatch, type TeamKey } from "@/lib/football-data"
 import { processNotificationsForHour } from "@/lib/notifications"
-import { getFollowedTeams, upsertMatch } from "@/server/db/queries"
+import { getAllFollowedTeamKeys, upsertMatch } from "@/server/db/queries"
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -10,10 +10,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // 1. Sync fixtures
+  // 1. Sync fixtures for all active users' followed teams
   let upserted = 0
   try {
-    const teamKeys = (await getFollowedTeams()) as TeamKey[]
+    const teamKeys = (await getAllFollowedTeamKeys()) as TeamKey[]
     const fixtures = await Promise.all(teamKeys.map((k) => fetchUpcomingFixtures(k)))
     for (const [i, team] of teamKeys.entries()) {
       for (const f of fixtures[i]) {
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: `sync failed: ${message}` }, { status: 500 })
   }
 
-  // 2. Send notifications
+  // 2. Send notifications for all active users
   const { processed, errors } = await processNotificationsForHour()
 
   return NextResponse.json({ ok: true, upserted, processed, errors })
