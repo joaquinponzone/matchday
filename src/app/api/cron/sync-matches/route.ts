@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { fetchUpcomingFixtures, mapFixtureToMatch, type TeamKey } from "@/lib/football-data"
-import { getFollowedTeams, upsertMatch } from "@/server/db/queries"
+import { getAllFollowedTeamKeys, upsertMatch } from "@/server/db/queries"
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const teamKeys = (await getFollowedTeams()) as TeamKey[]
+    const teamKeys = (await getAllFollowedTeamKeys()) as TeamKey[]
     const fixtures = await Promise.all(teamKeys.map((k) => fetchUpcomingFixtures(k)))
 
     let upserted = 0

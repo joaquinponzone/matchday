@@ -1,7 +1,22 @@
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
+import { integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
+
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  role: text("role").notNull().default("user"),
+  status: text("status").notNull().default("pending"),
+  resetToken: text("reset_token"),
+  resetTokenExpiresAt: text("reset_token_expires_at"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+})
 
 export const settings = sqliteTable("settings", {
-  id: integer("id").primaryKey(),
+  userId: integer("user_id")
+    .primaryKey()
+    .references(() => users.id),
   telegramChatId: text("telegram_chat_id"),
   timezone: text("timezone").notNull().default("America/Argentina/Buenos_Aires"),
   telegramEnabled: integer("telegram_enabled").notNull().default(0),
@@ -36,6 +51,9 @@ export const notifications = sqliteTable(
   "notifications",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
     matchId: integer("match_id")
       .notNull()
       .references(() => matches.id),
@@ -53,11 +71,20 @@ export const notifications = sqliteTable(
   (table) => [uniqueIndex("idempotency_key_idx").on(table.idempotencyKey)],
 )
 
-export const followedTeams = sqliteTable("followed_teams", {
-  teamKey: text("team_key").primaryKey(),
-  enabled: integer("enabled").notNull().default(1),
-})
+export const followedTeams = sqliteTable(
+  "followed_teams",
+  {
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    teamKey: text("team_key").notNull(),
+    enabled: integer("enabled").notNull().default(1),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.teamKey] })],
+)
 
+export type User = typeof users.$inferSelect
+export type InsertUser = typeof users.$inferInsert
 export type Settings = typeof settings.$inferSelect
 export type Match = typeof matches.$inferSelect
 export type Notification = typeof notifications.$inferSelect

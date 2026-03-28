@@ -1,20 +1,54 @@
 "use server"
 
+import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { getIronSession } from "iron-session"
+
+import { isEmailConfigured } from "@/lib/email"
 import { sessionOptions, type SessionData } from "@/lib/session"
+import { LoginSchema } from "@/lib/validations"
+import { getUserByEmail } from "@/server/db/queries"
 
-export async function login(_prevState: { error: string }, formData: FormData) {
-  const password = formData.get("password") as string
-  const adminPassword = process.env.ADMIN_PASSWORD
+type LoginState = {
+  error?: string
+  emailConfigured?: boolean
+}
 
-  if (!adminPassword || password !== adminPassword) {
-    return { error: "Invalid password" }
+export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
+  const emailConfigured = isEmailConfigured()
+
+  const parsed = LoginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  })
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, emailConfigured }
+  }
+
+  const { email, password } = parsed.data
+  const user = await getUserByEmail(email)
+
+  if (!user) {
+    return { error: "Invalid email or password", emailConfigured }
+  }
+
+  if (user.status === "pending") {
+    return { error: "Your account is pending approval", emailConfigured }
+  }
+
+  if (user.status === "rejected") {
+    return { error: "Your account has not been approved", emailConfigured }
+  }
+
+  const valid = await bcrypt.compare(password, user.passwordHash)
+  if (!valid) {
+    return { error: "Invalid email or password", emailConfigured }
   }
 
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
-  session.isLoggedIn = true
+  session.userId = user.id
   await session.save()
 
   redirect("/")

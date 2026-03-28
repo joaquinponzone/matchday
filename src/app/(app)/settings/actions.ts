@@ -1,16 +1,19 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { verifySession } from "@/lib/dal"
 import { getSettings, setTeamEnabled } from "@/server/db/queries"
 import { sendTelegramMessage } from "@/lib/telegram"
 
 export async function toggleTeam(teamKey: string, enabled: boolean) {
-  await setTeamEnabled(teamKey, enabled)
+  const { userId } = await verifySession()
+  await setTeamEnabled(userId, teamKey, enabled)
   revalidatePath("/settings")
 }
 
 export async function testTelegramNotification(): Promise<{ ok: boolean; error?: string }> {
-  const s = await getSettings()
+  const { userId } = await verifySession()
+  const s = await getSettings(userId)
   if (!s?.telegramEnabled || !s.telegramChatId) {
     return { ok: false, error: "Telegram is not enabled or chat ID is missing." }
   }

@@ -4,6 +4,7 @@ import { Suspense } from "react"
 
 import { NotificationFilters } from "@/components/notification-filters"
 import { NotificationItem } from "@/components/notification-item"
+import { verifySession } from "@/lib/dal"
 import { getNotifications } from "@/server/db/queries"
 
 interface PageProps {
@@ -11,8 +12,9 @@ interface PageProps {
 }
 
 export default async function NotificationsPage({ searchParams }: PageProps) {
+  const { userId } = await verifySession()
   const { channel, status } = await searchParams
-  const notifications = await getNotifications({ channel, status })
+  const notifications = await getNotifications(userId, { channel, status })
 
   return (
     <div className="space-y-4">

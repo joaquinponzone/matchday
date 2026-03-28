@@ -1,12 +1,16 @@
 import Link from "next/link"
 
+import { getUser } from "@/lib/dal"
 import { getUnreadCount } from "@/server/db/queries"
 import { NavLinks } from "@/components/nav-links"
 
 export async function Nav() {
   let unread = 0
+  let role = "user"
   try {
-    unread = await getUnreadCount()
+    const user = await getUser()
+    role = user.role
+    unread = await getUnreadCount(user.id)
   } catch {
     // DB not reachable during build or before setup
   }
@@ -17,7 +21,7 @@ export async function Nav() {
         <Link href="/" className="font-medium text-xl">
           Matchday ⚽️
         </Link>
-        <NavLinks unread={unread} />
+        <NavLinks unread={unread} role={role} />
       </div>
     </nav>
   )
