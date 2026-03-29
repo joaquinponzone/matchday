@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useCallback, useState, useTransition } from "react"
+import { useCallback, useRef, useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,8 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { useDebounce } from "@/hooks/use-debounce"
 import { cn } from "@/lib/utils"
-import { TEAM_META } from "@/lib/teams"
-import { toggleTeam, testTelegramNotification } from "@/app/(app)/settings/actions"
+import { followTeam, unfollowTeam, testTelegramNotification } from "@/app/(app)/settings/actions"
 import type { Settings } from "@/server/db/schema"
 
 const TIMEZONES = [
@@ -34,6 +33,22 @@ const TIMEZONES = [
   "UTC",
 ]
 
+interface FollowedTeamMeta {
+  apiId: number
+  name: string
+  shortName: string
+  crest: string
+  enabled: number
+}
+
+interface SearchResult {
+  id: number
+  name: string
+  shortName: string
+  tla: string
+  crest: string
+}
+
 async function saveSettings(data: Partial<Settings>) {
   await fetch("/api/settings", {
     method: "PUT",
@@ -42,14 +57,46 @@ async function saveSettings(data: Partial<Settings>) {
   })
 }
 
-export function SettingsForm({ settings, followedTeams }: { settings: Settings; followedTeams: string[] }) {
+export function SettingsForm({
+  settings,
+  followedTeams,
+}: {
+  settings: Settings
+  followedTeams: FollowedTeamMeta[]
+}) {
   const [values, setValues] = useState(settings)
   const [isPending, startTransition] = useTransition()
   const [testResult, setTestResult] = useState<{ ok: boolean; error?: string } | null>(null)
 
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [followed, setFollowed] = useState(followedTeams)
+  const searchRef = useRef<HTMLDivElement>(null)
+
+  const followedIds = new Set(followed.map((t) => t.apiId))
+
   const persist = useDebounce(useCallback((data: Partial<Settings>) => {
     saveSettings(data)
   }, []), 600)
+
+  const doSearch = useDebounce(useCallback(async (q: string) => {
+    if (q.length < 3) {
+      setSearchResults([])
+      setIsSearching(false)
+      return
+    }
+    setIsSearching(true)
+    try {
+      const res = await fetch(`/api/teams/search?q=${encodeURIComponent(q)}`)
+      const data = await res.json()
+      setSearchResults(data.teams ?? [])
+    } catch {
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, []), 400)
 
   function update<K extends keyof Settings>(key: K, value: Settings[K]) {
     const next = { ...values, [key]: value }
@@ -57,27 +104,100 @@ export function SettingsForm({ settings, followedTeams }: { settings: Settings; 
     persist({ [key]: value })
   }
 
+  async function handleFollow(team: SearchResult) {
+    setFollowed((prev) => [
+      ...prev,
+      { apiId: team.id, name: team.name, shortName: team.shortName, crest: team.crest, enabled: 1 },
+    ])
+    setSearchQuery("")
+    setSearchResults([])
+    await followTeam(team.id, team.name, team.shortName, team.tla, team.crest)
+  }
+
+  async function handleUnfollow(apiId: number) {
+    setFollowed((prev) => prev.filter((t) => t.apiId !== apiId))
+    await unfollowTeam(apiId)
+  }
+
   return (
     <div className="space-y-6">
       <section className="space-y-3">
         <h2 className="text-sm font-medium">Followed Teams</h2>
-        {Object.values(TEAM_META).map((team) => (
-          <div key={team.key} className="flex items-center gap-3">
-            <Image
-              src={team.crestUrl}
-              alt={team.name}
-              width={32}
-              height={32}
-              className="object-contain"
-            />
-            <span className="font-medium">{team.name}</span>
-            <Switch
-              className="ml-auto"
-              checked={followedTeams.includes(team.key)}
-              onCheckedChange={(v) => toggleTeam(team.key, v)}
-            />
+
+        {followed.map((team) => (
+          <div key={team.apiId} className="flex items-center gap-3">
+            {team.crest && (
+              <Image
+                src={team.crest}
+                alt={team.name}
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            )}
+            <span className="flex-1 font-medium">{team.name}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-destructive"
+              onClick={() => handleUnfollow(team.apiId)}
+            >
+              Remove
+            </Button>
           </div>
         ))}
+
+        {followed.length === 0 && (
+          <p className="text-sm text-muted-foreground">No teams followed yet. Search to add one.</p>
+        )}
+
+        <div ref={searchRef} className="relative">
+          <Input
+            placeholder="Search teams..."
+            value={searchQuery}
+            onChange={(e) => {
+              const q = e.target.value
+              setSearchQuery(q)
+              doSearch(q)
+            }}
+          />
+          {(searchResults.length > 0 || isSearching) && searchQuery.length >= 3 && (
+            <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover shadow-md">
+              {isSearching ? (
+                <p className="p-3 text-sm text-muted-foreground">Searching...</p>
+              ) : (
+                searchResults.map((team) => (
+                  <div
+                    key={team.id}
+                    className="flex items-center gap-3 p-3 hover:bg-accent"
+                  >
+                    {team.crest && (
+                      <Image
+                        src={team.crest}
+                        alt={team.name}
+                        width={24}
+                        height={24}
+                        className="shrink-0 object-contain"
+                      />
+                    )}
+                    <span className="flex-1 text-sm">{team.name}</span>
+                    {followedIds.has(team.id) ? (
+                      <span className="text-xs text-muted-foreground">Following</span>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleFollow(team)}
+                      >
+                        Follow
+                      </Button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </section>
 
       <Separator />
@@ -132,7 +252,7 @@ export function SettingsForm({ settings, followedTeams }: { settings: Settings; 
                       })
                     }
                   >
-                    {isPending ? "Sending…" : "Test"}
+                    {isPending ? "Sending..." : "Test"}
                   </Button>
                 ) : null}
                 <Switch
@@ -150,11 +270,16 @@ export function SettingsForm({ settings, followedTeams }: { settings: Settings; 
               </p>
             ) : null}
             {values.telegramEnabled ? (
-              <Input
-                placeholder="Telegram Chat ID"
-                value={values.telegramChatId ?? ""}
-                onChange={(e) => update("telegramChatId", e.target.value)}
-              />
+              <div className="space-y-1">
+                <Input
+                  placeholder="Telegram Chat ID"
+                  value={values.telegramChatId ?? ""}
+                  onChange={(e) => update("telegramChatId", e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Message @userinfobot on Telegram and send /start to get your Chat ID.
+                </p>
+              </div>
             ) : null}
           </div>
         </div>

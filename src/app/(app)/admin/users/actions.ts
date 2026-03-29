@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache"
 import { requireAdmin } from "@/lib/dal"
 import {
-  createDefaultFollowedTeams,
   createUserSettings,
   updateUserRole,
   updateUserStatus,
@@ -13,7 +12,6 @@ export async function approveUser(userId: number) {
   await requireAdmin()
   await updateUserStatus(userId, "active")
   await createUserSettings(userId)
-  await createDefaultFollowedTeams(userId)
   revalidatePath("/admin/users")
 }
 

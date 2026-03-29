@@ -2,8 +2,6 @@ import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import type { TeamKey } from "@/lib/football-data"
-import { TEAM_META } from "@/lib/teams"
 import { formatMatchDate } from "@/lib/utils"
 import type { Match } from "@/server/db/schema"
 
@@ -13,18 +11,21 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, timezone }: MatchCardProps) {
-  const team = TEAM_META[match.teamKey as TeamKey]
+  const teamName = match.teamShortName ?? match.teamKey
+  const teamCrest = match.teamCrest
 
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
-        <Image
-          src={team.crestUrl}
-          alt={team.name}
-          width={16}
-          height={16}
-          className="shrink-0 object-contain"
-        />
+        {teamCrest && (
+          <Image
+            src={teamCrest}
+            alt={teamName}
+            width={16}
+            height={16}
+            className="shrink-0 object-contain"
+          />
+        )}
         {match.opponentLogo && (
           <Image
             src={match.opponentLogo}
@@ -35,7 +36,7 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
           />
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{team.shortName} vs {match.opponent}</p>
+          <p className="truncate font-medium">{teamName} vs {match.opponent}</p>
           <p className="truncate text-xs text-muted-foreground">
             {formatMatchDate(match.matchDate, timezone)}
           </p>

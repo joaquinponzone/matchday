@@ -2,8 +2,6 @@ import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import type { TeamKey } from "@/lib/football-data"
-import { TEAM_META } from "@/lib/teams"
 import { formatMatchDate } from "@/lib/utils"
 import type { Match } from "@/server/db/schema"
 
@@ -15,7 +13,8 @@ interface MatchHeroProps {
 }
 
 export function MatchHero({ match, timezone }: MatchHeroProps) {
-  const team = TEAM_META[match.teamKey as TeamKey]
+  const teamName = match.teamShortName ?? match.teamKey
+  const teamCrest = match.teamCrest
 
   return (
     <Card className="overflow-hidden">
@@ -38,15 +37,17 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col items-center gap-2">
-            <div className="relative h-16 w-16">
-              <Image
-                src={team.crestUrl}
-                alt={team.name}
-                fill
-                className="object-contain"
-              />
-            </div>
-            <span className="text-sm font-medium">{team.shortName}</span>
+            {teamCrest && (
+              <div className="relative h-16 w-16">
+                <Image
+                  src={teamCrest}
+                  alt={teamName}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            )}
+            <span className="text-sm font-medium">{teamName}</span>
           </div>
 
           <div className="flex flex-col items-center gap-1">

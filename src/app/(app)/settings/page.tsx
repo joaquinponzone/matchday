@@ -2,13 +2,13 @@ export const dynamic = "force-dynamic"
 
 import { SettingsForm } from "@/components/settings-form"
 import { verifySession } from "@/lib/dal"
-import { getFollowedTeams, getSettings } from "@/server/db/queries"
+import { getFollowedTeamsWithMeta, getSettings } from "@/server/db/queries"
 
 export default async function SettingsPage() {
   const { userId } = await verifySession()
-  const [settings, followed] = await Promise.all([
+  const [settings, followedTeams] = await Promise.all([
     getSettings(userId),
-    getFollowedTeams(userId),
+    getFollowedTeamsWithMeta(userId),
   ])
 
   if (!settings) {
@@ -22,7 +22,7 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-sm font-medium text-muted-foreground">Settings</h1>
-      <SettingsForm settings={settings} followedTeams={followed} />
+      <SettingsForm settings={settings} followedTeams={followedTeams} />
     </div>
   )
 }

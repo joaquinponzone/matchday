@@ -5,7 +5,6 @@ import bcrypt from "bcryptjs"
 import { RegisterSchema, type FormState } from "@/lib/validations"
 import { db } from "@/server/db/index"
 import {
-  createDefaultFollowedTeams,
   createUserSettings,
   getUserByEmail,
 } from "@/server/db/queries"
@@ -55,7 +54,6 @@ export async function register(_prevState: FormState, formData: FormData): Promi
 
   if (isFirstUser) {
     await createUserSettings(userId)
-    await createDefaultFollowedTeams(userId)
     return { success: "Account created! You can now sign in." }
   }
 

@@ -1,4 +1,3 @@
-import { TEAM_META } from "@/lib/teams"
 import { formatMatchDate } from "@/lib/utils"
 import {
   createNotification,
@@ -8,7 +7,6 @@ import {
   notificationExists,
 } from "@/server/db/queries"
 import type { Match } from "@/server/db/schema"
-import type { TeamKey } from "@/lib/football-data"
 
 import { sendTelegramMessage } from "./telegram"
 
@@ -33,13 +31,13 @@ export function buildNotificationContent(
   match: Match,
   timezone: string,
 ): NotificationContent {
-  const team = TEAM_META[match.teamKey as TeamKey]
+  const teamName = match.teamShortName ?? match.teamKey
   const venue = match.venue ?? "To be confirmed"
   const homeAway = match.isHome ? "vs" : "@"
   const dateStr = formatMatchDate(match.matchDate, timezone)
 
-  const title = `${team.shortName} ${homeAway} ${match.opponent} — ${match.competition}`
-  const body = `${match.competition}\n${team.shortName} ${homeAway} ${match.opponent}\n📅 ${dateStr}\n📍 ${venue}`
+  const title = `${teamName} ${homeAway} ${match.opponent} — ${match.competition}`
+  const body = `${match.competition}\n${teamName} ${homeAway} ${match.opponent}\n📅 ${dateStr}\n📍 ${venue}`
 
   return { title, body }
 }
@@ -116,7 +114,9 @@ export async function processNotificationsForHour(): Promise<{
         `${todayStart}T00:00:00.000Z`,
         `${todayStart}T23:59:59.999Z`,
       )
-      const userTodayMatches = todayMatches.filter((m) => userTeams.includes(m.teamKey))
+      const userTodayMatches = todayMatches.filter((m) =>
+        userTeams.includes(Number(m.teamKey)),
+      )
       for (const match of userTodayMatches) {
         for (const channel of channels) {
           try {
@@ -134,7 +134,9 @@ export async function processNotificationsForHour(): Promise<{
         `${tomorrowStart}T00:00:00.000Z`,
         `${tomorrowStart}T23:59:59.999Z`,
       )
-      const userTomorrowMatches = tomorrowMatches.filter((m) => userTeams.includes(m.teamKey))
+      const userTomorrowMatches = tomorrowMatches.filter((m) =>
+        userTeams.includes(Number(m.teamKey)),
+      )
       for (const match of userTomorrowMatches) {
         for (const channel of channels) {
           try {
