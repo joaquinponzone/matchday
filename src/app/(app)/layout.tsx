@@ -1,3 +1,4 @@
+import { Footer } from "@/components/footer"
 import { Nav } from "@/components/nav"
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -5,6 +6,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <>
       <Nav />
       <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
+      <Footer />
     </>
   )
 }
