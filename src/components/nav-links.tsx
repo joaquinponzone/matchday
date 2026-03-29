@@ -59,6 +59,7 @@ export function NavLinks({ unread, role }: { unread: number; role: string }) {
       </div>
       {/* Desktop */}
       <div className="hidden md:flex flex-1 items-center gap-4 text-sm">
+        <div className="flex items-center gap-6 w-full justify-end">
         {allLinks.map(({ href, label, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href)
           return (
@@ -76,11 +77,12 @@ export function NavLinks({ unread, role }: { unread: number; role: string }) {
                   {unread}
                 </Badge>
               )}
-            </Link>
-          )
-        })}
+              </Link>
+            )
+          })}
+        </div>
         <form action={logout} className="ml-auto">
-          <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground">
+          <Button variant="ghost" size="sm" type="submit" className="text-destructive">
             Logout
           </Button>
         </form>
