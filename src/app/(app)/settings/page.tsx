@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import { SettingsForm } from "@/components/settings-form"
 import { verifySession } from "@/lib/dal"
 import { getFollowedTeamsWithMeta, getSettings } from "@/server/db/queries"
+import { Separator } from "@/components/ui/separator"
 
 export default async function SettingsPage() {
   const { userId } = await verifySession()
@@ -21,7 +22,8 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-sm font-medium text-muted-foreground">Settings</h1>
+      <h1 className="text- font-medium text-muted-foreground">Settings</h1>
+      <Separator />
       <SettingsForm settings={settings} followedTeams={followedTeams} />
     </div>
   )
