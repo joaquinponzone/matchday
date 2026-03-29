@@ -1,3 +1,5 @@
+"use server"
+
 import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm"
 
 import { db } from "./index"
@@ -11,6 +13,7 @@ import {
   teams,
   users,
 } from "./schema"
+import { revalidatePath } from "next/cache"
 
 // Users
 
@@ -74,6 +77,24 @@ export async function getAllFollowedTeamKeys(): Promise<number[]> {
     .where(and(eq(followedTeams.enabled, 1), eq(users.status, "active")))
   const unique = [...new Set(rows.map((r) => Number(r.teamKey)))]
   return unique
+}
+
+export async function deactivateUser(userId: number) {
+  await db
+    .update(users)
+    .set({ status: "inactive", updatedAt: new Date().toISOString() })
+    .where(eq(users.id, userId))
+
+  revalidatePath("/admin/users")
+}
+
+export async function activateUser(userId: number) {
+  await db
+    .update(users)
+    .set({ status: "active", updatedAt: new Date().toISOString() })
+    .where(eq(users.id, userId))
+
+  revalidatePath("/admin/users")
 }
 
 // Settings

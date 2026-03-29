@@ -17,6 +17,7 @@ export function UserActions({ user }: { user: Pick<User, "id" | "role" | "status
             variant="default"
             disabled={pending}
             onClick={() => startTransition(() => approveUser(user.id))}
+            className="text-xs"
           >
             Approve
           </Button>
@@ -25,6 +26,7 @@ export function UserActions({ user }: { user: Pick<User, "id" | "role" | "status
             variant="destructive"
             disabled={pending}
             onClick={() => startTransition(() => rejectUser(user.id))}
+            className="text-xs"
           >
             Reject
           </Button>
@@ -40,6 +42,7 @@ export function UserActions({ user }: { user: Pick<User, "id" | "role" | "status
               changeRole(user.id, user.role === "admin" ? "user" : "admin"),
             )
           }
+          className="text-xs"
         >
           {user.role === "admin" ? "Remove admin" : "Make admin"}
         </Button>
@@ -50,6 +53,7 @@ export function UserActions({ user }: { user: Pick<User, "id" | "role" | "status
           variant="outline"
           disabled={pending}
           onClick={() => startTransition(() => approveUser(user.id))}
+          className="text-xs"
         >
           Approve
         </Button>
