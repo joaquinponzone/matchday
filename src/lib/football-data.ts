@@ -138,6 +138,40 @@ async function getAllTeams(): Promise<FDTeam[]> {
   return allTeams
 }
 
+export interface FDWorldCupMatch {
+  id: number
+  utcDate: string
+  status: string
+  matchday: number
+  stage: string
+  group: string | null
+  homeTeam: { id: number; name: string; shortName: string; tla: string; crest: string }
+  awayTeam: { id: number; name: string; shortName: string; tla: string; crest: string }
+  score: {
+    winner: string | null
+    fullTime: { home: number | null; away: number | null }
+  }
+}
+
+interface FDMatchesResponse {
+  matches: FDWorldCupMatch[]
+}
+
+export async function fetchWorldCupMatches(): Promise<FDWorldCupMatch[]> {
+  const key = getApiKey()
+  const res = await fetch(`${BASE_URL}/matches?competitions=2000`, {
+    headers: { "X-Auth-Token": key },
+    // next: { revalidate: 3600 },
+    next: { revalidate: 0 },
+  })
+
+  if (!res.ok) return []
+
+  const data: FDMatchesResponse = await res.json()
+  console.log("data", data)
+  return data.matches.filter((m) => m.stage === "GROUP_STAGE")
+}
+
 export async function searchTeams(
   query: string,
 ): Promise<Array<{ id: number; name: string; shortName: string; tla: string; crest: string }>> {

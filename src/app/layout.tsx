@@ -15,7 +15,15 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   title: "Matchday",
-  description: "Chelsea FC match notifications",
+  description: "Football Matchday Tracker",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "Matchday",
+    description: "Football Matchday Tracker",
+    url: "https://matchday-mvp.vercel.app/",
+  },
 }
 
 export default function RootLayout({

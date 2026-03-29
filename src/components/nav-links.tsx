@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { logout } from "@/app/actions/logout"
 import { cn } from "@/lib/utils"
-import { BellIcon, HomeIcon, LogOutIcon, SettingsIcon, UsersIcon } from "lucide-react"
+import { BellIcon, HomeIcon, LogOutIcon, SettingsIcon, TrophyIcon, UsersIcon } from "lucide-react"
 
 const links = [
   { href: "/", label: "Dashboard", exact: true, icon: <HomeIcon className="block md:hidden size-5" /> },
+  { href: "/world-cup", label: "World Cup", exact: false, icon: <TrophyIcon className="block md:hidden size-5" /> },
   { href: "/notifications", label: "Notifications", exact: false, icon: <BellIcon className="block md:hidden size-5" /> },
   { href: "/settings", label: "Settings", exact: false, icon: <SettingsIcon className="block md:hidden size-5" /> },
 ]
