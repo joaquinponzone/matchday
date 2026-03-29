@@ -102,12 +102,9 @@ export function mapFixtureToMatch(
   }
 }
 
-interface FDCompetition {
-  code: string
-}
-
-interface FDCompetitionsResponse {
-  competitions: FDCompetition[]
+interface FDTeamsPageResponse {
+  count: number
+  teams: FDTeam[]
 }
 
 let cachedTeams: FDTeam[] | null = null
@@ -116,37 +113,25 @@ async function getAllTeams(): Promise<FDTeam[]> {
   if (cachedTeams) return cachedTeams
 
   const key = getApiKey()
-
-  // 1. Get all available competitions
-  const compRes = await fetch(`${BASE_URL}/competitions`, {
-    headers: { "X-Auth-Token": key },
-    next: { revalidate: 0 },
-  })
-  if (!compRes.ok) throw new Error(`football-data.org error: ${compRes.status}`)
-  const compData: FDCompetitionsResponse = await compRes.json()
-
-  // 2. Fetch teams from each competition (with delays to respect rate limits)
-  const seen = new Set<number>()
   const allTeams: FDTeam[] = []
+  const limit = 500
+  let offset = 0
 
-  for (const comp of compData.competitions) {
-    try {
-      const res = await fetch(`${BASE_URL}/competitions/${comp.code}/teams`, {
+  while (true) {
+    const res = await fetch(
+      `${BASE_URL}/teams?limit=${limit}&offset=${offset}`,
+      {
         headers: { "X-Auth-Token": key },
         next: { revalidate: 0 },
-      })
-      if (!res.ok) continue
+      },
+    )
+    if (!res.ok) throw new Error(`football-data.org error: ${res.status}`)
 
-      const data: FDTeamsResponse = await res.json()
-      for (const t of data.teams) {
-        if (!seen.has(t.id)) {
-          seen.add(t.id)
-          allTeams.push(t)
-        }
-      }
-    } catch {
-      // Skip competitions that fail
-    }
+    const data: FDTeamsPageResponse = await res.json()
+    allTeams.push(...data.teams)
+
+    if (allTeams.length >= data.count) break
+    offset += limit
   }
 
   cachedTeams = allTeams

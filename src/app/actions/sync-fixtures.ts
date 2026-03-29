@@ -21,5 +21,5 @@ export async function syncFixtures() {
       await upsertMatch(mapFixtureToMatch(f, teamApiId, teamMeta))
     }
   }
-  revalidatePath("/upcoming-matches")
+  revalidatePath("/")
 }

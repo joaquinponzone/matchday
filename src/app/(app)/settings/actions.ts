@@ -29,7 +29,6 @@ export async function followTeam(
   }
 
   revalidatePath("/")
-  revalidatePath("/upcoming-matches")
   revalidatePath("/settings")
 }
 

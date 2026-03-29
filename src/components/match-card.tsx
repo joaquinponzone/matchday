@@ -14,29 +14,37 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
   const teamName = match.teamShortName ?? match.teamKey
   const teamCrest = match.teamCrest
 
+  const homeName = match.isHome ? teamName : match.opponent
+  const awayName = match.isHome ? match.opponent : teamName
+  const homeCrest = match.isHome ? teamCrest : match.opponentLogo
+  const awayCrest = match.isHome ? match.opponentLogo : teamCrest
+
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
-        {teamCrest && (
-          <Image
-            src={teamCrest}
-            alt={teamName}
-            width={16}
-            height={16}
-            className="shrink-0 object-contain"
-          />
-        )}
-        {match.opponentLogo && (
-          <Image
-            src={match.opponentLogo}
-            alt={match.opponent}
-            width={32}
-            height={32}
-            className="object-contain"
-          />
-        )}
+        <div className="flex items-center gap-2 bg-muted p-4">
+          {homeCrest && (
+            <Image
+              src={homeCrest}
+              alt={homeName}
+              width={32}
+              height={32}
+              className="shrink-0 object-contain"
+            />
+          )}
+          -
+          {awayCrest && (
+            <Image
+              src={awayCrest}
+              alt={awayName}
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+          )}
+        </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{teamName} vs {match.opponent}</p>
+          <p className="truncate font-medium">{homeName} vs {awayName}</p>
           <p className="truncate text-xs text-muted-foreground">
             {formatMatchDate(match.matchDate, timezone)}
           </p>

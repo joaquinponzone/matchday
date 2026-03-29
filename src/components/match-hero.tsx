@@ -16,6 +16,11 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
   const teamName = match.teamShortName ?? match.teamKey
   const teamCrest = match.teamCrest
 
+  const homeName = match.isHome ? teamName : match.opponent
+  const awayName = match.isHome ? match.opponent : teamName
+  const homeCrest = match.isHome ? teamCrest : match.opponentLogo
+  const awayCrest = match.isHome ? match.opponentLogo : teamCrest
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-6">
@@ -24,8 +29,8 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
             <Image
               src={match.competitionLogo}
               alt={match.competition}
-              width={20}
-              height={20}
+              width={32}
+              height={32}
               className="object-contain"
             />
           )}
@@ -37,17 +42,17 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col items-center gap-2">
-            {teamCrest && (
+            {homeCrest && (
               <div className="relative h-16 w-16">
                 <Image
-                  src={teamCrest}
-                  alt={teamName}
+                  src={homeCrest}
+                  alt={homeName}
                   fill
                   className="object-contain"
                 />
               </div>
             )}
-            <span className="text-sm font-medium">{teamName}</span>
+            <span className="text-sm font-medium">{homeName}</span>
           </div>
 
           <div className="flex flex-col items-center gap-1">
@@ -55,17 +60,17 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            {match.opponentLogo && (
+            {awayCrest && (
               <div className="relative h-16 w-16">
                 <Image
-                  src={match.opponentLogo}
-                  alt={match.opponent}
+                  src={awayCrest}
+                  alt={awayName}
                   fill
                   className="object-contain"
                 />
               </div>
             )}
-            <span className="text-sm font-medium">{match.opponent}</span>
+            <span className="text-sm font-medium">{awayName}</span>
           </div>
         </div>
 

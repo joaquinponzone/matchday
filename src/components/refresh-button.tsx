@@ -3,7 +3,7 @@
 import { useTransition } from "react"
 import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { syncFixtures } from "@/app/(app)/upcoming-matches/actions"
+import { syncFixtures } from "@/app/actions/sync-fixtures"
 
 export function RefreshButton() {
   const [isPending, startTransition] = useTransition()
