@@ -489,3 +489,5 @@ src/
 19. **Match results** — Display scores for finished matches, sync final scores in cron
 20. **Postponement alerts** — Detect status changes and notify user
 21. **Cron frequency** — Split daily cron into separate sync (3x/day) + notifications (hourly)
+
+🥸
