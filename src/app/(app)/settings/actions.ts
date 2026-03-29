@@ -2,12 +2,40 @@
 
 import { revalidatePath } from "next/cache"
 import { verifySession } from "@/lib/dal"
-import { getSettings, setTeamEnabled } from "@/server/db/queries"
+import { fetchUpcomingFixtures, mapFixtureToMatch } from "@/lib/football-data"
+import { getSettings, setTeamEnabled, upsertMatch, upsertTeam } from "@/server/db/queries"
 import { sendTelegramMessage } from "@/lib/telegram"
 
-export async function toggleTeam(teamKey: string, enabled: boolean) {
+export async function followTeam(
+  apiId: number,
+  name: string,
+  shortName: string,
+  tla: string,
+  crest: string,
+) {
   const { userId } = await verifySession()
-  await setTeamEnabled(userId, teamKey, enabled)
+  await upsertTeam({ apiId, name, shortName, tla, crest })
+  await setTeamEnabled(userId, String(apiId), true)
+
+  // Sync fixtures immediately so matches appear without waiting for cron
+  try {
+    const fixtures = await fetchUpcomingFixtures(apiId)
+    const teamMeta = { name, shortName, crest }
+    for (const f of fixtures) {
+      await upsertMatch(mapFixtureToMatch(f, apiId, teamMeta))
+    }
+  } catch {
+    // Non-fatal — fixtures will sync on next cron run
+  }
+
+  revalidatePath("/")
+  revalidatePath("/upcoming-matches")
+  revalidatePath("/settings")
+}
+
+export async function unfollowTeam(apiId: number) {
+  const { userId } = await verifySession()
+  await setTeamEnabled(userId, String(apiId), false)
   revalidatePath("/settings")
 }
 

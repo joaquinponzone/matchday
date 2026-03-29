@@ -3,14 +3,15 @@ export const dynamic = "force-dynamic"
 import { MatchCard } from "@/components/match-card"
 import { RefreshButton } from "@/components/refresh-button"
 import { verifySession } from "@/lib/dal"
-import { getSettings, getUpcomingMatches } from "@/server/db/queries"
+import { getFollowedTeams, getSettings, getUpcomingMatches } from "@/server/db/queries"
 
 export default async function UpcomingMatchesPage() {
   const { userId } = await verifySession()
-  const [settings, matches] = await Promise.all([
+  const [settings, teamIds] = await Promise.all([
     getSettings(userId),
-    getUpcomingMatches(5),
+    getFollowedTeams(userId),
   ])
+  const matches = await getUpcomingMatches(teamIds.map(String), 5)
   const timezone = settings?.timezone ?? "UTC"
 
   return (

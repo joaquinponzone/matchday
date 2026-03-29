@@ -1,4 +1,24 @@
-import { integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
+import {
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core"
+
+export const teams = sqliteTable("teams", {
+  apiId: integer("api_id").primaryKey(),
+  name: text("name").notNull(),
+  shortName: text("short_name").notNull(),
+  tla: text("tla").notNull(),
+  crest: text("crest").notNull(),
+  createdAt: text("created_at")
+    .notNull()
+    .$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at")
+    .notNull()
+    .$defaultFn(() => new Date().toISOString()),
+})
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -41,7 +61,10 @@ export const matches = sqliteTable("matches", {
   venue: text("venue"),
   isHome: integer("is_home").notNull().default(1),
   status: text("status").notNull().default("scheduled"),
-  chelseaScore: integer("chelsea_score"),
+  teamName: text("team_name"),
+  teamShortName: text("team_short_name"),
+  teamCrest: text("team_crest"),
+  teamScore: integer("team_score"),
   opponentScore: integer("opponent_score"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
@@ -91,3 +114,5 @@ export type Notification = typeof notifications.$inferSelect
 export type FollowedTeam = typeof followedTeams.$inferSelect
 export type InsertMatch = typeof matches.$inferInsert
 export type InsertNotification = typeof notifications.$inferInsert
+export type Team = typeof teams.$inferSelect
+export type InsertTeam = typeof teams.$inferInsert
