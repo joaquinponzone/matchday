@@ -51,7 +51,7 @@ export function NavLinks({ unread, role }: { unread: number; role: string }) {
           })}
         </div>
         <form action={logout} className="ml-auto">
-          <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground">
+          <Button variant="ghost" size="sm" type="submit" className="text-destructive">
             <LogOutIcon className="block md:hidden size-5" />
             <span className="hidden md:block">Logout</span>
           </Button>
