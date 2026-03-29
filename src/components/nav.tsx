@@ -17,7 +17,7 @@ export async function Nav() {
 
   return (
     <nav className="border-b">
-      <div className="mx-auto flex max-w-2xl md:max-w-4xl items-center gap-6 px-4 py-3">
+      <div className="mx-auto flex max-w-2xl md:max-w-4xl 2xl:max-w-6xl items-center gap-6 px-4 py-3">
         <Link href="/" className="font-medium text-xl text-blue-300">
           ⚽️ Matchday
         </Link>
