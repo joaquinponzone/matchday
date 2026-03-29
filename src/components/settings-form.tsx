@@ -120,195 +120,201 @@ export function SettingsForm({
   }
 
   return (
-    <div className="space-y-6">
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium">Followed Teams</h2>
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="space-y-6">
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium">Followed Teams</h2>
 
-        {followed.map((team) => (
-          <div key={team.apiId} className="flex items-center gap-3">
-            {team.crest && (
-              <Image
-                src={team.crest}
-                alt={team.name}
-                width={32}
-                height={32}
-                className="object-contain"
-              />
+          <div ref={searchRef} className="relative">
+            <Input
+              placeholder="Search teams..."
+              value={searchQuery}
+              onChange={(e) => {
+                const q = e.target.value
+                setSearchQuery(q)
+                doSearch(q)
+              }}
+            />
+            {(searchResults.length > 0 || isSearching) && searchQuery.length >= 3 && (
+              <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover shadow-md">
+                {isSearching ? (
+                  <p className="p-3 text-sm text-muted-foreground">Searching...</p>
+                ) : (
+                  searchResults.map((team) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center gap-3 p-3 hover:bg-accent"
+                    >
+                      {team.crest && (
+                        <Image
+                          src={team.crest}
+                          alt={team.name}
+                          width={24}
+                          height={24}
+                          className="shrink-0 object-contain"
+                        />
+                      )}
+                      <span className="flex-1 text-sm">{team.name}</span>
+                      {followedIds.has(team.id) ? (
+                        <span className="text-xs text-muted-foreground">Following</span>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleFollow(team)}
+                        >
+                          Follow
+                        </Button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             )}
-            <span className="flex-1 font-medium">{team.name}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => handleUnfollow(team.apiId)}
-            >
-              Remove
-            </Button>
           </div>
-        ))}
 
-        {followed.length === 0 && (
-          <p className="text-sm text-muted-foreground">No teams followed yet. Search to add one.</p>
-        )}
-
-        <div ref={searchRef} className="relative">
-          <Input
-            placeholder="Search teams..."
-            value={searchQuery}
-            onChange={(e) => {
-              const q = e.target.value
-              setSearchQuery(q)
-              doSearch(q)
-            }}
-          />
-          {(searchResults.length > 0 || isSearching) && searchQuery.length >= 3 && (
-            <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover shadow-md">
-              {isSearching ? (
-                <p className="p-3 text-sm text-muted-foreground">Searching...</p>
-              ) : (
-                searchResults.map((team) => (
-                  <div
-                    key={team.id}
-                    className="flex items-center gap-3 p-3 hover:bg-accent"
-                  >
-                    {team.crest && (
-                      <Image
-                        src={team.crest}
-                        alt={team.name}
-                        width={24}
-                        height={24}
-                        className="shrink-0 object-contain"
-                      />
-                    )}
-                    <span className="flex-1 text-sm">{team.name}</span>
-                    {followedIds.has(team.id) ? (
-                      <span className="text-xs text-muted-foreground">Following</span>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleFollow(team)}
-                      >
-                        Follow
-                      </Button>
-                    )}
-                  </div>
-                ))
+          {followed.map((team) => (
+            <div key={team.apiId} className="flex items-center gap-3">
+              {team.crest && (
+                <Image
+                  src={team.crest}
+                  alt={team.name}
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
               )}
+              <span className="flex-1 font-medium">{team.name}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => handleUnfollow(team.apiId)}
+              >
+                Remove
+              </Button>
             </div>
+          ))}
+
+          {followed.length === 0 && (
+            <p className="text-sm text-muted-foreground">No teams followed yet. Search to add one.</p>
           )}
-        </div>
-      </section>
 
-      <Separator />
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium">Timezone</h2>
-        <Select
-          value={values.timezone}
-          onValueChange={(v) => update("timezone", v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TIMEZONES.map((tz) => (
-              <SelectItem key={tz} value={tz}>
-                {tz}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </section>
+        </section>
 
-      <Separator />
+        <Separator />
+      </div>
+      <div className="space-y-6 lg:border-l lg:pl-4">
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium">Timezone</h2>
+          <Select
+            value={values.timezone}
+            onValueChange={(v) => update("timezone", v)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIMEZONES.map((tz) => (
+                <SelectItem key={tz} value={tz}>
+                  {tz}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">Channels</h2>
+        <Separator />
 
-        <div className="space-y-3">
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium">Channels</h2>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>In-app notifications</Label>
+              <Switch
+                checked={Boolean(values.inAppEnabled)}
+                onCheckedChange={(v) => update("inAppEnabled", v ? 1 : 0)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Telegram</Label>
+                <div className="flex items-center gap-2">
+                  {values.telegramEnabled && values.telegramChatId ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isPending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const result = await testTelegramNotification()
+                          setTestResult(result)
+                          setTimeout(() => setTestResult(null), 4000)
+                        })
+                      }
+                    >
+                      {isPending ? "Sending..." : "Test"}
+                    </Button>
+                  ) : null}
+                  <Switch
+                    checked={Boolean(values.telegramEnabled)}
+                    onCheckedChange={(v) => {
+                      update("telegramEnabled", v ? 1 : 0)
+                      setTestResult(null)
+                    }}
+                  />
+                </div>
+              </div>
+              {testResult ? (
+                <p className={cn("text-xs", testResult.ok ? "text-green-500" : "text-destructive")}>
+                  {testResult.ok ? "Message sent!" : testResult.error}
+                </p>
+              ) : null}
+              {values.telegramEnabled ? (
+                <div className="space-y-1">
+                  <Input
+                    placeholder="Telegram Chat ID"
+                    value={values.telegramChatId ?? ""}
+                    onChange={(e) => update("telegramChatId", e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Message @userinfobot on Telegram and send /start to get your Chat ID.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        <Separator />
+
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-sm font-medium">Notification timing</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">Runs once daily at 8:00 AM (Argentina time)</p>
+          </div>
+
           <div className="flex items-center justify-between">
-            <Label>In-app notifications</Label>
+            <Label>Day before match</Label>
             <Switch
-              checked={Boolean(values.inAppEnabled)}
-              onCheckedChange={(v) => update("inAppEnabled", v ? 1 : 0)}
+              checked={Boolean(values.notifyDayBefore)}
+              onCheckedChange={(v) => update("notifyDayBefore", v ? 1 : 0)}
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Telegram</Label>
-              <div className="flex items-center gap-2">
-                {values.telegramEnabled && values.telegramChatId ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isPending}
-                    onClick={() =>
-                      startTransition(async () => {
-                        const result = await testTelegramNotification()
-                        setTestResult(result)
-                        setTimeout(() => setTestResult(null), 4000)
-                      })
-                    }
-                  >
-                    {isPending ? "Sending..." : "Test"}
-                  </Button>
-                ) : null}
-                <Switch
-                  checked={Boolean(values.telegramEnabled)}
-                  onCheckedChange={(v) => {
-                    update("telegramEnabled", v ? 1 : 0)
-                    setTestResult(null)
-                  }}
-                />
-              </div>
-            </div>
-            {testResult ? (
-              <p className={cn("text-xs", testResult.ok ? "text-green-500" : "text-destructive")}>
-                {testResult.ok ? "Message sent!" : testResult.error}
-              </p>
-            ) : null}
-            {values.telegramEnabled ? (
-              <div className="space-y-1">
-                <Input
-                  placeholder="Telegram Chat ID"
-                  value={values.telegramChatId ?? ""}
-                  onChange={(e) => update("telegramChatId", e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Message @userinfobot on Telegram and send /start to get your Chat ID.
-                </p>
-              </div>
-            ) : null}
+          <div className="flex items-center justify-between">
+            <Label>Match day</Label>
+            <Switch
+              checked={Boolean(values.notifyMatchDay)}
+              onCheckedChange={(v) => update("notifyMatchDay", v ? 1 : 0)}
+            />
           </div>
-        </div>
-      </section>
-
-      <Separator />
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-sm font-medium">Notification timing</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">Runs once daily at 8:00 AM (Argentina time)</p>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label>Day before match</Label>
-          <Switch
-            checked={Boolean(values.notifyDayBefore)}
-            onCheckedChange={(v) => update("notifyDayBefore", v ? 1 : 0)}
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label>Match day</Label>
-          <Switch
-            checked={Boolean(values.notifyMatchDay)}
-            onCheckedChange={(v) => update("notifyMatchDay", v ? 1 : 0)}
-          />
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
+
   )
 }
