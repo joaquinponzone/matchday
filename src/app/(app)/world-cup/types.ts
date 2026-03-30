@@ -5,6 +5,8 @@ export interface WCMatch {
   time: string
   team1: string
   team2: string
+  team1FlagUrl?: string
+  team2FlagUrl?: string
   group?: string
   ground: string
 }
@@ -19,6 +21,7 @@ export interface GroupTeam {
   goalsAgainst: number
   goalDifference: number
   points: number
+  flagUrl?: string
 }
 
 export interface GroupStanding {
