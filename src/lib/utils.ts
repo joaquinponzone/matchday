@@ -21,7 +21,7 @@ export function formatTimeLeft(ms: number): string {
 }
 
 export function formatDate(date: Date | string, timezone?: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-AR", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -33,7 +33,7 @@ export function formatDate(date: Date | string, timezone?: string): string {
 }
 
 export function formatMatchDate(isoDate: string, timezone: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-AR", {
     weekday: "long",
     year: "numeric",
     month: "long",

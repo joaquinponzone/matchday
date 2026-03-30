@@ -19,7 +19,7 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-sm font-medium text-muted-foreground">Notifications</h1>
+        <h1 className="text-sm font-medium text-muted-foreground">Notificaciones</h1>
       </div>
 
       <Suspense>
@@ -27,7 +27,7 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
       </Suspense>
 
       {notifications.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">No notifications yet.</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">Aún no hay notificaciones.</p>
       ) : (
         <div>
           {notifications.map((n) => (

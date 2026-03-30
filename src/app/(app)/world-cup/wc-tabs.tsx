@@ -14,7 +14,7 @@ export function WcTabs({ standingsContent, matchesContent, bracketContent }: WcT
       <TabsList className="w-full">
         <TabsTrigger value="standings" className="flex-1">Posiciones</TabsTrigger>
         <TabsTrigger value="matches" className="flex-1">Partidos</TabsTrigger>
-        <TabsTrigger value="bracket" className="flex-1">Bracket</TabsTrigger>
+        <TabsTrigger value="bracket" className="flex-1">Llave</TabsTrigger>
       </TabsList>
       <TabsContent value="standings" className="mt-4">
         {standingsContent}

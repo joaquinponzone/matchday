@@ -15,7 +15,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Create account</CardTitle>
+          <CardTitle>Crear cuenta</CardTitle>
         </CardHeader>
         <CardContent>
           {state?.success ? (
@@ -23,7 +23,7 @@ export default function RegisterPage() {
               <p className="text-sm text-muted-foreground">{state.success}</p>
               <Link href="/login">
                 <Button variant="outline" className="w-full">
-                  Back to login
+                  Volver al inicio de sesión
                 </Button>
               </Link>
             </div>
@@ -31,15 +31,15 @@ export default function RegisterPage() {
             <>
               <form action={action} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">Nombre</Label>
                   <Input id="name" name="name" autoFocus required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Correo electrónico</Label>
                   <Input id="email" name="email" type="email" autoComplete="email" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Contraseña</Label>
                   <Input
                     id="password"
                     name="password"
@@ -53,7 +53,7 @@ export default function RegisterPage() {
                   <p className="text-sm text-destructive">{state.error}</p>
                 )}
                 <Button type="submit" className="w-full" disabled={pending}>
-                  {pending ? "Creating…" : "Create account"}
+                  {pending ? "Creando…" : "Crear cuenta"}
                 </Button>
               </form>
               <div className="mt-4 text-sm">
@@ -61,7 +61,7 @@ export default function RegisterPage() {
                   href="/login"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Already have an account? Sign in
+                  ¿Ya tenés cuenta? Iniciá sesión
                 </Link>
               </div>
             </>

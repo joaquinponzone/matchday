@@ -20,7 +20,7 @@ export default function LoginPage() {
         <CardContent>
           <form action={action} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Correo electrónico</Label>
               <Input
                 id="email"
                 name="email"
@@ -31,7 +31,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 name="password"
@@ -44,7 +44,7 @@ export default function LoginPage() {
               <p className="text-sm text-destructive">{state.error}</p>
             )}
             <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? "Signing in…" : "Sign in"}
+              {pending ? "Ingresando…" : "Ingresar"}
             </Button>
           </form>
           <div className="mt-4 flex items-center justify-between text-sm">
@@ -52,14 +52,14 @@ export default function LoginPage() {
               href="/register"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Create an account
+              Crear una cuenta
             </Link>
             {state?.emailConfigured && (
               <Link
                 href="/forgot-password"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Forgot password?
+                ¿Olvidaste tu contraseña?
               </Link>
             )}
           </div>

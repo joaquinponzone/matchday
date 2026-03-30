@@ -36,7 +36,7 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
           )}
           <span className="text-sm text-muted-foreground">{match.competition}</span>
           <Badge variant="outline" className="ml-auto text-xs">
-            {match.isHome ? "Home" : "Away"}
+            {match.isHome ? "Local" : "Visitante"}
           </Badge>
         </div>
 

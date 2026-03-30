@@ -15,14 +15,14 @@ export default async function SettingsPage() {
   if (!settings) {
     return (
       <p className="text-muted-foreground">
-        Settings not initialized. Run <code>bun run db:seed</code>.
+        Configuración no inicializada. Ejecutá <code>bun run db:seed</code>.
       </p>
     )
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="text- font-medium text-muted-foreground">Settings</h1>
+      <h1 className="text- font-medium text-muted-foreground">Configuración</h1>
       <Separator />
       <SettingsForm settings={settings} followedTeams={followedTeams} />
     </div>

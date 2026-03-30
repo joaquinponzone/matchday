@@ -23,7 +23,7 @@ export function UserActions({ user, systemAdminUserId }: { user: Pick<User, "id"
             onClick={() => startTransition(() => approveUser(user.id))}
             className="text-xs"
           >
-            Approve
+            Aprobar
           </Button>
           <Button
             size="sm"
@@ -32,7 +32,7 @@ export function UserActions({ user, systemAdminUserId }: { user: Pick<User, "id"
             onClick={() => startTransition(() => rejectUser(user.id))}
             className="text-xs"
           >
-            Reject
+            Rechazar
           </Button>
         </>
       )}
@@ -49,7 +49,7 @@ export function UserActions({ user, systemAdminUserId }: { user: Pick<User, "id"
           }}
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : user.role !== "admin" ? <ShieldCheckIcon className="size-4" /> : <ShieldXIcon className="size-4" />}
-          {user.role === "admin" ? "Remove admin" : "Make admin"}
+          {user.role === "admin" ? "Quitar admin" : "Hacer admin"}
         </Button>
       )}
       {user.status === "rejected" && (
@@ -60,7 +60,7 @@ export function UserActions({ user, systemAdminUserId }: { user: Pick<User, "id"
           onClick={() => startTransition(() => approveUser(user.id))}
           className="text-xs"
         >
-          Approve
+          Aprobar
         </Button>
       )}
     </div>

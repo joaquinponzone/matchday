@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   title: "Matchday",
-  description: "Football Matchday Tracker",
+  description: "Seguimiento de partidos de fútbol",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
     title: "Matchday",
-    description: "Football Matchday Tracker",
+    description: "Seguimiento de partidos de fútbol",
     url: "https://matchday-mvp.vercel.app/",
   },
 }
@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       suppressHydrationWarning
       className={cn("antialiased h-100dvh", fontSans.variable, "font-mono", geistMono.variable)}
     >
