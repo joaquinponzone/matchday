@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -46,7 +47,19 @@ function GroupTable({ standing }: { standing: GroupStanding }) {
               >
                 <TableCell className="px-2 py-1.5 text-muted-foreground">{i + 1}</TableCell>
                 <TableCell className="px-2 py-1.5 font-medium truncate max-w-[120px]">
-                  {team.name}
+                  <span className="flex items-center gap-1.5">
+                    {team.flagUrl && (
+                      <Image
+                        src={team.flagUrl}
+                        alt={team.name}
+                        width={16}
+                        height={16}
+                        className="shrink-0 rounded-sm"
+                        unoptimized
+                      />
+                    )}
+                    {team.name}
+                  </span>
                 </TableCell>
                 <TableCell className="px-1 py-1.5 text-center text-muted-foreground">{team.played}</TableCell>
                 <TableCell className="px-1 py-1.5 text-center">{team.won}</TableCell>
