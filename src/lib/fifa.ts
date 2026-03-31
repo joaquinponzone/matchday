@@ -56,6 +56,9 @@ interface FIFAMatch {
   MatchNumber: number
   Date: string
   TimeDefined: boolean
+  MatchStatus: number  // 0=upcoming, 1=live, 3=finished
+  HomeTeamScore: number | null
+  AwayTeamScore: number | null
   Home: FIFAMatchTeam | null
   Away: FIFAMatchTeam | null
   Stadium: FIFAStadium | null
@@ -209,62 +212,107 @@ export async function fetchWCStandings(): Promise<GroupStanding[]> {
   }
 }
 
+async function fetchRawWCMatches(): Promise<FIFAMatch[]> {
+  const allMatches: FIFAMatch[] = []
+  let token: string | null = null
+
+  do {
+    const url = new URL(`${FIFA_BASE}/calendar/matches`)
+    url.searchParams.set("idCompetition", COMPETITION_ID)
+    url.searchParams.set("idSeason", SEASON_ID)
+    url.searchParams.set("count", "200")
+    url.searchParams.set("language", "es")
+    if (token) url.searchParams.set("continuationToken", token)
+
+    const res = await fetch(url.toString(), { next: { revalidate: 3600 } })
+    if (!res.ok) break
+
+    const data: FIFAMatchesResponse = await res.json()
+    allMatches.push(...data.Results)
+    token = data.ContinuationToken
+  } while (token)
+
+  return allMatches
+}
+
+function mapFIFAMatch(m: FIFAMatch): WCMatch {
+  const d = new Date(m.Date)
+  const date = d.toISOString().slice(0, 10)
+  const hours = d.getUTCHours().toString().padStart(2, "0")
+  const mins = d.getUTCMinutes().toString().padStart(2, "0")
+  const time = `${hours}:${mins} UTC+0`
+
+  const team1 = m.Home?.TeamName?.length
+    ? getLocale(m.Home.TeamName)
+    : translateTeamName(m.Home?.ShortClubName ?? m.PlaceHolderA ?? "TBD")
+  const team2 = m.Away?.TeamName?.length
+    ? getLocale(m.Away.TeamName)
+    : translateTeamName(m.Away?.ShortClubName ?? m.PlaceHolderB ?? "TBD")
+  const team1FlagUrl = getFlagUrl(m.Home?.PictureUrl ?? null)
+  const team2FlagUrl = getFlagUrl(m.Away?.PictureUrl ?? null)
+
+  const city = m.Stadium ? getLocale(m.Stadium.CityName) : ""
+  const stadium = m.Stadium ? getLocale(m.Stadium.Name) : ""
+  const ground = city || stadium || ""
+
+  const isGroup = m.IdGroup !== null
+  const round = isGroup
+    ? getLocale(m.GroupName) || "Fase de Grupos"
+    : getLocale(m.StageName) || "Fase Eliminatoria"
+
+  return {
+    round,
+    num: m.MatchNumber,
+    date,
+    time,
+    team1,
+    team2,
+    team1FlagUrl,
+    team2FlagUrl,
+    group: isGroup ? getLocale(m.GroupName) : undefined,
+    ground,
+  }
+}
+
 export async function fetchWCGroupMatches(): Promise<WCMatch[]> {
   try {
-    const allMatches: FIFAMatch[] = []
-    let token: string | null = null
+    const allMatches = await fetchRawWCMatches()
+    return allMatches.filter((m) => m.IdGroup !== null).map(mapFIFAMatch)
+  } catch {
+    return []
+  }
+}
 
-    do {
-      const url = new URL(`${FIFA_BASE}/calendar/matches`)
-      url.searchParams.set("idCompetition", COMPETITION_ID)
-      url.searchParams.set("idSeason", SEASON_ID)
-      url.searchParams.set("count", "200")
-      url.searchParams.set("language", "es")
-      if (token) url.searchParams.set("continuationToken", token)
+export async function fetchAllWCMatches(): Promise<WCMatch[]> {
+  try {
+    const allMatches = await fetchRawWCMatches()
+    return allMatches.map(mapFIFAMatch).sort((a, b) => {
+      const da = new Date(`${a.date}T${a.time.split(" ")[0]}Z`)
+      const db2 = new Date(`${b.date}T${b.time.split(" ")[0]}Z`)
+      return da.getTime() - db2.getTime()
+    })
+  } catch {
+    return []
+  }
+}
 
-      const res = await fetch(url.toString(), { next: { revalidate: 3600 } })
-      if (!res.ok) break
-
-      const data: FIFAMatchesResponse = await res.json()
-      allMatches.push(...data.Results)
-      token = data.ContinuationToken
-    } while (token)
-
+export async function fetchFinishedWCMatchScores(): Promise<
+  { matchNumber: number; homeScore: number; awayScore: number }[]
+> {
+  try {
+    const allMatches = await fetchRawWCMatches()
     return allMatches
-      .filter((m) => m.IdGroup !== null)
-      .map((m) => {
-        const d = new Date(m.Date)
-        const date = d.toISOString().slice(0, 10)
-        const hours = d.getUTCHours().toString().padStart(2, "0")
-        const mins = d.getUTCMinutes().toString().padStart(2, "0")
-        const time = `${hours}:${mins} UTC+0`
-
-        const team1 = m.Home?.TeamName?.length
-          ? getLocale(m.Home.TeamName)
-          : translateTeamName(m.Home?.ShortClubName ?? m.PlaceHolderA ?? "TBD")
-        const team2 = m.Away?.TeamName?.length
-          ? getLocale(m.Away.TeamName)
-          : translateTeamName(m.Away?.ShortClubName ?? m.PlaceHolderB ?? "TBD")
-        const team1FlagUrl = getFlagUrl(m.Home?.PictureUrl ?? null)
-        const team2FlagUrl = getFlagUrl(m.Away?.PictureUrl ?? null)
-
-        const city = m.Stadium ? getLocale(m.Stadium.CityName) : ""
-        const stadium = m.Stadium ? getLocale(m.Stadium.Name) : ""
-        const ground = city || stadium || ""
-
-        return {
-          round: getLocale(m.GroupName) || "Group Stage",
-          num: m.MatchNumber,
-          date,
-          time,
-          team1,
-          team2,
-          team1FlagUrl,
-          team2FlagUrl,
-          group: getLocale(m.GroupName),
-          ground,
-        }
-      })
+      .filter(
+        (m) =>
+          m.MatchStatus === 3 &&
+          m.HomeTeamScore !== null &&
+          m.AwayTeamScore !== null,
+      )
+      .map((m) => ({
+        matchNumber: m.MatchNumber,
+        homeScore: m.HomeTeamScore!,
+        awayScore: m.AwayTeamScore!,
+      }))
   } catch {
     return []
   }

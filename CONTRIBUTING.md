@@ -1,12 +1,12 @@
-# Contributing to Matchday
+# Contribuir a Matchday
 
-Thanks for helping out! This is a personal project, so contributions are mainly ideas, specs, and small improvements. Here's how to do it properly.
+Gracias por querer ayudar! Este es un proyecto personal, así que las contribuciones son principalmente ideas, specs y mejoras pequeñas. Acá va cómo hacerlo bien.
 
-## Ground Rules
+## Reglas básicas
 
-- **Never merge your own PR.** Only the codeowner (@joaquinponzone) merges. Always.
-- Keep changes focused — one thing per PR.
-- When in doubt, open an issue or discussion first before writing code.
+- **Nunca mergees tu propio PR.** Solo el codeowner (@joaquinponzone) mergea. Siempre.
+- Mantené los cambios enfocados — una cosa por PR.
+- Ante la duda, abrí un issue o discussion antes de escribir código.
 
 ## Workflow
 
@@ -18,31 +18,31 @@ cd matchday
 bun install
 ```
 
-### 2. Create a feature branch
+### 2. Crear una rama
 
-Branch off `main`. Use a descriptive name with a prefix:
+Partí desde `main`. Usá un nombre descriptivo con prefijo:
 
-| Prefix | When to use |
+| Prefijo | Cuándo usarlo |
 |---|---|
-| `feat/` | New feature or enhancement |
-| `fix/` | Bug fix |
-| `spec/` | Ideas, specs, or docs only |
-| `chore/` | Tooling, config, deps |
+| `feat/` | Feature nueva o mejora |
+| `fix/` | Corrección de bug |
+| `spec/` | Ideas, specs o solo docs |
+| `chore/` | Tooling, config, dependencias |
 
 ```bash
 git checkout main
 git pull origin main
-git checkout -b feat/your-feature-name
+git checkout -b feat/nombre-de-tu-feature
 ```
 
-### 3. Make your changes
+### 3. Hacer los cambios
 
-For ideas and specs, add a file under `specs/` (e.g. `specs/YOUR_IDEA.md`). No need to touch code for that.
+Para ideas y specs, agregá un archivo en `specs/` (ej. `specs/TU_IDEA.md`). No hace falta tocar código para eso.
 
-For code changes, follow the conventions in [CLAUDE.md](./CLAUDE.md):
-- Double quotes, no semicolons, 2-space indent
-- Server Components by default — only `"use client"` when needed
-- Run checks before pushing:
+Para cambios de código, seguí las convenciones de [CLAUDE.md](./CLAUDE.md):
+- Comillas dobles, sin punto y coma, indentación de 2 espacios
+- Server Components por defecto — solo `"use client"` cuando sea necesario
+- Corré los checks antes de pushear:
 
 ```bash
 bun run lint
@@ -50,44 +50,44 @@ bun run typecheck
 bun run format
 ```
 
-### 4. Push and open a PR
+### 4. Push y abrir un PR
 
 ```bash
-git push origin feat/your-feature-name
+git push origin feat/nombre-de-tu-feature
 ```
 
-Then open a Pull Request against `main` on GitHub.
+Después abrí un Pull Request contra `main` en GitHub.
 
-**PR title format:** `feat: short description` / `fix: short description` / `spec: short description`
+**Formato del título del PR:** `feat: descripción corta` / `fix: descripción corta` / `spec: descripción corta`
 
-In the PR description, briefly explain:
-- What does this do or propose?
-- Why is it useful?
-- Any open questions or things to discuss?
+En la descripción del PR, explicá brevemente:
+- ¿Qué hace o propone?
+- ¿Por qué es útil?
+- ¿Alguna pregunta abierta o algo para discutir?
 
-### 5. Wait for review
+### 5. Esperar review
 
-The codeowner will review and merge. Don't merge it yourself — even if it looks ready.
+El codeowner va a revisar y mergear. No lo mergees vos — aunque parezca listo.
 
 ## Ideas & Specs
 
-If you just have an idea and don't want to write code, the easiest path is:
+Si solo tenés una idea y no querés escribir código, lo más fácil es:
 
-1. Create a branch: `git checkout -b spec/your-idea`
-2. Add a markdown file: `specs/YOUR_IDEA.md`
-3. Open a PR — describe the idea in the PR body or the file itself
+1. Crear una rama: `git checkout -b spec/tu-idea`
+2. Agregar un markdown: `specs/TU_IDEA.md`
+3. Abrir un PR — describí la idea en el body del PR o en el archivo
 
-No code needed. Ideas are welcome.
+No hace falta código. Las ideas son bienvenidas.
 
-## Local Setup
+## Setup local
 
-You'll need:
-- [Bun](https://bun.sh/) runtime
-- A `.env.local` file — ask @joaquinponzone for the required variables
+Vas a necesitar:
+- [Bun](https://bun.sh/) como runtime
+- Un archivo `.env.local` — pedile las variables a @joaquinponzone
 
 ```bash
 bun install
 bun run dev
 ```
 
-See [CLAUDE.md](./CLAUDE.md) for all available commands.
+Consultá [CLAUDE.md](./CLAUDE.md) para todos los comandos disponibles.
