@@ -98,6 +98,13 @@ export async function activateUser(userId: number) {
   revalidatePath("/admin/users")
 }
 
+export async function updateUserName(userId: number, name: string) {
+  await db
+    .update(users)
+    .set({ name, updatedAt: new Date().toISOString() })
+    .where(eq(users.id, userId))
+}
+
 // Settings
 
 export async function getSettings(userId: number) {

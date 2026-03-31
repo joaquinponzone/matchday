@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { useDebounce } from "@/hooks/use-debounce"
 import { cn } from "@/lib/utils"
-import { followTeam, unfollowTeam, testTelegramNotification } from "@/app/(app)/settings/actions"
+import { followTeam, unfollowTeam, testTelegramNotification, updateDisplayName } from "@/app/(app)/settings/actions"
 import type { Settings } from "@/server/db/schema"
 
 const TIMEZONES = [
@@ -60,14 +60,17 @@ async function saveSettings(data: Partial<Settings>) {
 export function SettingsForm({
   settings,
   followedTeams,
+  userName,
 }: {
   settings: Settings
   followedTeams: FollowedTeamMeta[]
+  userName: string
 }) {
   const [values, setValues] = useState(settings)
   const [isPending, startTransition] = useTransition()
   const [testResult, setTestResult] = useState<{ ok: boolean; error?: string } | null>(null)
 
+  const [displayName, setDisplayName] = useState(userName)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -78,6 +81,10 @@ export function SettingsForm({
 
   const persist = useDebounce(useCallback((data: Partial<Settings>) => {
     saveSettings(data)
+  }, []), 600)
+
+  const persistName = useDebounce(useCallback((name: string) => {
+    updateDisplayName(name)
   }, []), 600)
 
   const doSearch = useDebounce(useCallback(async (q: string) => {
@@ -206,6 +213,20 @@ export function SettingsForm({
         <Separator />
       </div>
       <div className="space-y-6 lg:border-l lg:pl-4">
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium">Nombre</h2>
+          <Input
+            placeholder="Tu nombre"
+            value={displayName}
+            onChange={(e) => {
+              setDisplayName(e.target.value)
+              persistName(e.target.value)
+            }}
+          />
+        </section>
+
+        <Separator />
+
         <section className="space-y-3">
           <h2 className="text-sm font-medium">Zona horaria</h2>
           <Select

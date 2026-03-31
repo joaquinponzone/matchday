@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { verifySession } from "@/lib/dal"
 import { fetchUpcomingFixtures, mapFixtureToMatch } from "@/lib/football-data"
-import { getSettings, setTeamEnabled, upsertMatch, upsertTeam } from "@/server/db/queries"
+import { getSettings, setTeamEnabled, updateUserName, upsertMatch, upsertTeam } from "@/server/db/queries"
 import { sendTelegramMessage } from "@/lib/telegram"
 
 export async function followTeam(
@@ -35,6 +35,14 @@ export async function followTeam(
 export async function unfollowTeam(apiId: number) {
   const { userId } = await verifySession()
   await setTeamEnabled(userId, String(apiId), false)
+  revalidatePath("/settings")
+}
+
+export async function updateDisplayName(name: string) {
+  const { userId } = await verifySession()
+  const trimmed = name.trim()
+  if (!trimmed) return
+  await updateUserName(userId, trimmed)
   revalidatePath("/settings")
 }
 
