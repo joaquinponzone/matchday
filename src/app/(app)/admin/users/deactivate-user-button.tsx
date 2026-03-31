@@ -31,18 +31,18 @@ export function ToggleUserStatusButton({ user }: { user: Pick<User, "id" | "stat
             <DialogTrigger asChild>
                 <Button size="sm" variant="outline" disabled={pending} className="text-xs">
                     {pending ? <Loader2 className="size-4 animate-spin" /> : isActive ? <CircleX className="size-4" /> : <CircleCheck className="size-4" />}
-                    {isActive ? "Deactivate" : "Activate"}
+                    {isActive ? "Desactivar" : "Activar"}
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{isActive ? "Deactivate" : "Activate"} user</DialogTitle>
+                    <DialogTitle>{isActive ? "Desactivar" : "Activar"} usuario</DialogTitle>
                 </DialogHeader>
                 <DialogDescription>
-                    Are you sure you want to {isActive ? "deactivate" : "activate"} this user?
+                    ¿Estás seguro que querés {isActive ? "desactivar" : "activar"} este usuario?
                 </DialogDescription>
                 <DialogFooter showCloseButton={true}>
-                    <Button variant="destructive" onClick={toggleUserStatus} disabled={pending}>{isActive ? "Deactivate" : "Activate"}</Button>
+                    <Button variant="destructive" onClick={toggleUserStatus} disabled={pending}>{isActive ? "Desactivar" : "Activar"}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

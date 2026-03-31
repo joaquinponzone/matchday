@@ -10,7 +10,7 @@ export function Countdown({ matchDate }: { matchDate: string }) {
   useEffect(() => {
     function update() {
       const ms = new Date(matchDate).getTime() - Date.now()
-      setTimeLeft(ms > 0 ? formatTimeLeft(ms) : "Kick off!")
+      setTimeLeft(ms > 0 ? formatTimeLeft(ms) : "¡Arranca el partido!")
     }
     update()
     const id = setInterval(update, 1000)

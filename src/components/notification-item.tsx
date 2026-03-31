@@ -9,7 +9,7 @@ import type { Notification } from "@/server/db/schema"
 const CHANNEL_LABELS: Record<string, string> = {
   email: "Email",
   telegram: "Telegram",
-  in_app: "In-app",
+  in_app: "En la app",
 }
 
 const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -53,7 +53,7 @@ export function NotificationItem({ notification }: { notification: Notification 
       </div>
       {notification.channel === "in_app" && notification.status === "sent" && (
         <Button variant="ghost" size="sm" className="shrink-0 text-xs" onClick={markRead}>
-          Mark read
+          Marcar como leída
         </Button>
       )}
     </div>

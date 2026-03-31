@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Reset password</CardTitle>
+          <CardTitle>Restablecer contraseña</CardTitle>
         </CardHeader>
         <CardContent>
           {state?.success ? (
@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
               <p className="text-sm text-muted-foreground">{state.success}</p>
               <Link href="/login">
                 <Button variant="outline" className="w-full">
-                  Back to login
+                  Volver al inicio de sesión
                 </Button>
               </Link>
             </div>
@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
             <>
               <form action={action} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Correo electrónico</Label>
                   <Input
                     id="email"
                     name="email"
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
                   <p className="text-sm text-destructive">{state.error}</p>
                 )}
                 <Button type="submit" className="w-full" disabled={pending}>
-                  {pending ? "Sending…" : "Send reset link"}
+                  {pending ? "Enviando…" : "Enviar enlace"}
                 </Button>
               </form>
               <div className="mt-4 text-sm">
@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
                   href="/login"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Back to login
+                  Volver al inicio de sesión
                 </Link>
               </div>
             </>

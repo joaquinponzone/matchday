@@ -18,7 +18,7 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <p className="text-sm text-destructive">
-        Invalid or missing reset token.
+        Token de restablecimiento inválido o ausente.
       </p>
     )
   }
@@ -28,7 +28,7 @@ function ResetPasswordForm() {
       <p className="text-sm text-muted-foreground">{state.success}</p>
       <Link href="/login">
         <Button variant="outline" className="w-full">
-          Sign in
+          Ingresar
         </Button>
       </Link>
     </div>
@@ -36,7 +36,7 @@ function ResetPasswordForm() {
     <form action={action} className="space-y-4">
       <input type="hidden" name="token" value={token} />
       <div className="space-y-2">
-        <Label htmlFor="password">New password</Label>
+        <Label htmlFor="password">Nueva contraseña</Label>
         <Input
           id="password"
           name="password"
@@ -48,7 +48,7 @@ function ResetPasswordForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm password</Label>
+        <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
         <Input
           id="confirmPassword"
           name="confirmPassword"
@@ -62,7 +62,7 @@ function ResetPasswordForm() {
         <p className="text-sm text-destructive">{state.error}</p>
       )}
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Resetting…" : "Reset password"}
+        {pending ? "Restableciendo…" : "Restablecer contraseña"}
       </Button>
     </form>
   )
@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Set new password</CardTitle>
+          <CardTitle>Establecer nueva contraseña</CardTitle>
         </CardHeader>
         <CardContent>
           <Suspense>

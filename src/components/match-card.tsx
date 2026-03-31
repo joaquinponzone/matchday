@@ -51,7 +51,7 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
           <p className="text-xs text-muted-foreground">{match.competition}</p>
         </div>
         <Badge variant="outline" className="shrink-0 text-xs">
-          {match.isHome ? "H" : "A"}
+          {match.isHome ? "L" : "V"}
         </Badge>
       </CardContent>
     </Card>

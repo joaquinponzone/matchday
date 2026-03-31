@@ -10,17 +10,17 @@ import { cn } from "@/lib/utils"
 import { BellIcon, HomeIcon, LogOutIcon, SettingsIcon, TrophyIcon, UsersIcon } from "lucide-react"
 
 const links = [
-  { href: "/", label: "Dashboard", exact: true, icon: <HomeIcon className="block md:hidden size-5" /> },
-  { href: "/world-cup", label: "World Cup", exact: false, icon: <TrophyIcon className="block md:hidden size-5" /> },
-  { href: "/notifications", label: "Notifications", exact: false, icon: <BellIcon className="block md:hidden size-5" /> },
-  { href: "/settings", label: "Settings", exact: false, icon: <SettingsIcon className="block md:hidden size-5" /> },
+  { href: "/", label: "Inicio", exact: true, icon: <HomeIcon className="block md:hidden size-5" /> },
+  { href: "/world-cup", label: "Mundial", exact: false, icon: <TrophyIcon className="block md:hidden size-5" /> },
+  { href: "/notifications", label: "Notificaciones", exact: false, icon: <BellIcon className="block md:hidden size-5" /> },
+  { href: "/settings", label: "Configuración", exact: false, icon: <SettingsIcon className="block md:hidden size-5" /> },
 ]
 
 const adminLinks = [
-  { href: "/admin/users", label: "Users", exact: false, icon: <UsersIcon className="block md:hidden size-5" /> },
+  { href: "/admin/users", label: "Usuarios", exact: false, icon: <UsersIcon className="block md:hidden size-5" /> },
 ]
 
-const logoutLink = { href: "/logout", label: <span className="text-destructive">Logout</span>, exact: false, icon: <LogOutIcon className="block md:hidden text-destructive size-5" /> }
+const logoutLink = { href: "/logout", label: <span className="text-destructive">Salir</span>, exact: false, icon: <LogOutIcon className="block md:hidden text-destructive size-5" /> }
 
 export function NavLinks({ unread, role }: { unread: number; role: string }) {
   const pathname = usePathname()
@@ -42,7 +42,7 @@ export function NavLinks({ unread, role }: { unread: number; role: string }) {
             >
               <span className="hidden md:block">{label}</span>
               <span className="block md:hidden">{icon}</span>
-              {label === "Notifications" && unread > 0 && (
+              {label === "Notificaciones" && unread > 0 && (
                 <Badge className="h-3 min-w-3 px-1 text-[8px] bg-sky-500 text-white">
                   {unread}
                 </Badge>

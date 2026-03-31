@@ -123,11 +123,11 @@ export function SettingsForm({
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="space-y-6">
         <section className="space-y-3">
-          <h2 className="text-sm font-medium">Followed Teams</h2>
+          <h2 className="text-sm font-medium">Equipos seguidos</h2>
 
           <div ref={searchRef} className="relative">
             <Input
-              placeholder="Search teams..."
+              placeholder="Buscar equipos..."
               value={searchQuery}
               onChange={(e) => {
                 const q = e.target.value
@@ -138,7 +138,7 @@ export function SettingsForm({
             {(searchResults.length > 0 || isSearching) && searchQuery.length >= 3 && (
               <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover shadow-md">
                 {isSearching ? (
-                  <p className="p-3 text-sm text-muted-foreground">Searching...</p>
+                  <p className="p-3 text-sm text-muted-foreground">Buscando...</p>
                 ) : (
                   searchResults.map((team) => (
                     <div
@@ -156,14 +156,14 @@ export function SettingsForm({
                       )}
                       <span className="flex-1 text-sm">{team.name}</span>
                       {followedIds.has(team.id) ? (
-                        <span className="text-xs text-muted-foreground">Following</span>
+                        <span className="text-xs text-muted-foreground">Siguiendo</span>
                       ) : (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleFollow(team)}
                         >
-                          Follow
+                          Seguir
                         </Button>
                       )}
                     </div>
@@ -191,13 +191,13 @@ export function SettingsForm({
                 className="text-muted-foreground hover:text-destructive"
                 onClick={() => handleUnfollow(team.apiId)}
               >
-                Remove
+                Quitar
               </Button>
             </div>
           ))}
 
           {followed.length === 0 && (
-            <p className="text-sm text-muted-foreground">No teams followed yet. Search to add one.</p>
+            <p className="text-sm text-muted-foreground">Aún no seguís ningún equipo. Buscá uno para agregar.</p>
           )}
 
 
@@ -207,7 +207,7 @@ export function SettingsForm({
       </div>
       <div className="space-y-6 lg:border-l lg:pl-4">
         <section className="space-y-3">
-          <h2 className="text-sm font-medium">Timezone</h2>
+          <h2 className="text-sm font-medium">Zona horaria</h2>
           <Select
             value={values.timezone}
             onValueChange={(v) => update("timezone", v)}
@@ -228,11 +228,11 @@ export function SettingsForm({
         <Separator />
 
         <section className="space-y-4">
-          <h2 className="text-sm font-medium">Channels</h2>
+          <h2 className="text-sm font-medium">Canales</h2>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>In-app notifications</Label>
+              <Label>Notificaciones en la app</Label>
               <Switch
                 checked={Boolean(values.inAppEnabled)}
                 onCheckedChange={(v) => update("inAppEnabled", v ? 1 : 0)}
@@ -256,7 +256,7 @@ export function SettingsForm({
                         })
                       }
                     >
-                      {isPending ? "Sending..." : "Test"}
+                      {isPending ? "Enviando..." : "Probar"}
                     </Button>
                   ) : null}
                   <Switch
@@ -270,18 +270,18 @@ export function SettingsForm({
               </div>
               {testResult ? (
                 <p className={cn("text-xs", testResult.ok ? "text-green-500" : "text-destructive")}>
-                  {testResult.ok ? "Message sent!" : testResult.error}
+                  {testResult.ok ? "¡Mensaje enviado!" : testResult.error}
                 </p>
               ) : null}
               {values.telegramEnabled ? (
                 <div className="space-y-1">
                   <Input
-                    placeholder="Telegram Chat ID"
+                    placeholder="ID de chat de Telegram"
                     value={values.telegramChatId ?? ""}
                     onChange={(e) => update("telegramChatId", e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Message @userinfobot on Telegram and send /start to get your Chat ID.
+                    Escribile a @userinfobot en Telegram y enviá /start para obtener tu ID de chat.
                   </p>
                 </div>
               ) : null}
@@ -293,12 +293,12 @@ export function SettingsForm({
 
         <section className="space-y-4">
           <div>
-            <h2 className="text-sm font-medium">Notification timing</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">Runs once daily at 8:00 AM (Argentina time)</p>
+            <h2 className="text-sm font-medium">Momento de notificación</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">Se ejecuta una vez al día a las 8:00 AM (hora Argentina)</p>
           </div>
 
           <div className="flex items-center justify-between">
-            <Label>Day before match</Label>
+            <Label>Día anterior al partido</Label>
             <Switch
               checked={Boolean(values.notifyDayBefore)}
               onCheckedChange={(v) => update("notifyDayBefore", v ? 1 : 0)}
@@ -306,7 +306,7 @@ export function SettingsForm({
           </div>
 
           <div className="flex items-center justify-between">
-            <Label>Match day</Label>
+            <Label>Día del partido</Label>
             <Switch
               checked={Boolean(values.notifyMatchDay)}
               onCheckedChange={(v) => update("notifyMatchDay", v ? 1 : 0)}

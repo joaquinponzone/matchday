@@ -22,24 +22,24 @@ export function NotificationFilters() {
     <div className="flex gap-2 w-full">
       <Select defaultValue={params.get("channel") ?? "all"} onValueChange={(v) => set("channel", v)}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Channel" />
+          <SelectValue placeholder="Canal" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All channels</SelectItem>
+          <SelectItem value="all">Todos los canales</SelectItem>
           <SelectItem value="telegram">Telegram</SelectItem>
-          <SelectItem value="in_app">In-app</SelectItem>
+          <SelectItem value="in_app">En la app</SelectItem>
         </SelectContent>
       </Select>
 
       <Select defaultValue={params.get("status") ?? "all"} onValueChange={(v) => set("status", v)}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Status" />
+          <SelectValue placeholder="Estado" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All statuses</SelectItem>
-          <SelectItem value="sent">Sent</SelectItem>
-          <SelectItem value="read">Read</SelectItem>
-          <SelectItem value="failed">Failed</SelectItem>
+          <SelectItem value="all">Todos los estados</SelectItem>
+          <SelectItem value="sent">Enviada</SelectItem>
+          <SelectItem value="read">Leída</SelectItem>
+          <SelectItem value="failed">Fallida</SelectItem>
         </SelectContent>
       </Select>
     </div>

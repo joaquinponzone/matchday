@@ -16,7 +16,7 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-sm font-medium text-muted-foreground">Users Management</h1>
+      <h1 className="text-sm font-medium text-muted-foreground">Gestión de usuarios</h1>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
         {users.map((user) => (
@@ -34,7 +34,7 @@ export default async function AdminUsersPage() {
                 <ToggleUserStatusButton user={user} /> : 
                 <Button size="sm" variant="ghost" className="text-xs bg-blue-400/40 text-white" disabled>
                   <Shield className="size-4" />
-                  System Admin
+                  Admin del sistema
               </Button>}
             </div>
           </div>
