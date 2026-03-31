@@ -2,7 +2,7 @@ import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { formatMatchDate } from "@/lib/utils"
+import { formatMatchDateParts } from "@/lib/utils"
 import type { Match } from "@/server/db/schema"
 
 interface MatchCardProps {
@@ -18,6 +18,7 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
   const awayName = match.isHome ? match.opponent : teamName
   const homeCrest = match.isHome ? teamCrest : match.opponentLogo
   const awayCrest = match.isHome ? match.opponentLogo : teamCrest
+  const { date, time } = formatMatchDateParts(match.matchDate, timezone)
 
   return (
     <Card>
@@ -46,7 +47,11 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{homeName} vs {awayName}</p>
           <p className="truncate text-xs text-muted-foreground">
-            {formatMatchDate(match.matchDate, timezone)}
+            <span className="md:hidden">{time}</span>
+            <span className="hidden md:inline">{time} - {date}</span>
+          </p>
+          <p className="truncate text-xs text-muted-foreground md:hidden">
+            {date}
           </p>
           <p className="text-xs text-muted-foreground">{match.competition}</p>
         </div>

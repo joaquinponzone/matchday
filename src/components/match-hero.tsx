@@ -2,7 +2,7 @@ import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { formatMatchDate } from "@/lib/utils"
+import { formatMatchDateParts } from "@/lib/utils"
 import type { Match } from "@/server/db/schema"
 
 import { Countdown } from "./countdown"
@@ -20,6 +20,7 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
   const awayName = match.isHome ? match.opponent : teamName
   const homeCrest = match.isHome ? teamCrest : match.opponentLogo
   const awayCrest = match.isHome ? match.opponentLogo : teamCrest
+  const { date, time } = formatMatchDateParts(match.matchDate, timezone)
 
   return (
     <Card className="overflow-hidden">
@@ -75,7 +76,11 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
         </div>
 
         <div className="mt-4 space-y-1 border-t pt-4 text-sm text-muted-foreground">
-          <p>{formatMatchDate(match.matchDate, timezone)}</p>
+          <p>
+            <span className="md:hidden">{time}</span>
+            <span className="hidden md:inline">{time} - {date}</span>
+          </p>
+          <p className="md:hidden">{date}</p>
           {match.venue && <p>{match.venue}</p>}
           <p className="font-medium text-foreground">
             <Countdown matchDate={match.matchDate} />

@@ -33,15 +33,40 @@ export function formatDate(date: Date | string, timezone?: string): string {
 }
 
 export function formatMatchDate(isoDate: string, timezone: string): string {
-  return new Intl.DateTimeFormat("es-AR", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
+  const d = new Date(isoDate)
+  const date = new Intl.DateTimeFormat("es-AR", {
     day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: timezone,
+  }).format(d)
+  const time = new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
     hour: "2-digit",
     minute: "2-digit",
     timeZone: timezone,
-  }).format(new Date(isoDate))
+  }).format(d)
+  return `${date}\n${time}`
+}
+
+export function formatMatchDateParts(
+  isoDate: string,
+  timezone: string,
+): { date: string; time: string } {
+  const d = new Date(isoDate)
+  const date = new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: timezone,
+  }).format(d)
+  const time = new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: timezone,
+  }).format(d)
+  return { date, time }
 }
 
 export function isToday(isoDate: string, timezone: string): boolean {
