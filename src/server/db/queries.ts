@@ -105,6 +105,22 @@ export async function updateUserName(userId: number, name: string) {
     .where(eq(users.id, userId))
 }
 
+export async function updateUserNickname(userId: number, nickname: string) {
+  await db
+    .update(users)
+    .set({ nickname, updatedAt: new Date().toISOString() })
+    .where(eq(users.id, userId))
+}
+
+export async function isNicknameTaken(nickname: string, excludeUserId: number) {
+  const rows = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.nickname, nickname), sql`${users.id} != ${excludeUserId}`))
+    .limit(1)
+  return rows.length > 0
+}
+
 // Settings
 
 export async function getSettings(userId: number) {
@@ -337,7 +353,7 @@ export async function getMatchPredictions(matchNumber: number) {
       homeScore: prodePredictions.homeScore,
       awayScore: prodePredictions.awayScore,
       points: prodePredictions.points,
-      userName: users.name,
+      userName: sql<string>`COALESCE(${users.nickname}, ${users.name})`,
     })
     .from(prodePredictions)
     .innerJoin(users, eq(prodePredictions.userId, users.id))
@@ -348,7 +364,7 @@ export async function getProdeLeaderboard() {
   return db
     .select({
       userId: users.id,
-      name: users.name,
+      name: sql<string>`COALESCE(${users.nickname}, ${users.name})`,
       totalPoints: sql<number>`COALESCE(SUM(${prodePredictions.points}), 0)`,
       exactCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 3 THEN 1 END)`,
       correctCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 1 THEN 1 END)`,
@@ -356,7 +372,7 @@ export async function getProdeLeaderboard() {
     .from(users)
     .leftJoin(prodePredictions, eq(users.id, prodePredictions.userId))
     .where(eq(users.status, "active"))
-    .groupBy(users.id, users.name)
+    .groupBy(users.id, users.name, users.nickname)
     .orderBy(
       desc(sql`COALESCE(SUM(${prodePredictions.points}), 0)`),
       desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 3 THEN 1 END)`),
