@@ -141,7 +141,7 @@ export function SettingsForm({
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 md:w-4xl mx-auto">
       <div className="space-y-6">
         <section className="space-y-3">
-          <h2 className="text-sm font-medium italic">🏆 Equipos seguidos</h2>
+          <h2 className="text-sm font-medium italic border-b border-blue-300 pb-2 w-fit">🏆 Equipos seguidos</h2>
 
           {/* <h2 className="text-sm font-medium">Equipos seguidos</h2> */}
 
@@ -226,7 +226,7 @@ export function SettingsForm({
       </div>
       <div className="space-y-6 lg:border-l lg:pl-4">
         <section className="space-y-3">
-          <h2 className="text-sm font-medium italic">👤 Información personal</h2>
+          <h2 className="text-sm font-medium italic border-b border-blue-300 pb-2 w-fit">👤 Información personal</h2>
 
 
           <h2 className="text-sm font-medium">Nombre</h2>
@@ -293,7 +293,7 @@ export function SettingsForm({
         <Separator />
 
         <section className="space-y-4">
-          <h2 className="text-sm font-medium italic">📣 Canales de aviso</h2>
+          <h2 className="text-sm font-medium italic border-b border-blue-300 pb-2 w-fit">📣 Canales de aviso</h2>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
