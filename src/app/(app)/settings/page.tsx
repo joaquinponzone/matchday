@@ -24,7 +24,7 @@ export default async function SettingsPage() {
     <div className="space-y-4">
       <h1 className="text- font-medium text-muted-foreground">Configuración</h1>
       <Separator />
-      <SettingsForm settings={settings} followedTeams={followedTeams} userName={user.name} />
+      <SettingsForm settings={settings} followedTeams={followedTeams} userName={user.name} userNickname={user.nickname ?? ""} />
     </div>
   )
 }

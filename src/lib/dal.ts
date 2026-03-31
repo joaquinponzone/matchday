@@ -28,6 +28,7 @@ export const getUser = cache(async () => {
       id: users.id,
       email: users.email,
       name: users.name,
+      nickname: users.nickname,
       role: users.role,
       status: users.status,
     })
