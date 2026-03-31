@@ -1,6 +1,6 @@
 "use server"
 
-import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm"
+import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm"
 
 import { db } from "./index"
 import {
@@ -9,6 +9,7 @@ import {
   followedTeams,
   matches,
   notifications,
+  prodePredictions,
   settings,
   teams,
   users,
@@ -309,4 +310,100 @@ export async function notificationExists(idempotencyKey: string) {
     .where(eq(notifications.idempotencyKey, idempotencyKey))
     .limit(1)
   return rows.length > 0
+}
+
+// Prode
+
+export async function getUserPredictions(userId: number) {
+  return db
+    .select()
+    .from(prodePredictions)
+    .where(eq(prodePredictions.userId, userId))
+}
+
+export async function getMatchPredictions(matchNumber: number) {
+  return db
+    .select({
+      id: prodePredictions.id,
+      userId: prodePredictions.userId,
+      matchNumber: prodePredictions.matchNumber,
+      homeScore: prodePredictions.homeScore,
+      awayScore: prodePredictions.awayScore,
+      points: prodePredictions.points,
+      userName: users.name,
+    })
+    .from(prodePredictions)
+    .innerJoin(users, eq(prodePredictions.userId, users.id))
+    .where(eq(prodePredictions.matchNumber, matchNumber))
+}
+
+export async function getProdeLeaderboard() {
+  return db
+    .select({
+      userId: users.id,
+      name: users.name,
+      totalPoints: sql<number>`COALESCE(SUM(${prodePredictions.points}), 0)`,
+      exactCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 3 THEN 1 END)`,
+      correctCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 1 THEN 1 END)`,
+    })
+    .from(users)
+    .leftJoin(prodePredictions, eq(users.id, prodePredictions.userId))
+    .where(eq(users.status, "active"))
+    .groupBy(users.id, users.name)
+    .orderBy(
+      desc(sql`COALESCE(SUM(${prodePredictions.points}), 0)`),
+      desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 3 THEN 1 END)`),
+    )
+}
+
+export async function upsertProdePrediction(data: {
+  userId: number
+  matchNumber: number
+  homeScore: number
+  awayScore: number
+}) {
+  const now = new Date().toISOString()
+  await db
+    .insert(prodePredictions)
+    .values({ ...data, createdAt: now, updatedAt: now })
+    .onConflictDoUpdate({
+      target: [prodePredictions.userId, prodePredictions.matchNumber],
+      set: {
+        homeScore: data.homeScore,
+        awayScore: data.awayScore,
+        updatedAt: now,
+      },
+    })
+}
+
+export async function calculateMatchPoints(
+  matchNumber: number,
+  realHome: number,
+  realAway: number,
+) {
+  const preds = await db
+    .select()
+    .from(prodePredictions)
+    .where(
+      and(
+        eq(prodePredictions.matchNumber, matchNumber),
+        isNull(prodePredictions.points),
+      ),
+    )
+
+  for (const pred of preds) {
+    let points = 0
+    if (pred.homeScore === realHome && pred.awayScore === realAway) {
+      points = 3
+    } else {
+      const outcome = (h: number, a: number) => (h > a ? "1" : h < a ? "2" : "X")
+      if (outcome(pred.homeScore, pred.awayScore) === outcome(realHome, realAway)) {
+        points = 1
+      }
+    }
+    await db
+      .update(prodePredictions)
+      .set({ points, updatedAt: new Date().toISOString() })
+      .where(eq(prodePredictions.id, pred.id))
+  }
 }

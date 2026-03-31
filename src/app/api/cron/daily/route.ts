@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { fetchUpcomingFixtures, mapFixtureToMatch } from "@/lib/football-data"
 import { processNotificationsForHour } from "@/lib/notifications"
-import { getAllFollowedTeamKeys, getTeam, upsertMatch } from "@/server/db/queries"
+import { fetchFinishedWCMatchScores } from "@/lib/fifa"
+import { getAllFollowedTeamKeys, getTeam, upsertMatch, calculateMatchPoints } from "@/server/db/queries"
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -36,5 +37,17 @@ export async function GET(req: NextRequest) {
   // 2. Send notifications for all active users
   const { processed, errors } = await processNotificationsForHour()
 
-  return NextResponse.json({ ok: true, upserted, processed, errors })
+  // 3. Calculate prode points for finished World Cup matches
+  let prodeCalculated = 0
+  try {
+    const finishedMatches = await fetchFinishedWCMatchScores()
+    for (const { matchNumber, homeScore, awayScore } of finishedMatches) {
+      await calculateMatchPoints(matchNumber, homeScore, awayScore)
+      prodeCalculated++
+    }
+  } catch {
+    // Non-critical: don't fail the whole cron if prode calculation fails
+  }
+
+  return NextResponse.json({ ok: true, upserted, processed, errors, prodeCalculated })
 }

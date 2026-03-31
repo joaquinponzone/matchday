@@ -6,6 +6,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core"
 
+
 export const teams = sqliteTable("teams", {
   apiId: integer("api_id").primaryKey(),
   name: text("name").notNull(),
@@ -106,6 +107,23 @@ export const followedTeams = sqliteTable(
   (table) => [primaryKey({ columns: [table.userId, table.teamKey] })],
 )
 
+export const prodePredictions = sqliteTable(
+  "prode_predictions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    matchNumber: integer("match_number").notNull(),
+    homeScore: integer("home_score").notNull(),
+    awayScore: integer("away_score").notNull(),
+    points: integer("points"),
+    createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+    updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+  },
+  (table) => [uniqueIndex("prode_user_match_idx").on(table.userId, table.matchNumber)],
+)
+
 export type User = typeof users.$inferSelect
 export type InsertUser = typeof users.$inferInsert
 export type Settings = typeof settings.$inferSelect
@@ -116,3 +134,5 @@ export type InsertMatch = typeof matches.$inferInsert
 export type InsertNotification = typeof notifications.$inferInsert
 export type Team = typeof teams.$inferSelect
 export type InsertTeam = typeof teams.$inferInsert
+export type ProdePrediction = typeof prodePredictions.$inferSelect
+export type InsertProdePrediction = typeof prodePredictions.$inferInsert

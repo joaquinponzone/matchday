@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic"
 
 import Image from "next/image"
-import { getSettings } from "@/server/db/queries"
+import { getSettings, getUserPredictions, getProdeLeaderboard } from "@/server/db/queries"
 import { getUser } from "@/lib/dal"
 import { WcTabs } from "./wc-tabs"
 import { GroupStandings } from "./group-standings"
@@ -12,10 +12,11 @@ import {
   toUtcIso,
   formatMatchDate,
 } from "./lib"
-import { fetchWCStandings, fetchWCGroupMatches } from "@/lib/fifa"
-import fixtureData from "../../../../specs/FIFA-WORLD-CUP/2026.json"
+import { fetchWCStandings, fetchWCGroupMatches, fetchAllWCMatches } from "@/lib/fifa"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { WCMatch } from "./types"
+import { PredictionsList } from "./prode/predictions-list"
+import { Leaderboard } from "./prode/leaderboard"
 
 function MatchRow({ match, timezone }: { match: WCMatch; timezone: string }) {
   const utcDate = toUtcIso(match.date, match.time)
@@ -87,23 +88,23 @@ export default async function WorldCupPage() {
   const settings = await getSettings(user.id)
   const timezone = settings?.timezone ?? "UTC"
 
-  // Static data for bracket (FIFA API doesn't have knockout structure yet)
-  const allStaticMatches = fixtureData.matches as WCMatch[]
-  const bracketRounds = buildBracketRounds(allStaticMatches)
+  // Live data from FIFA API + prode data
+  const [standings, apiGroupMatches, allMatches, userPredictions, leaderboard] =
+    await Promise.all([
+      fetchWCStandings(),
+      fetchWCGroupMatches(),
+      fetchAllWCMatches(),
+      getUserPredictions(user.id),
+      getProdeLeaderboard(),
+    ])
 
-  // Live data from FIFA API
-  const [standings, apiGroupMatches] = await Promise.all([
-    fetchWCStandings(),
-    fetchWCGroupMatches(),
-  ])
+  // Bracket from knockout matches returned by the API
+  const bracketRounds = buildBracketRounds(allMatches)
 
-  // Fallback to static data if API fails
-  const groupMatches =
-    apiGroupMatches.length > 0
-      ? apiGroupMatches
-      : allStaticMatches.filter((m) => m.group)
+  // Fallback to empty standings extracted from group matches if API fails
+  const groupMatches = apiGroupMatches.length > 0 ? apiGroupMatches : []
   const activeStandings =
-    standings.length > 0 ? standings : extractGroupStandings(allStaticMatches)
+    standings.length > 0 ? standings : extractGroupStandings(groupMatches)
 
   const groupedMatches = groupMatches.reduce<Record<string, WCMatch[]>>(
     (acc, m) => {
@@ -115,6 +116,21 @@ export default async function WorldCupPage() {
     {},
   )
   const sortedGroups = Object.keys(groupedMatches).sort()
+
+  const prodeContent = (
+    <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-2">
+        <PredictionsList
+          matches={allMatches}
+          initialPredictions={userPredictions}
+          timezone={timezone}
+        />
+      </div>
+      <div>
+        <Leaderboard entries={leaderboard} currentUserId={user.id} />
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-4">
@@ -133,6 +149,7 @@ export default async function WorldCupPage() {
         bracketContent={
           <KnockoutBracket rounds={bracketRounds} timezone={timezone} />
         }
+        prodeContent={prodeContent}
       />
     </div>
   )
