@@ -37,7 +37,7 @@ export function NavLinks({ unread, role }: { unread: number; role: string }) {
               href={href}
               className={cn(
                 "flex items-center gap-1.5 transition-colors hover:text-foreground",
-                active ? "text-foreground font-medium border-b-2 border-primary" : "text-muted-foreground",
+                active ? "text-foreground font-medium md:border-b-2 md:border-primary" : "text-muted-foreground animate-in fade-in-0 duration-700",
               )}
             >
               <span className="hidden md:block">{label}</span>
