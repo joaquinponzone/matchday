@@ -15,7 +15,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Matchday</CardTitle>
+          <CardTitle>Dia de partido ⚽️</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={action} className="space-y-4">

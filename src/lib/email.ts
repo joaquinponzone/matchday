@@ -12,11 +12,11 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   await resend.emails.send({
     from,
     to,
-    subject: "Reset your Matchday password",
+    subject: "Restablece tu contraseña",
     html: `
-      <p>You requested a password reset for your Matchday account.</p>
-      <p><a href="${resetUrl}">Click here to reset your password</a></p>
-      <p>This link expires in 1 hour. If you didn't request this, ignore this email.</p>
+      <p>Solicitaste restablecer la contraseña de tu cuenta de Dia de partido.</p>
+      <p><a href="${resetUrl}">Haz clic aquí para restablecer tu contraseña</a></p>
+      <p>Este enlace expira en 1 hora. Si no solicitaste este cambio, ignora este correo.</p>
     `,
   })
 }

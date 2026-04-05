@@ -1,4 +1,4 @@
-# Contribuir a Matchday
+# Contribuir a Dia de partido ⚽️
 
 Gracias por querer ayudar! Este es un proyecto personal, así que las contribuciones son principalmente ideas, specs y mejoras pequeñas. Acá va cómo hacerlo bien.
 

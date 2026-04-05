@@ -281,7 +281,7 @@ export function SettingsForm({
           <div>
             <h2 className="text-sm font-medium">Nickname</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Tu nombre público en los rankings de Matchday. Único por usuario.
+              Tu nombre público en los rankings. Único por usuario.
             </p>
           </div>
           <div className="space-y-1">

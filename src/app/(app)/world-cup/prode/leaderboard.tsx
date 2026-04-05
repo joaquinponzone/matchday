@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 interface LeaderboardEntry {
   userId: number
   name: string
+  email: string
   totalPoints: number
   exactCount: number
   correctCount: number
@@ -53,11 +54,18 @@ export function Leaderboard({ entries, currentUserId }: LeaderboardProps) {
                   <TableCell className="font-mono text-muted-foreground text-xs">
                     {i + 1}
                   </TableCell>
-                  <TableCell className="font-medium">
-                    {entry.name}
-                    {entry.userId === currentUserId && (
-                      <span className="ml-1.5 text-[10px] text-muted-foreground">(vos)</span>
-                    )}
+                  <TableCell>
+                    <div className="font-medium leading-tight">
+                      {entry.name}
+                      {entry.userId === currentUserId && (
+                        <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">
+                          (vos)
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-0.5 font-mono text-[10px] text-muted-foreground break-all">
+                      ({entry.email})
+                    </div>
                   </TableCell>
                   <TableCell className="text-right font-mono font-semibold">
                     {entry.totalPoints}

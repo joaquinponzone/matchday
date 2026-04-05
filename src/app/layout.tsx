@@ -15,15 +15,15 @@ const fontSans = Geist({
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
-  title: "Matchday",
+  title: "Dia de partido",
   description: "Seguimiento de partidos de fútbol",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Matchday",
+    title: "Dia de partido",
     description: "Seguimiento de partidos de fútbol",
-    url: "https://matchday-mvp.vercel.app/",
+    url: "https://diadepartido.com/",
   },
 }
 

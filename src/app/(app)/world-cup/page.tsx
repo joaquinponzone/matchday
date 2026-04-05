@@ -14,9 +14,12 @@ import {
 } from "./lib"
 import { fetchWCStandings, fetchWCGroupMatches, fetchAllWCMatches } from "@/lib/fifa"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Trophy } from "lucide-react"
 import type { WCMatch } from "./types"
 import { PredictionsList } from "./prode/predictions-list"
 import { Leaderboard } from "./prode/leaderboard"
+import { WorldCupCountdown } from "./countdown"
 
 function MatchRow({ match, timezone }: { match: WCMatch; timezone: string }) {
   const utcDate = toUtcIso(match.date, match.time)
@@ -101,6 +104,14 @@ export default async function WorldCupPage() {
   // Bracket from knockout matches returned by the API
   const bracketRounds = buildBracketRounds(allMatches)
 
+  const firstMatch = allMatches[0]
+  const firstMatchDate = firstMatch
+    ? toUtcIso(firstMatch.date, firstMatch.time)
+    : null
+  const firstMatchLabel = firstMatch
+    ? `${firstMatch.team1} vs ${firstMatch.team2} · ${formatMatchDate(firstMatchDate!, timezone)}`
+    : undefined
+
   // Fallback to empty standings extracted from group matches if API fails
   const groupMatches = apiGroupMatches.length > 0 ? apiGroupMatches : []
   const activeStandings =
@@ -119,6 +130,16 @@ export default async function WorldCupPage() {
 
   const prodeContent = (
     <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-3 mb-2">
+        <Alert>
+          <Trophy className="size-4" />
+          <AlertTitle>Pozo de premios - Próximamente</AlertTitle>
+          <AlertDescription>
+            Pronto podrás inscribirte al prode pagando una entrada para competir
+            por premios para los 3 primeros puestos.
+          </AlertDescription>
+        </Alert>
+      </div>
       <div className="lg:col-span-2">
         <PredictionsList
           matches={allMatches}
@@ -137,6 +158,12 @@ export default async function WorldCupPage() {
       <h1 className="text-xl md:text-2xl lg:text-3xl font-medium">
         FIFA World Cup 2026
       </h1>
+      {firstMatchDate && (
+        <WorldCupCountdown
+          targetDate={firstMatchDate}
+          firstMatchLabel={firstMatchLabel}
+        />
+      )}
       <WcTabs
         standingsContent={<GroupStandings standings={activeStandings} />}
         matchesContent={

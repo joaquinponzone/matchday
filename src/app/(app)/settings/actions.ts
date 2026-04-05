@@ -71,7 +71,7 @@ export async function testTelegramNotification(): Promise<{ ok: boolean; error?:
   try {
     await sendTelegramMessage(
       s.telegramChatId,
-      "✅ <b>Matchday test</b>\nTelegram notifications are working correctly.",
+      "✅ <b>Dia de partido ⚽️ test</b>\nTelegram notifications are working correctly.",
     )
     return { ok: true }
   } catch (err) {
