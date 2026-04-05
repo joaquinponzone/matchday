@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { MatchCard } from "@/components/match-card"
 import { MatchHero } from "@/components/match-hero"
+import { RefreshButton } from "@/components/refresh-button"
 import { verifySession } from "@/lib/dal"
 import { getFollowedTeams, getSettings, getUpcomingMatches } from "@/server/db/queries"
 
@@ -26,7 +27,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-sm font-medium text-muted-foreground">Próximo partido</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-sm font-medium text-muted-foreground">Próximo partido</h1>
+        <RefreshButton />
+      </div>
       <MatchHero match={hero} timezone={timezone} />
 
       {rest.length > 0 && (

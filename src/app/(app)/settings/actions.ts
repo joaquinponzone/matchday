@@ -35,6 +35,7 @@ export async function followTeam(
 export async function unfollowTeam(apiId: number) {
   const { userId } = await verifySession()
   await setTeamEnabled(userId, String(apiId), false)
+  revalidatePath("/")
   revalidatePath("/settings")
 }
 
