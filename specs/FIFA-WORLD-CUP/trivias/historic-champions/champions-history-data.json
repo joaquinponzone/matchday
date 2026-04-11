@@ -1,0 +1,191 @@
+{
+    "mundiales": [
+      {
+        "año": 1930,
+        "sede": "Uruguay",
+        "campeon": "Uruguay",
+        "subcampeon": "Argentina",
+        "resultado_final": "4-2",
+        "tercer_lugar": "Estados Unidos"
+      },
+      {
+        "año": 1934,
+        "sede": "Italia",
+        "campeon": "Italia",
+        "subcampeon": "Checoslovaquia",
+        "resultado_final": "2-1 (prórroga)",
+        "tercer_lugar": "Alemania"
+      },
+      {
+        "año": 1938,
+        "sede": "Francia",
+        "campeon": "Italia",
+        "subcampeon": "Hungría",
+        "resultado_final": "4-2",
+        "tercer_lugar": "Brasil"
+      },
+      {
+        "año": 1950,
+        "sede": "Brasil",
+        "campeon": "Uruguay",
+        "subcampeon": "Brasil",
+        "resultado_final": "2-1",
+        "tercer_lugar": "Suecia"
+      },
+      {
+        "año": 1954,
+        "sede": "Suiza",
+        "campeon": "Alemania Occidental",
+        "subcampeon": "Hungría",
+        "resultado_final": "3-2",
+        "tercer_lugar": "Austria"
+      },
+      {
+        "año": 1958,
+        "sede": "Suecia",
+        "campeon": "Brasil",
+        "subcampeon": "Suecia",
+        "resultado_final": "5-2",
+        "tercer_lugar": "Francia"
+      },
+      {
+        "año": 1962,
+        "sede": "Chile",
+        "campeon": "Brasil",
+        "subcampeon": "Checoslovaquia",
+        "resultado_final": "3-1",
+        "tercer_lugar": "Chile"
+      },
+      {
+        "año": 1966,
+        "sede": "Inglaterra",
+        "campeon": "Inglaterra",
+        "subcampeon": "Alemania Occidental",
+        "resultado_final": "4-2 (prórroga)",
+        "tercer_lugar": "Portugal"
+      },
+      {
+        "año": 1970,
+        "sede": "México",
+        "campeon": "Brasil",
+        "subcampeon": "Italia",
+        "resultado_final": "4-1",
+        "tercer_lugar": "Alemania Occidental"
+      },
+      {
+        "año": 1974,
+        "sede": "Alemania Occidental",
+        "campeon": "Alemania Occidental",
+        "subcampeon": "Países Bajos",
+        "resultado_final": "2-1",
+        "tercer_lugar": "Polonia"
+      },
+      {
+        "año": 1978,
+        "sede": "Argentina",
+        "campeon": "Argentina",
+        "subcampeon": "Países Bajos",
+        "resultado_final": "3-1 (prórroga)",
+        "tercer_lugar": "Brasil"
+      },
+      {
+        "año": 1982,
+        "sede": "España",
+        "campeon": "Italia",
+        "subcampeon": "Alemania Occidental",
+        "resultado_final": "3-1",
+        "tercer_lugar": "Polonia"
+      },
+      {
+        "año": 1986,
+        "sede": "México",
+        "campeon": "Argentina",
+        "subcampeon": "Alemania Occidental",
+        "resultado_final": "3-2",
+        "tercer_lugar": "Francia"
+      },
+      {
+        "año": 1990,
+        "sede": "Italia",
+        "campeon": "Alemania Occidental",
+        "subcampeon": "Argentina",
+        "resultado_final": "1-0",
+        "tercer_lugar": "Italia"
+      },
+      {
+        "año": 1994,
+        "sede": "Estados Unidos",
+        "campeon": "Brasil",
+        "subcampeon": "Italia",
+        "resultado_final": "0-0 (3-2 penales)",
+        "tercer_lugar": "Suecia"
+      },
+      {
+        "año": 1998,
+        "sede": "Francia",
+        "campeon": "Francia",
+        "subcampeon": "Brasil",
+        "resultado_final": "3-0",
+        "tercer_lugar": "Croacia"
+      },
+      {
+        "año": 2002,
+        "sede": "Corea del Sur / Japón",
+        "campeon": "Brasil",
+        "subcampeon": "Alemania",
+        "resultado_final": "2-0",
+        "tercer_lugar": "Turquía"
+      },
+      {
+        "año": 2006,
+        "sede": "Alemania",
+        "campeon": "Italia",
+        "subcampeon": "Francia",
+        "resultado_final": "1-1 (5-3 penales)",
+        "tercer_lugar": "Alemania"
+      },
+      {
+        "año": 2010,
+        "sede": "Sudáfrica",
+        "campeon": "España",
+        "subcampeon": "Países Bajos",
+        "resultado_final": "1-0 (prórroga)",
+        "tercer_lugar": "Alemania"
+      },
+      {
+        "año": 2014,
+        "sede": "Brasil",
+        "campeon": "Alemania",
+        "subcampeon": "Argentina",
+        "resultado_final": "1-0 (prórroga)",
+        "tercer_lugar": "Países Bajos"
+      },
+      {
+        "año": 2018,
+        "sede": "Rusia",
+        "campeon": "Francia",
+        "subcampeon": "Croacia",
+        "resultado_final": "4-2",
+        "tercer_lugar": "Bélgica"
+      },
+      {
+        "año": 2022,
+        "sede": "Qatar",
+        "campeon": "Argentina",
+        "subcampeon": "Francia",
+        "resultado_final": "3-3 (4-2 penales)",
+        "tercer_lugar": "Croacia"
+      }
+    ],
+    "notas": "No se disputaron ediciones en 1942 y 1946 por la Segunda Guerra Mundial. El próximo Mundial (2026) se jugará en Canadá, México y Estados Unidos (aún sin campeón).",
+    "estadistica_campeones": {
+      "Brasil": 5,
+      "Alemania": 4,
+      "Italia": 4,
+      "Argentina": 3,
+      "Francia": 2,
+      "Uruguay": 2,
+      "Inglaterra": 1,
+      "España": 1
+    }
+  }
