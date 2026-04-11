@@ -1,4 +1,4 @@
-import { formatMatchDate } from "@/lib/utils"
+import { formatMatchTimeOnly } from "@/lib/utils"
 import {
   createNotification,
   getAllActiveUsersWithSettings,
@@ -10,9 +10,19 @@ import type { Match } from "@/server/db/schema"
 
 import { sendTelegramMessage } from "./telegram"
 
+export type MatchNotificationTiming = "day_before" | "match_day"
+
 interface NotificationContent {
   title: string
   body: string
+  telegramHtml: string
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
 }
 
 interface UserSettings {
@@ -30,20 +40,33 @@ interface UserSettings {
 export function buildNotificationContent(
   match: Match,
   timezone: string,
+  timing: MatchNotificationTiming,
 ): NotificationContent {
-  const teamName = match.teamShortName ?? match.teamKey
+  const followedName = match.teamShortName ?? match.teamKey
+  const local = match.isHome ? followedName : match.opponent
+  const visitor = match.isHome ? match.opponent : followedName
   const venue = match.venue ?? "To be confirmed"
-  const homeAway = match.isHome ? "vs" : "@"
-  const dateStr = formatMatchDate(match.matchDate, timezone)
+  const relativeLabel = timing === "match_day" ? "hoy" : "mañana"
+  const timeStr = formatMatchTimeOnly(match.matchDate, timezone)
 
-  const title = `${teamName} ${homeAway} ${match.opponent} — ${match.competition}`
-  const body = `${match.competition}\n${teamName} ${homeAway} ${match.opponent}\n📅 ${dateStr}\n📍 ${venue}`
+  const title = `${local} vs ${visitor} — ${match.competition}`
+  const body = `${match.competition}\n${local}\nvs\n${visitor}\n📅 ${relativeLabel} - ${timeStr}\n📍 ${venue}`
 
-  return { title, body }
+  const esc = escapeHtml
+  const telegramHtml = [
+    `<b>${esc(match.competition)}</b>`,
+    esc(local),
+    "vs",
+    esc(visitor),
+    `📅 ${esc(relativeLabel)} - ${esc(timeStr)}`,
+    `📍 ${esc(venue)}`,
+  ].join("\n")
+
+  return { title, body, telegramHtml }
 }
 
 type Channel = "telegram" | "in_app"
-type Timing = "day_before" | "match_day"
+type Timing = MatchNotificationTiming
 
 async function dispatchNotification(
   userId: number,
@@ -56,13 +79,17 @@ async function dispatchNotification(
 
   if (await notificationExists(idempotencyKey)) return
 
-  const { title, body } = buildNotificationContent(match, userSettings.timezone)
+  const { title, body, telegramHtml } = buildNotificationContent(
+    match,
+    userSettings.timezone,
+    timing,
+  )
   let status: "sent" | "failed" = "sent"
   let error: string | undefined
 
   try {
     if (channel === "telegram" && userSettings.telegramChatId) {
-      await sendTelegramMessage(userSettings.telegramChatId, body)
+      await sendTelegramMessage(userSettings.telegramChatId, telegramHtml)
     }
   } catch (err) {
     status = "failed"
