@@ -14,6 +14,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "api.fifa.com",
       },
+      {
+        protocol: "https",
+        hostname: "api.promiedos.com.ar",
+      },
     ],
   },
 }

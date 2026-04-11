@@ -3,12 +3,12 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatMatchDateParts } from "@/lib/utils"
-import type { Match } from "@/server/db/schema"
+import type { FixtureForUi } from "@/lib/types"
 
 import { Countdown } from "./countdown"
 
 interface MatchHeroProps {
-  match: Match
+  match: FixtureForUi
   timezone: string
 }
 
@@ -16,8 +16,8 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
   const teamName = match.teamShortName ?? match.teamKey
   const teamCrest = match.teamCrest
 
-  const homeName = match.isHome ? teamName : match.opponent
-  const awayName = match.isHome ? match.opponent : teamName
+  const homeName = (match.isHome ? teamName : match.opponent) ?? ""
+  const awayName = (match.isHome ? match.opponent : teamName) ?? ""
   const homeCrest = match.isHome ? teamCrest : match.opponentLogo
   const awayCrest = match.isHome ? match.opponentLogo : teamCrest
   const { date, time } = formatMatchDateParts(match.matchDate, timezone)
@@ -43,7 +43,7 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col items-center gap-2">
-            {homeCrest && (
+            {homeCrest != null && homeCrest !== "" && (
               <div className="relative h-16 w-16">
                 <Image
                   src={homeCrest}
@@ -61,7 +61,7 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            {awayCrest && (
+            {awayCrest != null && awayCrest !== "" && (
               <div className="relative h-16 w-16">
                 <Image
                   src={awayCrest}

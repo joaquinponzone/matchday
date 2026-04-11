@@ -3,10 +3,10 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatMatchDateParts } from "@/lib/utils"
-import type { Match } from "@/server/db/schema"
+import type { FixtureForUi } from "@/lib/types"
 
 interface MatchCardProps {
-  match: Match
+  match: FixtureForUi
   timezone: string
 }
 
@@ -14,8 +14,8 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
   const teamName = match.teamShortName ?? match.teamKey
   const teamCrest = match.teamCrest
 
-  const homeName = match.isHome ? teamName : match.opponent
-  const awayName = match.isHome ? match.opponent : teamName
+  const homeName = (match.isHome ? teamName : match.opponent) ?? ""
+  const awayName = (match.isHome ? match.opponent : teamName) ?? ""
   const homeCrest = match.isHome ? teamCrest : match.opponentLogo
   const awayCrest = match.isHome ? match.opponentLogo : teamCrest
   const { date, time } = formatMatchDateParts(match.matchDate, timezone)
@@ -24,7 +24,7 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
         <div className="flex items-center gap-2 bg-muted p-4">
-          {homeCrest && (
+          {homeCrest != null && homeCrest !== "" && (
             <Image
               src={homeCrest}
               alt={homeName}
@@ -34,7 +34,7 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
             />
           )}
           -
-          {awayCrest && (
+          {awayCrest != null && awayCrest !== "" && (
             <Image
               src={awayCrest}
               alt={awayName}

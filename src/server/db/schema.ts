@@ -7,12 +7,18 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 
+/** Promiedos-backed team: club competition vs national (Mundial) selection */
+export type TeamKind = "club" | "national"
+
 export const teams = sqliteTable("teams", {
-  apiId: integer("api_id").primaryKey(),
+  teamKey: text("team_key").primaryKey(),
   name: text("name").notNull(),
   shortName: text("short_name").notNull(),
   tla: text("tla").notNull(),
   crest: text("crest").notNull(),
+  /** `club` = clubes; `national` = selecciones (Mundial) */
+  teamKind: text("team_kind").notNull().default("club"),
+  promiedosUrlName: text("promiedos_url_name"),
   createdAt: text("created_at")
     .notNull()
     .$defaultFn(() => new Date().toISOString()),
@@ -51,27 +57,6 @@ export const settings = sqliteTable("settings", {
   updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
 })
 
-export const matches = sqliteTable("matches", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  apiFootballId: integer("api_football_id").notNull().unique(),
-  teamKey: text("team_key").notNull().default("chelsea"),
-  opponent: text("opponent").notNull(),
-  opponentLogo: text("opponent_logo"),
-  competition: text("competition").notNull(),
-  competitionLogo: text("competition_logo"),
-  matchDate: text("match_date").notNull(),
-  venue: text("venue"),
-  isHome: integer("is_home").notNull().default(1),
-  status: text("status").notNull().default("scheduled"),
-  teamName: text("team_name"),
-  teamShortName: text("team_short_name"),
-  teamCrest: text("team_crest"),
-  teamScore: integer("team_score"),
-  opponentScore: integer("opponent_score"),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
-  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
-})
-
 export const notifications = sqliteTable(
   "notifications",
   {
@@ -79,9 +64,6 @@ export const notifications = sqliteTable(
     userId: integer("user_id")
       .notNull()
       .references(() => users.id),
-    matchId: integer("match_id")
-      .notNull()
-      .references(() => matches.id),
     channel: text("channel").notNull(),
     timing: text("timing").notNull(),
     idempotencyKey: text("idempotency_key").notNull(),
@@ -92,6 +74,7 @@ export const notifications = sqliteTable(
     sentAt: text("sent_at"),
     readAt: text("read_at"),
     createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+    promiedosFixtureUrl: text("promiedos_fixture_url"),
   },
   (table) => [uniqueIndex("idempotency_key_idx").on(table.idempotencyKey)],
 )
@@ -128,10 +111,8 @@ export const prodePredictions = sqliteTable(
 export type User = typeof users.$inferSelect
 export type InsertUser = typeof users.$inferInsert
 export type Settings = typeof settings.$inferSelect
-export type Match = typeof matches.$inferSelect
 export type Notification = typeof notifications.$inferSelect
 export type FollowedTeam = typeof followedTeams.$inferSelect
-export type InsertMatch = typeof matches.$inferInsert
 export type InsertNotification = typeof notifications.$inferInsert
 export type Team = typeof teams.$inferSelect
 export type InsertTeam = typeof teams.$inferInsert

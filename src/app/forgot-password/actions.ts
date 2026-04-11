@@ -3,7 +3,8 @@
 import crypto from "node:crypto"
 
 import { sendPasswordResetEmail, isEmailConfigured } from "@/lib/email"
-import { ForgotPasswordSchema, type FormState } from "@/lib/validations"
+import type { FormState } from "@/lib/types"
+import { ForgotPasswordSchema } from "@/lib/validations"
 import { getUserByEmail } from "@/server/db/queries"
 import { db } from "@/server/db/index"
 import { users } from "@/server/db/schema"

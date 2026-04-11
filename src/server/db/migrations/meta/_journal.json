@@ -43,6 +43,48 @@
       "when": 1774991114663,
       "tag": "0005_secret_carlie_cooper",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1775000000000,
+      "tag": "0006_promiedos_teams_matches",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1775100000000,
+      "tag": "0007_notifications_nullable_match",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1775944111193,
+      "tag": "0008_ordinary_the_hand",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1776000000000,
+      "tag": "0009_drop_matches_add_fixture_url",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1776100000000,
+      "tag": "0010_teams_team_kind",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1775948941538,
+      "tag": "0011_nervous_vindicator",
+      "breakpoints": true
     }
   ]
 }

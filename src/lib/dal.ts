@@ -6,7 +6,8 @@ import { redirect } from "next/navigation"
 import { getIronSession } from "iron-session"
 import { eq } from "drizzle-orm"
 
-import { sessionOptions, type SessionData } from "@/lib/session"
+import { sessionOptions } from "@/lib/session"
+import type { SessionData } from "@/lib/types"
 import { db } from "@/server/db/index"
 import { users } from "@/server/db/schema"
 

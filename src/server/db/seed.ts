@@ -1,8 +1,33 @@
 import bcrypt from "bcryptjs"
-import { sql } from "drizzle-orm"
+
+import { promiedosTeamCrestUrl } from "@/lib/promiedos"
 
 import { db } from "./index"
 import { followedTeams, settings, teams, users } from "./schema"
+
+/** Demo Promiedos team ids (Liga Profesional samples from api.promiedos.com.ar). */
+const SEED_TEAMS: {
+  promiedosId: string
+  name: string
+  shortName: string
+  tla: string
+  urlName: string
+}[] = [
+  {
+    promiedosId: "ihb",
+    name: "Argentinos Juniors",
+    shortName: "Argentinos",
+    tla: "ARJ",
+    urlName: "argentinos-juniors",
+  },
+  {
+    promiedosId: "hchc",
+    name: "Instituto",
+    shortName: "Instituto",
+    tla: "INS",
+    urlName: "instituto-ac-cordoba",
+  },
+]
 
 async function seed() {
   const email = process.env.ADMIN_EMAIL
@@ -52,58 +77,35 @@ async function seed() {
 
     console.log("Seeded settings for admin user")
 
-    for (const key of ["61", "762"]) {
+    for (const t of SEED_TEAMS) {
+      const teamKey = `pm:${t.promiedosId}`
       await db
         .insert(followedTeams)
-        .values({ userId: adminId, teamKey: key, enabled: 1 })
+        .values({ userId: adminId, teamKey, enabled: 1 })
         .onConflictDoNothing()
     }
-    console.log("Seeded followed teams (61=Chelsea, 762=Argentina)")
+    console.log("Seeded followed teams (Promiedos demo clubs)")
   }
 
-  // Seed teams table
-  await db
-    .insert(teams)
-    .values({
-      apiId: 61,
-      name: "Chelsea FC",
-      shortName: "Chelsea",
-      tla: "CHE",
-      crest: "https://crests.football-data.org/61.png",
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoNothing()
+  for (const t of SEED_TEAMS) {
+    const teamKey = `pm:${t.promiedosId}`
+    await db
+      .insert(teams)
+      .values({
+        teamKey,
+        name: t.name,
+        shortName: t.shortName,
+        tla: t.tla,
+        crest: promiedosTeamCrestUrl(t.promiedosId),
+        teamKind: "club",
+        promiedosUrlName: t.urlName,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoNothing()
+  }
 
-  await db
-    .insert(teams)
-    .values({
-      apiId: 762,
-      name: "Argentina",
-      shortName: "Argentina",
-      tla: "ARG",
-      crest: "https://crests.football-data.org/762.png",
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoNothing()
-
-  console.log("Seeded teams table (Chelsea, Argentina)")
-
-  // Migrate existing data from old string keys to numeric API IDs
-  await db.run(
-    sql`UPDATE matches SET team_key = '61' WHERE team_key = 'chelsea'`,
-  )
-  await db.run(
-    sql`UPDATE matches SET team_key = '762' WHERE team_key = 'argentina'`,
-  )
-  await db.run(
-    sql`UPDATE followed_teams SET team_key = '61' WHERE team_key = 'chelsea'`,
-  )
-  await db.run(
-    sql`UPDATE followed_teams SET team_key = '762' WHERE team_key = 'argentina'`,
-  )
-  console.log("Migrated existing team keys to API IDs")
+  console.log("Seeded teams table (Promiedos)")
 }
 
 seed().catch(console.error)

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { getIronSession } from "iron-session"
 
-import { sessionOptions, type SessionData } from "@/lib/session"
+import { sessionOptions } from "@/lib/session"
+import type { SessionData } from "@/lib/types"
 import { getSettings, updateSettings } from "@/server/db/queries"
 
 async function getUserId() {

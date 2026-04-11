@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, type KeyboardEvent } from "react"
 import Image from "next/image"
+import { Minus, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { WCMatch } from "../types"
 import type { ProdePrediction } from "@/server/db/schema"
@@ -13,22 +15,10 @@ import { toUtcIso } from "../lib"
 interface PredictionsListProps {
   matches: WCMatch[]
   initialPredictions: ProdePrediction[]
-  timezone: string
 }
 
 function isLocked(match: WCMatch): boolean {
   return new Date() >= new Date(toUtcIso(match.date, match.time))
-}
-
-function formatMatchDate(match: WCMatch, timezone: string): string {
-  const iso = toUtcIso(match.date, match.time)
-  return new Intl.DateTimeFormat("es-AR", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: timezone,
-  }).format(new Date(iso))
 }
 
 function PointsBadge({ points }: { points: number | null }) {
@@ -48,46 +38,114 @@ function PointsBadge({ points }: { points: number | null }) {
   )
 }
 
+const GOAL_MAX = 99
+
+function clampGoal(n: number): number {
+  return Math.max(0, Math.min(GOAL_MAX, n))
+}
+
+function GoalStepper({
+  value,
+  onChange,
+  teamName,
+}: {
+  value: number
+  onChange: (value: number) => void
+  teamName: string
+}) {
+  const dec = () => onChange(clampGoal(value - 1))
+  const inc = () => onChange(clampGoal(value + 1))
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowRight") {
+      e.preventDefault()
+      inc()
+    } else if (e.key === "ArrowDown" || e.key === "ArrowLeft") {
+      e.preventDefault()
+      dec()
+    }
+  }
+
+  return (
+    <div
+      className="flex items-center gap-0.5 rounded border border-border bg-background/80 p-0.5"
+      role="group"
+      aria-label={`Goles ${teamName}`}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
+      <Button
+        type="button"
+        variant="outline"
+        size="icon-xs"
+        aria-label={`Restar gol a ${teamName}`}
+        disabled={value <= 0}
+        onClick={dec}
+      >
+        <Minus data-icon="inline-start" />
+      </Button>
+      <span
+        className="min-w-6 text-center text-sm font-mono tabular-nums"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {value}
+      </span>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon-xs"
+        aria-label={`Sumar gol a ${teamName}`}
+        disabled={value >= GOAL_MAX}
+        onClick={inc}
+      >
+        <Plus data-icon="inline-start" />
+      </Button>
+    </div>
+  )
+}
+
 function MatchPredictionRow({
   match,
   prediction,
-  timezone,
 }: {
   match: WCMatch
   prediction: ProdePrediction | undefined
-  timezone: string
 }) {
   const locked = isLocked(match)
-  const [home, setHome] = useState(prediction?.homeScore?.toString() ?? "")
-  const [away, setAway] = useState(prediction?.awayScore?.toString() ?? "")
+  const initialHome = prediction?.homeScore ?? 0
+  const initialAway = prediction?.awayScore ?? 0
+  const [home, setHome] = useState(initialHome)
+  const [away, setAway] = useState(initialAway)
+  const [lastSavedHome, setLastSavedHome] = useState(initialHome)
+  const [lastSavedAway, setLastSavedAway] = useState(initialAway)
   const [saved, setSaved] = useState(!!prediction)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
   const handleSave = () => {
-    const h = parseInt(home)
-    const a = parseInt(away)
-    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) {
-      setError("Ingresá un marcador válido")
-      return
-    }
+    const h = clampGoal(home)
+    const a = clampGoal(away)
+    setHome(h)
+    setAway(a)
     setError(null)
     startTransition(async () => {
       const res = await savePrediction(match.num!, h, a)
       if (res?.error) {
         setError(res.error)
       } else {
+        setLastSavedHome(h)
+        setLastSavedAway(a)
         setSaved(true)
       }
     })
   }
 
-  const dirty =
-    home !== (prediction?.homeScore?.toString() ?? "") ||
-    away !== (prediction?.awayScore?.toString() ?? "")
+  const dirty = home !== lastSavedHome || away !== lastSavedAway
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5 border-b last:border-0 text-xs">
+    <div className="border-b last:border-0">
+      <div className="flex items-center gap-2 px-3 py-2.5 text-xs">
       {/* Team 1 */}
       <span className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
         <span className="truncate text-right">{match.team1}</span>
@@ -103,7 +161,7 @@ function MatchPredictionRow({
         )}
       </span>
 
-      {/* Score inputs or locked display */}
+      {/* Score steppers or locked display */}
       <div className="flex items-center gap-1 shrink-0">
         {locked ? (
           <span className="font-mono text-sm text-muted-foreground w-14 text-center">
@@ -113,24 +171,22 @@ function MatchPredictionRow({
           </span>
         ) : (
           <>
-            <input
-              type="number"
-              min={0}
-              max={99}
+            <GoalStepper
               value={home}
-              onChange={(e) => { setHome(e.target.value); setSaved(false) }}
-              className="w-8 h-7 text-center text-sm font-mono bg-background border rounded focus:outline-none focus:ring-1 focus:ring-ring [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              placeholder="0"
+              teamName={match.team1}
+              onChange={(v) => {
+                setHome(v)
+                setSaved(false)
+              }}
             />
-            <span className="text-muted-foreground">-</span>
-            <input
-              type="number"
-              min={0}
-              max={99}
+            <span className="text-muted-foreground px-0.5">-</span>
+            <GoalStepper
               value={away}
-              onChange={(e) => { setAway(e.target.value); setSaved(false) }}
-              className="w-8 h-7 text-center text-sm font-mono bg-background border rounded focus:outline-none focus:ring-1 focus:ring-ring [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              placeholder="0"
+              teamName={match.team2}
+              onChange={(v) => {
+                setAway(v)
+                setSaved(false)
+              }}
             />
           </>
         )}
@@ -170,15 +226,15 @@ function MatchPredictionRow({
         )}
         {locked && <PointsBadge points={prediction?.points ?? null} />}
       </div>
-
+      </div>
       {error && (
-        <span className="absolute text-[10px] text-destructive">{error}</span>
+        <div className="px-3 pb-2 text-[10px] text-destructive">{error}</div>
       )}
     </div>
   )
 }
 
-export function PredictionsList({ matches, initialPredictions, timezone }: PredictionsListProps) {
+export function PredictionsList({ matches, initialPredictions }: PredictionsListProps) {
   const predByMatch = new Map(initialPredictions.map((p) => [p.matchNumber, p]))
 
   // Group matches by round
@@ -209,7 +265,6 @@ export function PredictionsList({ matches, initialPredictions, timezone }: Predi
                 key={match.num}
                 match={match}
                 prediction={predByMatch.get(match.num!)}
-                timezone={timezone}
               />
             ))}
           </CardContent>

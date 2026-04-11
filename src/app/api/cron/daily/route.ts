@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { fetchUpcomingFixtures, mapFixtureToMatch } from "@/lib/football-data"
-import { processNotificationsForHour } from "@/lib/notifications"
 import { fetchFinishedWCMatchScores } from "@/lib/fifa"
-import { getAllFollowedTeamKeys, getTeam, upsertMatch, calculateMatchPoints } from "@/server/db/queries"
+import { processDailyDigestNotifications } from "@/lib/notifications"
+import { calculateMatchPoints } from "@/server/db/queries"
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -11,33 +10,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // 1. Sync fixtures for all active users' followed teams
-  let upserted = 0
+  // 1. Notifications from live Promiedos fetch
+  let processed = 0
+  let notificationErrors: string[] = []
   try {
-    const teamIds = await getAllFollowedTeamKeys()
-    for (const teamApiId of teamIds) {
-      const team = await getTeam(teamApiId)
-      if (!team) continue
-      const fixtures = await fetchUpcomingFixtures(teamApiId)
-      const teamMeta = {
-        name: team.name,
-        shortName: team.shortName,
-        crest: team.crest,
-      }
-      for (const f of fixtures) {
-        await upsertMatch(mapFixtureToMatch(f, teamApiId, teamMeta))
-        upserted++
-      }
-    }
+    const result = await processDailyDigestNotifications()
+    processed = result.processed
+    notificationErrors = result.errors
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
-    return NextResponse.json({ error: `sync failed: ${message}` }, { status: 500 })
+    return NextResponse.json({ error: `notifications failed: ${message}` }, { status: 500 })
   }
 
-  // 2. Send notifications for all active users
-  const { processed, errors } = await processNotificationsForHour()
-
-  // 3. Calculate prode points for finished World Cup matches
+  // 2. Prode: finished World Cup matches
   let prodeCalculated = 0
   try {
     const finishedMatches = await fetchFinishedWCMatchScores()
@@ -46,8 +31,13 @@ export async function GET(req: NextRequest) {
       prodeCalculated++
     }
   } catch {
-    // Non-critical: don't fail the whole cron if prode calculation fails
+    // Non-critical
   }
 
-  return NextResponse.json({ ok: true, upserted, processed, errors, prodeCalculated })
+  return NextResponse.json({
+    ok: true,
+    processed,
+    errors: notificationErrors,
+    prodeCalculated,
+  })
 }

@@ -1,29 +1,14 @@
-export const dynamic = "force-dynamic"
-
-import { MatchCard } from "@/components/match-card"
-import { MatchHero } from "@/components/match-hero"
+import { DashboardFeed } from "@/components/dashboard-feed"
 import { RefreshButton } from "@/components/refresh-button"
 import { verifySession } from "@/lib/dal"
-import { getFollowedTeams, getSettings, getUpcomingMatches } from "@/server/db/queries"
+import { getSettings } from "@/server/db/queries"
+
+export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
   const { userId } = await verifySession()
-  const [settings, teamIds] = await Promise.all([
-    getSettings(userId),
-    getFollowedTeams(userId),
-  ])
-  const upcoming = await getUpcomingMatches(teamIds.map(String), 10)
-
+  const settings = await getSettings(userId)
   const timezone = settings?.timezone ?? "UTC"
-  const [hero, ...rest] = upcoming
-
-  if (!hero) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <p className="text-muted-foreground">No hay partidos programados.</p>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-4">
@@ -31,18 +16,7 @@ export default async function DashboardPage() {
         <h1 className="text-sm font-medium text-muted-foreground">Próximo partido</h1>
         <RefreshButton />
       </div>
-      <MatchHero match={hero} timezone={timezone} />
-
-      {rest.length > 0 && (
-        <>
-          <h2 className="text-sm font-medium text-muted-foreground">Próximamente</h2>
-          <div className="space-y-2">
-            {rest.map((match) => (
-              <MatchCard key={match.id} match={match} timezone={timezone} />
-            ))}
-          </div>
-        </>
-      )}
+      <DashboardFeed timezone={timezone} />
     </div>
   )
 }
