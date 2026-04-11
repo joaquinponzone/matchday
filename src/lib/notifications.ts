@@ -1,12 +1,18 @@
 import { formatMatchTimeOnly } from "@/lib/utils"
+import type { LiveFixture } from "@/lib/fixture.types"
+import {
+  fetchGamesForDate,
+  filterGamesForTeamIds,
+  mapPromiedosGameToMatch,
+  promiedosIdFromTeamKey,
+} from "@/lib/promiedos"
 import {
   createNotification,
   getAllActiveUsersWithSettings,
   getFollowedTeams,
-  getMatchesBetween,
+  getTeam,
   notificationExists,
 } from "@/server/db/queries"
-import type { Match } from "@/server/db/schema"
 
 import { sendTelegramMessage } from "./telegram"
 
@@ -38,13 +44,13 @@ interface UserSettings {
 }
 
 export function buildNotificationContent(
-  match: Match,
+  match: LiveFixture,
   timezone: string,
   timing: MatchNotificationTiming,
 ): NotificationContent {
   const followedName = match.teamShortName ?? match.teamKey
-  const local = match.isHome ? followedName : match.opponent
-  const visitor = match.isHome ? match.opponent : followedName
+  const local = (match.isHome ? followedName : match.opponent) ?? ""
+  const visitor = (match.isHome ? match.opponent : followedName) ?? ""
   const venue = match.venue ?? "To be confirmed"
   const relativeLabel = timing === "match_day" ? "hoy" : "mañana"
   const timeStr = formatMatchTimeOnly(match.matchDate, timezone)
@@ -70,12 +76,12 @@ type Timing = MatchNotificationTiming
 
 async function dispatchNotification(
   userId: number,
-  match: Match,
+  match: LiveFixture,
   userSettings: UserSettings,
   channel: Channel,
   timing: Timing,
 ): Promise<void> {
-  const idempotencyKey = `${userId}_${match.id}_${channel}_${timing}`
+  const idempotencyKey = `${userId}_${match.externalMatchId}_${match.teamKey}_${channel}_${timing}`
 
   if (await notificationExists(idempotencyKey)) return
 
@@ -98,7 +104,6 @@ async function dispatchNotification(
 
   await createNotification({
     userId,
-    matchId: match.id,
     channel,
     timing,
     idempotencyKey,
@@ -107,75 +112,124 @@ async function dispatchNotification(
     body,
     error: error ?? null,
     sentAt: new Date().toISOString(),
+    promiedosFixtureUrl: match.promiedosFixtureUrl,
   })
 }
 
-export async function processNotificationsForHour(): Promise<{
+/**
+ * Daily digest: fetch Promiedos for today / tomorrow per user timezone (grouped),
+ * then notify for followed teams.
+ */
+export async function processDailyDigestNotifications(): Promise<{
   processed: number
   errors: string[]
 }> {
   const allUsers = await getAllActiveUsersWithSettings()
   if (allUsers.length === 0) return { processed: 0, errors: [] }
 
+  const byTz = new Map<string, typeof allUsers>()
+  for (const u of allUsers) {
+    const list = byTz.get(u.timezone) ?? []
+    list.push(u)
+    byTz.set(u.timezone, list)
+  }
+
   const errors: string[] = []
   let processed = 0
 
-  for (const userSettings of allUsers) {
-    const now = new Date()
-    const todayStart = new Intl.DateTimeFormat("en-CA", {
-      timeZone: userSettings.timezone,
-    }).format(now)
-    const tomorrowStart = new Intl.DateTimeFormat("en-CA", {
-      timeZone: userSettings.timezone,
-    }).format(new Date(now.getTime() + 86400000))
-
-    const channels: Channel[] = []
-    if (userSettings.inAppEnabled) channels.push("in_app")
-    if (userSettings.telegramEnabled && userSettings.telegramChatId) channels.push("telegram")
-    if (channels.length === 0) continue
-
-    const userTeams = await getFollowedTeams(userSettings.userId)
-
-    if (userSettings.notifyMatchDay) {
-      const todayMatches = await getMatchesBetween(
-        `${todayStart}T00:00:00.000Z`,
-        `${todayStart}T23:59:59.999Z`,
+  for (const [tz, usersInTz] of byTz) {
+    let rawToday: Awaited<ReturnType<typeof fetchGamesForDate>>
+    let rawTomorrow: Awaited<ReturnType<typeof fetchGamesForDate>>
+    try {
+      rawToday = await fetchGamesForDate(new Date(), tz)
+      rawTomorrow = await fetchGamesForDate(
+        new Date(Date.now() + 86400000),
+        tz,
       )
-      const userTodayMatches = todayMatches.filter((m) =>
-        userTeams.includes(Number(m.teamKey)),
+    } catch (err) {
+      errors.push(
+        `tz:${tz}: ${err instanceof Error ? err.message : String(err)}`,
       )
-      for (const match of userTodayMatches) {
-        for (const channel of channels) {
-          try {
-            await dispatchNotification(userSettings.userId, match, userSettings, channel, "match_day")
-            processed++
-          } catch (err) {
-            errors.push(`user:${userSettings.userId}/${channel}/${match.id}: ${err instanceof Error ? err.message : err}`)
+      continue
+    }
+
+    for (const userSettings of usersInTz) {
+      const channels: Channel[] = []
+      if (userSettings.inAppEnabled) channels.push("in_app")
+      if (userSettings.telegramEnabled && userSettings.telegramChatId) {
+        channels.push("telegram")
+      }
+      if (channels.length === 0) continue
+
+      const userTeams = await getFollowedTeams(userSettings.userId)
+      const promiedosIds = new Set<string>()
+      for (const key of userTeams) {
+        const id = promiedosIdFromTeamKey(key)
+        if (id) promiedosIds.add(id)
+      }
+      if (promiedosIds.size === 0) continue
+
+      const teamMetaByKey = new Map<
+        string,
+        { name: string; shortName: string; crest: string }
+      >()
+      for (const key of userTeams) {
+        const row = await getTeam(key)
+        if (!row) continue
+        teamMetaByKey.set(key, {
+          name: row.name,
+          shortName: row.shortName,
+          crest: row.crest,
+        })
+      }
+
+      const dispatchForTiming = async (
+        raw: typeof rawToday,
+        timing: Timing,
+      ) => {
+        const filtered = filterGamesForTeamIds(raw, promiedosIds)
+        for (const { league, game } of filtered) {
+          for (const key of userTeams) {
+            const pid = promiedosIdFromTeamKey(key)
+            if (!pid || !game.teams?.some((t) => t.id === pid)) continue
+            const meta = teamMetaByKey.get(key)
+            if (!meta) continue
+            const row = mapPromiedosGameToMatch(league, game, pid, meta)
+            if (row.status !== "scheduled") continue
+            for (const channel of channels) {
+              try {
+                await dispatchNotification(
+                  userSettings.userId,
+                  row,
+                  userSettings,
+                  channel,
+                  timing,
+                )
+                processed++
+              } catch (err) {
+                errors.push(
+                  `user:${userSettings.userId}/${channel}/${row.externalMatchId}: ${err instanceof Error ? err.message : err}`,
+                )
+              }
+            }
           }
         }
       }
-    }
 
-    if (userSettings.notifyDayBefore) {
-      const tomorrowMatches = await getMatchesBetween(
-        `${tomorrowStart}T00:00:00.000Z`,
-        `${tomorrowStart}T23:59:59.999Z`,
-      )
-      const userTomorrowMatches = tomorrowMatches.filter((m) =>
-        userTeams.includes(Number(m.teamKey)),
-      )
-      for (const match of userTomorrowMatches) {
-        for (const channel of channels) {
-          try {
-            await dispatchNotification(userSettings.userId, match, userSettings, channel, "day_before")
-            processed++
-          } catch (err) {
-            errors.push(`user:${userSettings.userId}/${channel}/${match.id}: ${err instanceof Error ? err.message : err}`)
-          }
-        }
+      if (userSettings.notifyMatchDay) {
+        await dispatchForTiming(rawToday, "match_day")
+      }
+
+      if (userSettings.notifyDayBefore) {
+        await dispatchForTiming(rawTomorrow, "day_before")
       }
     }
   }
 
   return { processed, errors }
+}
+
+/** @deprecated Use processDailyDigestNotifications */
+export async function processNotificationsForHour() {
+  return processDailyDigestNotifications()
 }

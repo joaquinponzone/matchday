@@ -1,13 +1,12 @@
 "use server"
 
-import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm"
+import { and, desc, eq, isNull, sql } from "drizzle-orm"
 
 import { db } from "./index"
 import {
-  type InsertMatch,
   type InsertNotification,
+  type TeamKind,
   followedTeams,
-  matches,
   notifications,
   prodePredictions,
   settings,
@@ -70,14 +69,13 @@ export async function getAllActiveUsersWithSettings() {
     .where(eq(users.status, "active"))
 }
 
-export async function getAllFollowedTeamKeys(): Promise<number[]> {
+export async function getAllFollowedTeamKeys(): Promise<string[]> {
   const rows = await db
     .select({ teamKey: followedTeams.teamKey })
     .from(followedTeams)
     .innerJoin(users, eq(followedTeams.userId, users.id))
     .where(and(eq(followedTeams.enabled, 1), eq(users.status, "active")))
-  const unique = [...new Set(rows.map((r) => Number(r.teamKey)))]
-  return unique
+  return [...new Set(rows.map((r) => r.teamKey))]
 }
 
 export async function deactivateUser(userId: number) {
@@ -157,12 +155,12 @@ export async function createUserSettings(userId: number) {
 
 // Followed Teams
 
-export async function getFollowedTeams(userId: number): Promise<number[]> {
+export async function getFollowedTeams(userId: number): Promise<string[]> {
   const rows = await db
     .select()
     .from(followedTeams)
     .where(and(eq(followedTeams.userId, userId), eq(followedTeams.enabled, 1)))
-  return rows.map((r) => Number(r.teamKey))
+  return rows.map((r) => r.teamKey)
 }
 
 export async function setTeamEnabled(userId: number, teamKey: string, enabled: boolean) {
@@ -177,111 +175,69 @@ export async function setTeamEnabled(userId: number, teamKey: string, enabled: b
 
 // Teams
 
-export async function getTeam(apiId: number) {
+export async function getTeam(teamKey: string) {
   const rows = await db
     .select()
     .from(teams)
-    .where(eq(teams.apiId, apiId))
+    .where(eq(teams.teamKey, teamKey))
     .limit(1)
   return rows[0] ?? null
 }
 
 export async function upsertTeam(data: {
-  apiId: number
+  teamKey: string
   name: string
   shortName: string
   tla: string
   crest: string
+  teamKind: TeamKind
+  promiedosUrlName?: string | null
 }) {
   await db
     .insert(teams)
     .values({
-      ...data,
+      teamKey: data.teamKey,
+      name: data.name,
+      shortName: data.shortName,
+      tla: data.tla,
+      crest: data.crest,
+      teamKind: data.teamKind,
+      promiedosUrlName: data.promiedosUrlName ?? null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     })
     .onConflictDoUpdate({
-      target: teams.apiId,
+      target: teams.teamKey,
       set: {
         name: data.name,
         shortName: data.shortName,
         tla: data.tla,
         crest: data.crest,
+        teamKind: data.teamKind,
+        promiedosUrlName: data.promiedosUrlName ?? null,
         updatedAt: new Date().toISOString(),
       },
     })
 }
 
 export async function getFollowedTeamsWithMeta(userId: number) {
-  return db
+  const rows = await db
     .select({
-      apiId: teams.apiId,
+      teamKey: teams.teamKey,
       name: teams.name,
       shortName: teams.shortName,
       crest: teams.crest,
+      teamKind: teams.teamKind,
       enabled: followedTeams.enabled,
     })
     .from(followedTeams)
-    .innerJoin(
-      teams,
-      sql`CAST(${followedTeams.teamKey} AS INTEGER) = ${teams.apiId}`,
-    )
+    .innerJoin(teams, eq(followedTeams.teamKey, teams.teamKey))
     .where(and(eq(followedTeams.userId, userId), eq(followedTeams.enabled, 1)))
-}
 
-// Matches
-
-export async function getUpcomingMatches(teamKeys: string[], limit = 5) {
-  const now = new Date().toISOString()
-  return db
-    .select()
-    .from(matches)
-    .where(
-      and(
-        gte(matches.matchDate, now),
-        eq(matches.status, "scheduled"),
-        teamKeys.length > 0 ? inArray(matches.teamKey, teamKeys) : undefined,
-      ),
-    )
-    .orderBy(matches.matchDate)
-    .limit(limit)
-}
-
-export async function upsertMatch(data: InsertMatch) {
-  const existing = await db
-    .select()
-    .from(matches)
-    .where(eq(matches.apiFootballId, data.apiFootballId))
-    .limit(1)
-
-  if (existing[0]) {
-    await db
-      .update(matches)
-      .set({ ...data, updatedAt: new Date().toISOString() })
-      .where(eq(matches.apiFootballId, data.apiFootballId))
-    return existing[0].id
-  }
-
-  const inserted = await db.insert(matches).values(data).returning({ id: matches.id })
-  return inserted[0].id
-}
-
-export async function getMatchesBetween(from: string, to: string) {
-  return db
-    .select()
-    .from(matches)
-    .where(and(gte(matches.matchDate, from), lte(matches.matchDate, to)))
-}
-
-export async function getNextUpcomingMatch() {
-  const now = new Date().toISOString()
-  const rows = await db
-    .select()
-    .from(matches)
-    .where(and(gte(matches.matchDate, now), eq(matches.status, "scheduled")))
-    .orderBy(matches.matchDate)
-    .limit(1)
-  return rows[0] ?? null
+  return rows.map((r) => ({
+    ...r,
+    teamKind: r.teamKind as TeamKind,
+  }))
 }
 
 // Notifications

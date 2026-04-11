@@ -2,7 +2,8 @@
 
 import bcrypt from "bcryptjs"
 
-import { RegisterSchema, type FormState } from "@/lib/validations"
+import type { FormState } from "@/lib/types"
+import { RegisterSchema } from "@/lib/validations"
 import { db } from "@/server/db/index"
 import {
   createUserSettings,

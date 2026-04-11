@@ -1,36 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { fetchUpcomingFixtures, mapFixtureToMatch } from "@/lib/football-data"
-import { getAllFollowedTeamKeys, getTeam, upsertMatch } from "@/server/db/queries"
-
+/**
+ * @deprecated Removed: fixtures load via Promiedos on-demand (`/api/fixtures/upcoming`).
+ */
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "")
   if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  try {
-    const teamIds = await getAllFollowedTeamKeys()
-
-    let upserted = 0
-    for (const teamApiId of teamIds) {
-      const team = await getTeam(teamApiId)
-      if (!team) continue
-      const fixtures = await fetchUpcomingFixtures(teamApiId)
-      const teamMeta = {
-        name: team.name,
-        shortName: team.shortName,
-        crest: team.crest,
-      }
-      for (const f of fixtures) {
-        await upsertMatch(mapFixtureToMatch(f, teamApiId, teamMeta))
-        upserted++
-      }
-    }
-
-    return NextResponse.json({ ok: true, upserted })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error"
-    return NextResponse.json({ error: message }, { status: 500 })
-  }
+  return NextResponse.json(
+    {
+      ok: false,
+      deprecated: true,
+      message: "Gone: no DB match sync. Use Promiedos on-demand fixtures.",
+    },
+    { status: 410 },
+  )
 }

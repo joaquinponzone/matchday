@@ -144,7 +144,6 @@ export default async function WorldCupPage() {
         <PredictionsList
           matches={allMatches}
           initialPredictions={userPredictions}
-          timezone={timezone}
         />
       </div>
       <div>

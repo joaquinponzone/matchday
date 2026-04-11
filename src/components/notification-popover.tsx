@@ -158,6 +158,16 @@ export function NotificationPopover({ unread }: NotificationPopoverProps) {
                         {n.error}
                       </p>
                     )}
+                    {n.promiedosFixtureUrl && (
+                      <a
+                        href={n.promiedosFixtureUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1.5 inline-block text-[10px] text-sky-600 underline"
+                      >
+                        Abrir en Promiedos
+                      </a>
+                    )}
                   </div>
                   {n.channel === "in_app" && n.status === "sent" && (
                     <Button

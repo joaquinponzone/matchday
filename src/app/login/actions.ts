@@ -6,7 +6,8 @@ import { redirect } from "next/navigation"
 import { getIronSession } from "iron-session"
 
 import { isEmailConfigured } from "@/lib/email"
-import { sessionOptions, type SessionData } from "@/lib/session"
+import { sessionOptions } from "@/lib/session"
+import type { SessionData } from "@/lib/types"
 import { LoginSchema } from "@/lib/validations"
 import { getUserByEmail } from "@/server/db/queries"
 

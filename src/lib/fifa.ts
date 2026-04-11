@@ -11,6 +11,7 @@ interface LocalizedString {
 }
 
 interface FIFATeam {
+  IdTeam?: string
   Name?: LocalizedString[]
   ShortClubName: string
   Abbreviation: string
@@ -20,6 +21,8 @@ interface FIFATeam {
 
 interface FIFAStandingEntry {
   IdGroup: string
+  /** Sometimes present on the row as well as on `Team` */
+  IdTeam?: string
   Group: LocalizedString[]
   Position: number
   Played: number
@@ -161,6 +164,61 @@ function translateTeamName(name: string): string {
 function getFlagUrl(pictureUrl: string | null): string | undefined {
   if (!pictureUrl) return undefined
   return pictureUrl.replace("{format}", "sq").replace("{size}", "3")
+}
+
+export interface FifaWcNationalTeamForSearch {
+  idTeam: string
+  nameEs: string
+  abbreviation: string
+  /** Resolved FIFA flag URL (`{format}`/`{size}` replaced), or null */
+  flagUrl: string | null
+}
+
+/**
+ * All national teams from the WC Standing feed (Spanish names), deduped by `IdTeam`.
+ * Used to search selecciones while linking to Promiedos `pm:` ids for fixtures.
+ */
+export async function fetchFifaWCNationalTeamsForSearch(): Promise<
+  FifaWcNationalTeamForSearch[]
+> {
+  try {
+    const res = await fetch(
+      `${FIFA_BASE}/calendar/${COMPETITION_ID}/${SEASON_ID}/${STAGE_ID}/Standing?language=es`,
+      { next: { revalidate: 3600 } },
+    )
+    if (!res.ok) return []
+
+    const data: FIFAStandingsResponse = await res.json()
+    const byId = new Map<string, FifaWcNationalTeamForSearch>()
+
+    for (const entry of data.Results ?? []) {
+      const team = entry.Team
+      const idTeam =
+        team.IdTeam?.trim() ||
+        entry.IdTeam?.trim() ||
+        `${team.Abbreviation}-${team.ShortClubName}`.replace(/\s+/g, "")
+      if (!idTeam) continue
+
+      const nameEs = team.Name?.length
+        ? getLocale(team.Name)
+        : translateTeamName(team.ShortClubName || team.Abbreviation)
+
+      const flagUrl = getFlagUrl(team.PictureUrl) ?? null
+
+      if (!byId.has(idTeam)) {
+        byId.set(idTeam, {
+          idTeam,
+          nameEs,
+          abbreviation: team.Abbreviation,
+          flagUrl,
+        })
+      }
+    }
+
+    return [...byId.values()]
+  } catch {
+    return []
+  }
 }
 
 export async function fetchWCStandings(): Promise<GroupStanding[]> {

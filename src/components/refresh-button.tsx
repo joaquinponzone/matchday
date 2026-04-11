@@ -1,16 +1,19 @@
 "use client"
 
-import { useTransition } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { RefreshCw } from "lucide-react"
+import { useTransition } from "react"
+
+import { UPCOMING_QUERY_KEY } from "@/components/dashboard-feed"
 import { Button } from "@/components/ui/button"
-import { syncFixtures } from "@/app/actions/sync-fixtures"
 
 export function RefreshButton() {
+  const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
 
   function handleClick() {
     startTransition(async () => {
-      await syncFixtures()
+      await queryClient.invalidateQueries({ queryKey: [...UPCOMING_QUERY_KEY] })
     })
   }
 
@@ -20,7 +23,7 @@ export function RefreshButton() {
       size="icon"
       onClick={handleClick}
       disabled={isPending}
-      aria-label="Refresh fixtures"
+      aria-label="Actualizar partidos"
     >
       <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
     </Button>
