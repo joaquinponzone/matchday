@@ -69,6 +69,15 @@ export function formatMatchDateParts(
   return { date, time }
 }
 
+/** Time of day only (es-AR), for match notifications with a separate day label. */
+export function formatMatchTimeOnly(isoDate: string, timezone: string): string {
+  return new Intl.DateTimeFormat("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: timezone,
+  }).format(new Date(isoDate))
+}
+
 export function isToday(isoDate: string, timezone: string): boolean {
   const matchDay = new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(new Date(isoDate))
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(new Date())
