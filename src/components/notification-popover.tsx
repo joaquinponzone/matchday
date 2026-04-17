@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { formatNotificationTimestamp } from "@/lib/utils"
 import type { Notification } from "@/server/db/schema"
 
 const CHANNEL_LABELS: Record<string, string> = {
@@ -149,7 +150,7 @@ export function NotificationPopover({ unread }: NotificationPopoverProps) {
                       </Badge>
                       {n.sentAt && (
                         <span className="text-[10px] text-muted-foreground">
-                          {new Date(n.sentAt).toLocaleString()}
+                          {formatNotificationTimestamp(n.sentAt)}
                         </span>
                       )}
                     </div>

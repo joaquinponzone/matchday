@@ -12,13 +12,15 @@ export function toUtcIso(date: string, time: string): string {
 }
 
 export function formatMatchDate(isoDate: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  const formatted = new Intl.DateTimeFormat("en-GB", {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
     timeZone: APP_TIMEZONE,
   }).format(new Date(isoDate))
+  return `${formatted} hs`
 }
 
 export function extractGroupStandings(matches: WCMatch[]): GroupStanding[] {

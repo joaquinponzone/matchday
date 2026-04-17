@@ -25,15 +25,17 @@ export function formatTimeLeft(ms: number): string {
 }
 
 export function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat("es-AR", {
+  const formatted = new Intl.DateTimeFormat("es-AR", {
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
     timeZone: APP_TIMEZONE,
     timeZoneName: "short",
   }).format(new Date(date))
+  return `${formatted} hs`
 }
 
 export function formatMatchDate(isoDate: string): string {
@@ -48,9 +50,10 @@ export function formatMatchDate(isoDate: string): string {
     weekday: "long",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
     timeZone: APP_TIMEZONE,
   }).format(d)
-  return `${date}\n${time}`
+  return `${date}\n${time} hs`
 }
 
 export function formatMatchDateParts(
@@ -67,9 +70,10 @@ export function formatMatchDateParts(
     weekday: "long",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
     timeZone: APP_TIMEZONE,
   }).format(d)
-  return { date, time }
+  return { date, time: `${time} hs` }
 }
 
 /** Time of day only, 24h format, for match notifications with a separate day label. */
@@ -80,6 +84,19 @@ export function formatMatchTimeOnly(isoDate: string): string {
     hour12: false,
     timeZone: APP_TIMEZONE,
   }).format(new Date(isoDate))
+}
+
+/** Short date + time for notification history (popover). */
+export function formatNotificationTimestamp(isoDate: Date | string): string {
+  const formatted = new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: APP_TIMEZONE,
+  }).format(new Date(isoDate))
+  return `${formatted} hs`
 }
 
 export function isToday(isoDate: string): boolean {
