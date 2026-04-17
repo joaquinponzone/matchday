@@ -5,6 +5,25 @@ import { verifySession } from "@/lib/dal"
 import type { TeamKind } from "@/server/db/schema"
 import { getSettings, isNicknameTaken, setTeamEnabled, updateUserName, updateUserNickname, upsertTeam } from "@/server/db/queries"
 import { sendTelegramMessage } from "@/lib/telegram"
+import { buildNotificationContent } from "@/lib/notifications"
+import type { LiveFixture } from "@/lib/fixture.types"
+
+function buildTomorrow14Iso(tz: string): string {
+  const now = new Date()
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+  const parts = formatter.formatToParts(now)
+  const y = Number(parts.find((p) => p.type === "year")?.value)
+  const m = Number(parts.find((p) => p.type === "month")?.value)
+  const d = Number(parts.find((p) => p.type === "day")?.value)
+  const tomorrowLocal = new Date(Date.UTC(y, m - 1, d + 1, 14, 0, 0))
+  const tzOffset = new Date(tomorrowLocal.toLocaleString("en-US", { timeZone: tz })).getTime() - tomorrowLocal.getTime()
+  return new Date(tomorrowLocal.getTime() - tzOffset).toISOString()
+}
 
 export async function followTeam(
   teamKey: string,
@@ -68,9 +87,29 @@ export async function testTelegramNotification(): Promise<{ ok: boolean; error?:
     return { ok: false, error: "Telegram is not enabled or chat ID is missing." }
   }
   try {
+    const tz = s.timezone ?? "America/Argentina/Buenos_Aires"
+    const sample: LiveFixture = {
+      externalMatchId: "sample:test",
+      teamKey: "pm:sample",
+      opponent: "Manchester United",
+      opponentLogo: null,
+      competition: "Premier League (Test)",
+      competitionLogo: null,
+      matchDate: buildTomorrow14Iso(tz),
+      venue: null,
+      isHome: 1,
+      status: "scheduled",
+      teamName: "Chelsea",
+      teamShortName: "Chelsea",
+      teamCrest: null,
+      teamScore: null,
+      opponentScore: null,
+      promiedosFixtureUrl: null,
+    }
+    const { telegramHtml } = buildNotificationContent(sample, tz, "day_before")
     await sendTelegramMessage(
       s.telegramChatId,
-      "✅ <b>Dia de partido ⚽️ test</b>\nTelegram notifications are working correctly.",
+      `${telegramHtml}`,
     )
     return { ok: true }
   } catch (err) {

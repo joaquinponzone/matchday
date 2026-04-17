@@ -51,22 +51,27 @@ export function buildNotificationContent(
   const followedName = match.teamShortName ?? match.teamKey
   const local = (match.isHome ? followedName : match.opponent) ?? ""
   const visitor = (match.isHome ? match.opponent : followedName) ?? ""
-  const venue = match.venue ?? "To be confirmed"
-  const relativeLabel = timing === "match_day" ? "hoy" : "mañana"
+  const venue = match.venue?.trim() || null
+  const relativeLabel = timing === "match_day" ? "Hoy" : "Mañana"
   const timeStr = formatMatchTimeOnly(match.matchDate, timezone)
 
-  const title = `${local} vs ${visitor} — ${match.competition}`
-  const body = `${match.competition}\n${local}\nvs\n${visitor}\n📅 ${relativeLabel} - ${timeStr}\n📍 ${venue}`
+  const title = `${local} vs. ${visitor} — ${match.competition}`
+  const bodyLines = [
+    `🏆 <b>${match.competition}</b>\n`,
+    `▶️ ${local} vs. ${visitor}`,
+    `📅 ${relativeLabel} ${timeStr} hs`,
+  ]
+  if (venue) bodyLines.push(`📍 ${venue}`)
+  const body = bodyLines.join("\n")
 
   const esc = escapeHtml
-  const telegramHtml = [
-    `<b>${esc(match.competition)}</b>`,
-    esc(local),
-    "vs",
-    esc(visitor),
-    `📅 ${esc(relativeLabel)} - ${esc(timeStr)}`,
-    `📍 ${esc(venue)}`,
-  ].join("\n")
+  const telegramLines = [
+    `🏆 <b>${esc(match.competition)}</b>\n`,
+    `▶️ ${esc(local)} vs. ${esc(visitor)}`,
+    `📅 ${esc(relativeLabel)} ${esc(timeStr)} hs`,
+  ]
+  if (venue) telegramLines.push(`📍 ${esc(venue)}`)
+  const telegramHtml = telegramLines.join("\n")
 
   return { title, body, telegramHtml }
 }

@@ -69,11 +69,12 @@ export function formatMatchDateParts(
   return { date, time }
 }
 
-/** Time of day only (es-AR), for match notifications with a separate day label. */
+/** Time of day only, 24h format, for match notifications with a separate day label. */
 export function formatMatchTimeOnly(isoDate: string, timezone: string): string {
   return new Intl.DateTimeFormat("es-AR", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
     timeZone: timezone,
   }).format(new Date(isoDate))
 }
