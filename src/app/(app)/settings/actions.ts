@@ -6,23 +6,25 @@ import type { TeamKind } from "@/server/db/schema"
 import { getSettings, isNicknameTaken, setTeamEnabled, updateUserName, updateUserNickname, upsertTeam } from "@/server/db/queries"
 import { sendTelegramMessage } from "@/lib/telegram"
 import { buildNotificationContent } from "@/lib/notifications"
+import { APP_TIMEZONE } from "@/lib/utils"
 import type { LiveFixture } from "@/lib/fixture.types"
 
-function buildTomorrow14Iso(tz: string): string {
-  const now = new Date()
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: tz,
+/**
+ * ISO for tomorrow at 14:00 Argentina time. Used as a sample `matchDate`
+ * on the Telegram test notification so the formatter renders a realistic value.
+ */
+function buildTomorrow14IsoAr(): string {
+  const nowParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  })
-  const parts = formatter.formatToParts(now)
-  const y = Number(parts.find((p) => p.type === "year")?.value)
-  const m = Number(parts.find((p) => p.type === "month")?.value)
-  const d = Number(parts.find((p) => p.type === "day")?.value)
-  const tomorrowLocal = new Date(Date.UTC(y, m - 1, d + 1, 14, 0, 0))
-  const tzOffset = new Date(tomorrowLocal.toLocaleString("en-US", { timeZone: tz })).getTime() - tomorrowLocal.getTime()
-  return new Date(tomorrowLocal.getTime() - tzOffset).toISOString()
+  }).formatToParts(new Date())
+  const y = Number(nowParts.find((p) => p.type === "year")?.value)
+  const m = Number(nowParts.find((p) => p.type === "month")?.value)
+  const d = Number(nowParts.find((p) => p.type === "day")?.value)
+  // Argentina is UTC-3 (no DST), so 14:00 AR == 17:00 UTC.
+  return new Date(Date.UTC(y, m - 1, d + 1, 17, 0, 0)).toISOString()
 }
 
 export async function followTeam(
@@ -87,7 +89,6 @@ export async function testTelegramNotification(): Promise<{ ok: boolean; error?:
     return { ok: false, error: "Telegram is not enabled or chat ID is missing." }
   }
   try {
-    const tz = s.timezone ?? "America/Argentina/Buenos_Aires"
     const sample: LiveFixture = {
       externalMatchId: "sample:test",
       teamKey: "pm:sample",
@@ -95,7 +96,7 @@ export async function testTelegramNotification(): Promise<{ ok: boolean; error?:
       opponentLogo: null,
       competition: "Premier League (Test)",
       competitionLogo: null,
-      matchDate: buildTomorrow14Iso(tz),
+      matchDate: buildTomorrow14IsoAr(),
       venue: null,
       isHome: 1,
       status: "scheduled",
@@ -106,11 +107,8 @@ export async function testTelegramNotification(): Promise<{ ok: boolean; error?:
       opponentScore: null,
       promiedosFixtureUrl: null,
     }
-    const { telegramHtml } = buildNotificationContent(sample, tz, "day_before")
-    await sendTelegramMessage(
-      s.telegramChatId,
-      `${telegramHtml}`,
-    )
+    const { telegramHtml } = buildNotificationContent(sample, "day_before")
+    await sendTelegramMessage(s.telegramChatId, telegramHtml)
     return { ok: true }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Unknown error" }

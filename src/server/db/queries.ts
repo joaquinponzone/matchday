@@ -56,7 +56,6 @@ export async function getAllActiveUsersWithSettings() {
       email: users.email,
       name: users.name,
       telegramChatId: settings.telegramChatId,
-      timezone: settings.timezone,
       telegramEnabled: settings.telegramEnabled,
       inAppEnabled: settings.inAppEnabled,
       notifyDayBefore: settings.notifyDayBefore,

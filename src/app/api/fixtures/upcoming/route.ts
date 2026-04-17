@@ -5,19 +5,13 @@ import {
   getUpcomingFixturesForUser,
   getUpcomingWindowConfig,
 } from "@/lib/upcoming-fixtures"
-import { getSettings } from "@/server/db/queries"
 
 export async function GET() {
   const { userId } = await verifySession()
-  const settings = await getSettings(userId)
-  const tz = settings?.timezone ?? "America/Argentina/Buenos_Aires"
 
   try {
     const window = getUpcomingWindowConfig()
-    const fixtures = await getUpcomingFixturesForUser(userId, {
-      limit: 15,
-      timeZone: tz,
-    })
+    const fixtures = await getUpcomingFixturesForUser(userId, { limit: 15 })
     return NextResponse.json({
       fixtures,
       upcomingDaysBack: window.daysBack,

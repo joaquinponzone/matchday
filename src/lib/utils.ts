@@ -1,6 +1,12 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
+/**
+ * App-wide display timezone. All users are in Argentina, so we format every
+ * date with this zone instead of carrying a per-user `timezone` everywhere.
+ */
+export const APP_TIMEZONE = "America/Argentina/Buenos_Aires"
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -11,83 +17,80 @@ export function formatTimeLeft(ms: number): string {
   const days = Math.floor(totalSeconds / 86400)
   const hours = Math.floor((totalSeconds % 86400) / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
   const parts = []
   if (days > 0) parts.push(`${days}d`)
   if (hours > 0) parts.push(`${hours}h`)
   if (minutes > 0) parts.push(`${minutes}m`)
-  // if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`)
   return parts.join(" ")
 }
 
-export function formatDate(date: Date | string, timezone?: string): string {
+export function formatDate(date: Date | string): string {
   return new Intl.DateTimeFormat("es-AR", {
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: timezone,
+    timeZone: APP_TIMEZONE,
     timeZoneName: "short",
   }).format(new Date(date))
 }
 
-export function formatMatchDate(isoDate: string, timezone: string): string {
+export function formatMatchDate(isoDate: string): string {
   const d = new Date(isoDate)
   const date = new Intl.DateTimeFormat("es-AR", {
     day: "numeric",
     month: "long",
     year: "numeric",
-    timeZone: timezone,
+    timeZone: APP_TIMEZONE,
   }).format(d)
   const time = new Intl.DateTimeFormat("es-AR", {
     weekday: "long",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: timezone,
+    timeZone: APP_TIMEZONE,
   }).format(d)
   return `${date}\n${time}`
 }
 
 export function formatMatchDateParts(
   isoDate: string,
-  timezone: string,
 ): { date: string; time: string } {
   const d = new Date(isoDate)
   const date = new Intl.DateTimeFormat("es-AR", {
     day: "numeric",
     month: "long",
     year: "numeric",
-    timeZone: timezone,
+    timeZone: APP_TIMEZONE,
   }).format(d)
   const time = new Intl.DateTimeFormat("es-AR", {
     weekday: "long",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: timezone,
+    timeZone: APP_TIMEZONE,
   }).format(d)
   return { date, time }
 }
 
 /** Time of day only, 24h format, for match notifications with a separate day label. */
-export function formatMatchTimeOnly(isoDate: string, timezone: string): string {
+export function formatMatchTimeOnly(isoDate: string): string {
   return new Intl.DateTimeFormat("es-AR", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: timezone,
+    timeZone: APP_TIMEZONE,
   }).format(new Date(isoDate))
 }
 
-export function isToday(isoDate: string, timezone: string): boolean {
-  const matchDay = new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(new Date(isoDate))
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(new Date())
+export function isToday(isoDate: string): boolean {
+  const matchDay = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(new Date(isoDate))
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(new Date())
   return matchDay === today
 }
 
-export function isTomorrow(isoDate: string, timezone: string): boolean {
-  const matchDay = new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(new Date(isoDate))
-  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(
+export function isTomorrow(isoDate: string): boolean {
+  const matchDay = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(new Date(isoDate))
+  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(
     new Date(Date.now() + 86400000),
   )
   return matchDay === tomorrow

@@ -9,10 +9,9 @@ import { Countdown } from "./countdown"
 
 interface MatchHeroProps {
   match: FixtureForUi
-  timezone: string
 }
 
-export function MatchHero({ match, timezone }: MatchHeroProps) {
+export function MatchHero({ match }: MatchHeroProps) {
   const teamName = match.teamShortName ?? match.teamKey
   const teamCrest = match.teamCrest
 
@@ -20,7 +19,7 @@ export function MatchHero({ match, timezone }: MatchHeroProps) {
   const awayName = (match.isHome ? match.opponent : teamName) ?? ""
   const homeCrest = match.isHome ? teamCrest : match.opponentLogo
   const awayCrest = match.isHome ? match.opponentLogo : teamCrest
-  const { date, time } = formatMatchDateParts(match.matchDate, timezone)
+  const { date, time } = formatMatchDateParts(match.matchDate)
 
   return (
     <Card className="overflow-hidden">

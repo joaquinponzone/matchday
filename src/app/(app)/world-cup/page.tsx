@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic"
 
 import Image from "next/image"
-import { getSettings, getUserPredictions, getProdeLeaderboard } from "@/server/db/queries"
+import { getUserPredictions, getProdeLeaderboard } from "@/server/db/queries"
 import { getUser } from "@/lib/dal"
 import { WcTabs } from "./wc-tabs"
 import { GroupStandings } from "./group-standings"
@@ -21,7 +21,7 @@ import { PredictionsList } from "./prode/predictions-list"
 import { Leaderboard } from "./prode/leaderboard"
 import { WorldCupCountdown } from "./countdown"
 
-function MatchRow({ match, timezone }: { match: WCMatch; timezone: string }) {
+function MatchRow({ match }: { match: WCMatch }) {
   const utcDate = toUtcIso(match.date, match.time)
 
   return (
@@ -40,7 +40,7 @@ function MatchRow({ match, timezone }: { match: WCMatch; timezone: string }) {
         )}
       </span>
       <span className="text-muted-foreground text-center w-24 shrink-0 font-mono text-[10px]">
-        {formatMatchDate(utcDate, timezone)}
+        {formatMatchDate(utcDate)}
       </span>
       <span className="flex-1 flex items-center gap-1.5 truncate">
         {match.team2FlagUrl && (
@@ -62,11 +62,9 @@ function MatchRow({ match, timezone }: { match: WCMatch; timezone: string }) {
 function MatchesView({
   groupedMatches,
   sortedGroups,
-  timezone,
 }: {
   groupedMatches: Record<string, WCMatch[]>
   sortedGroups: string[]
-  timezone: string
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
@@ -77,7 +75,7 @@ function MatchesView({
           </CardHeader>
           <CardContent className="p-0">
             {groupedMatches[group].map((match, i) => (
-              <MatchRow key={i} match={match} timezone={timezone} />
+              <MatchRow key={i} match={match} />
             ))}
           </CardContent>
         </Card>
@@ -88,8 +86,6 @@ function MatchesView({
 
 export default async function WorldCupPage() {
   const user = await getUser()
-  const settings = await getSettings(user.id)
-  const timezone = settings?.timezone ?? "UTC"
 
   // Live data from FIFA API + prode data
   const [standings, apiGroupMatches, allMatches, userPredictions, leaderboard] =
@@ -109,7 +105,7 @@ export default async function WorldCupPage() {
     ? toUtcIso(firstMatch.date, firstMatch.time)
     : null
   const firstMatchLabel = firstMatch
-    ? `${firstMatch.team1} vs ${firstMatch.team2} · ${formatMatchDate(firstMatchDate!, timezone)}`
+    ? `${firstMatch.team1} vs ${firstMatch.team2} · ${formatMatchDate(firstMatchDate!)}`
     : undefined
 
   // Fallback to empty standings extracted from group matches if API fails
@@ -169,12 +165,9 @@ export default async function WorldCupPage() {
           <MatchesView
             groupedMatches={groupedMatches}
             sortedGroups={sortedGroups}
-            timezone={timezone}
           />
         }
-        bracketContent={
-          <KnockoutBracket rounds={bracketRounds} timezone={timezone} />
-        }
+        bracketContent={<KnockoutBracket rounds={bracketRounds} />}
         prodeContent={prodeContent}
       />
     </div>

@@ -1,3 +1,4 @@
+import { APP_TIMEZONE } from "@/lib/utils"
 import type { WCMatch, GroupStanding, GroupTeam, BracketMatch, BracketRound } from "./types"
 
 // Parses "13:00 UTC-6" → UTC ISO string for the given date
@@ -10,13 +11,13 @@ export function toUtcIso(date: string, time: string): string {
   return d.toISOString()
 }
 
-export function formatMatchDate(isoDate: string, timezone: string): string {
+export function formatMatchDate(isoDate: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: timezone,
+    timeZone: APP_TIMEZONE,
   }).format(new Date(isoDate))
 }
 

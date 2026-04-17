@@ -5,9 +5,9 @@ import {
   filterGamesForTeamIds,
   mapPromiedosGameToMatch,
   promiedosIdFromTeamKey,
-  PROMIEDOS_WALL_CLOCK_TIMEZONE,
 } from "@/lib/promiedos"
 import type { DashboardFixture } from "@/lib/types"
+import { APP_TIMEZONE } from "@/lib/utils"
 import { getFollowedTeams, getTeam } from "@/server/db/queries"
 
 const FALLBACK_DAYS_BACK = 0
@@ -51,13 +51,11 @@ export async function getUpcomingFixturesForUser(
   userId: number,
   options?: {
     limit?: number
-    timeZone?: string
     daysBack?: number
     daysForward?: number
   },
 ): Promise<DashboardFixture[]> {
   const limit = options?.limit ?? 10
-  const tz = options?.timeZone ?? PROMIEDOS_WALL_CLOCK_TIMEZONE
   const win = getUpcomingWindowConfig()
   const daysBack = options?.daysBack ?? win.daysBack
   const daysForward = options?.daysForward ?? win.daysForward
@@ -93,7 +91,7 @@ export async function getUpcomingFixturesForUser(
   const days = dateWindowDays(center, daysBack, daysForward)
   const rawByDay = await Promise.all(
     days.map((day) =>
-      fetchGamesForDate(day, tz).catch((): null => null),
+      fetchGamesForDate(day, APP_TIMEZONE).catch((): null => null),
     ),
   )
 

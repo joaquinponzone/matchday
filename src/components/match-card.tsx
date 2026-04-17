@@ -7,10 +7,9 @@ import type { FixtureForUi } from "@/lib/types"
 
 interface MatchCardProps {
   match: FixtureForUi
-  timezone: string
 }
 
-export function MatchCard({ match, timezone }: MatchCardProps) {
+export function MatchCard({ match }: MatchCardProps) {
   const teamName = match.teamShortName ?? match.teamKey
   const teamCrest = match.teamCrest
 
@@ -18,7 +17,7 @@ export function MatchCard({ match, timezone }: MatchCardProps) {
   const awayName = (match.isHome ? match.opponent : teamName) ?? ""
   const homeCrest = match.isHome ? teamCrest : match.opponentLogo
   const awayCrest = match.isHome ? match.opponentLogo : teamCrest
-  const { date, time } = formatMatchDateParts(match.matchDate, timezone)
+  const { date, time } = formatMatchDateParts(match.matchDate)
 
   return (
     <Card>

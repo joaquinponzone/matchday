@@ -15,7 +15,6 @@ import { SaveStatus } from "@/components/save-status"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { followTeam, unfollowTeam, testTelegramNotification, updateDisplayName, updateNickname } from "@/app/(app)/settings/actions"
@@ -24,25 +23,6 @@ import { useSaveStatus } from "@/hooks/use-save-status"
 import { cn } from "@/lib/utils"
 import type { Settings, TeamKind } from "@/server/db/schema"
 import { Loader2 } from "lucide-react"
-
-const TIMEZONES = [
-  "America/Argentina/Buenos_Aires",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Sao_Paulo",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Madrid",
-  "Europe/Lisbon",
-  "Asia/Dubai",
-  "Asia/Kolkata",
-  "Asia/Tokyo",
-  "Australia/Sydney",
-  "Pacific/Auckland",
-  "UTC",
-]
 
 interface FollowedTeamMeta {
   teamKey: string
@@ -246,7 +226,6 @@ export function SettingsForm({
 
   const nameStatus = useSaveStatus()
   const nicknameStatus = useSaveStatus()
-  const timezoneStatus = useSaveStatus()
   const inAppStatus = useSaveStatus()
   const telegramToggleStatus = useSaveStatus()
   const telegramChatIdStatus = useSaveStatus()
@@ -281,10 +260,6 @@ export function SettingsForm({
     if (!result.ok) setNicknameError(result.error ?? "Error al guardar.")
     else setNicknameError(null)
   }, [nicknameStatus]), 1000)
-
-  const persistTimezone = useDebounce(useCallback(async (data: Partial<Settings>) => {
-    await timezoneStatus.wrap(() => saveSettings(data))
-  }, [timezoneStatus]), 1000)
 
   const persistInApp = useDebounce(useCallback(async (data: Partial<Settings>) => {
     await inAppStatus.wrap(() => saveSettings(data))
@@ -498,28 +473,6 @@ export function SettingsForm({
               </p>
             )}
           </div>
-        </section>
-
-        <Separator />
-
-        <section className="space-y-3">
-          <h2 className="text-sm font-medium">Zona horaria</h2>
-          <Select
-            value={values.timezone}
-            onValueChange={(v) => updateWith("timezone", v, persistTimezone)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TIMEZONES.map((tz) => (
-                <SelectItem key={tz} value={tz}>
-                  {tz}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <SaveStatus {...timezoneStatus} />
         </section>
 
         <Separator />

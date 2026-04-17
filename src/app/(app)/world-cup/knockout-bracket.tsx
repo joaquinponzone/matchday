@@ -22,9 +22,9 @@ function slotPos(index: number, round: number) {
 
 // ─── Match card (compact, for desktop tree) ───────────────────────────────────
 
-function TreeCard({ match, timezone }: { match: BracketMatch; timezone: string }) {
+function TreeCard({ match }: { match: BracketMatch }) {
   const utcDate = toUtcIso(match.date, match.time)
-  const dateStr = formatMatchDate(utcDate, timezone)
+  const dateStr = formatMatchDate(utcDate)
   const isSpecial = match.round === "Final" || match.round === "Match for third place"
 
   return (
@@ -50,11 +50,9 @@ function TreeCard({ match, timezone }: { match: BracketMatch; timezone: string }
 function BracketCol({
   matches,
   round,
-  timezone,
 }: {
   matches: BracketMatch[]
   round: number
-  timezone: string
 }) {
   return (
     <div className="relative shrink-0" style={{ width: 118, height: TOTAL_H }}>
@@ -66,7 +64,7 @@ function BracketCol({
             className="absolute flex items-center"
             style={{ top, height, left: 0, right: 0 }}
           >
-            <TreeCard match={m} timezone={timezone} />
+            <TreeCard match={m} />
           </div>
         )
       })}
@@ -127,13 +125,7 @@ function Connector({
 
 // ─── Center column (Final + 3rd place) ────────────────────────────────────────
 
-function CenterCol({
-  centerRound,
-  timezone,
-}: {
-  centerRound: BracketRound
-  timezone: string
-}) {
+function CenterCol({ centerRound }: { centerRound: BracketRound }) {
   const final = centerRound.matches.find((m) => m.round === "Final")
   const third = centerRound.matches.find((m) => m.round === "Match for third place")
   const sfCenter = TOTAL_H / 2 // center of the full bracket
@@ -152,7 +144,7 @@ function CenterCol({
           className="absolute left-1/2 -translate-x-1/2"
           style={{ top: sfCenter - 28 }}
         >
-          <TreeCard match={final} timezone={timezone} />
+          <TreeCard match={final} />
         </div>
       )}
 
@@ -163,7 +155,7 @@ function CenterCol({
           style={{ top: sfCenter + 44 }}
         >
           <div className="text-[8px] text-muted-foreground text-center mb-0.5">3er puesto</div>
-          <TreeCard match={third} timezone={timezone} />
+          <TreeCard match={third} />
         </div>
       )}
     </div>
@@ -175,7 +167,7 @@ function CenterCol({
 const ROUND_LABELS_LEFT = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal"]
 const ROUND_LABELS_RIGHT = ["Semifinal", "Cuartos", "Octavos", "Dieciseisavos"]
 
-function DesktopBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone: string }) {
+function DesktopBracket({ rounds }: { rounds: BracketRound[] }) {
   const leftRounds = rounds.filter((r) => r.side === "left")
   // Right side rendered from center → edge (SF first, R32 last)
   const rightRounds = rounds.filter((r) => r.side === "right")
@@ -205,7 +197,7 @@ function DesktopBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone
         {/* Left side: R32 → SF */}
         {leftRounds.map((round, i) => (
           <div key={`left-${i}`} className="flex">
-            <BracketCol matches={round.matches} round={i} timezone={timezone} />
+            <BracketCol matches={round.matches} round={i} />
             {i < leftRounds.length - 1 && (
               <Connector leftCount={round.matches.length} leftRound={i} />
             )}
@@ -220,7 +212,7 @@ function DesktopBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone
         </div>
 
         {/* Center */}
-        <CenterCol centerRound={centerRound} timezone={timezone} />
+        <CenterCol centerRound={centerRound} />
 
         {/* Right SF → center gap */}
         <div className="relative shrink-0" style={{ width: 20, height: TOTAL_H }}>
@@ -242,7 +234,7 @@ function DesktopBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone
                   mirrored={true}
                 />
               )}
-              <BracketCol matches={round.matches} round={colRound} timezone={timezone} />
+              <BracketCol matches={round.matches} round={colRound} />
             </div>
           )
         })}
@@ -265,9 +257,9 @@ const SLIDE_LABELS = [
   "16avos Der.",
 ]
 
-function MobileMatchCard({ match, timezone }: { match: BracketMatch; timezone: string }) {
+function MobileMatchCard({ match }: { match: BracketMatch }) {
   const utcDate = toUtcIso(match.date, match.time)
-  const dateStr = formatMatchDate(utcDate, timezone)
+  const dateStr = formatMatchDate(utcDate)
   const feedsInto = getFeedsInto(match.num)
   const isSpecial = match.round === "Final" || match.round === "Match for third place"
 
@@ -292,7 +284,7 @@ function MobileMatchCard({ match, timezone }: { match: BracketMatch; timezone: s
   )
 }
 
-function MobileBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone: string }) {
+function MobileBracket({ rounds }: { rounds: BracketRound[] }) {
   const [active, setActive] = useState(4) // default to Final
   const pillsRef = useRef<HTMLDivElement>(null)
   const pillRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -345,7 +337,7 @@ function MobileBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone:
           </h3>
           <div className="space-y-2">
             {round.matches.map((m) => (
-              <MobileMatchCard key={m.num} match={m} timezone={timezone} />
+              <MobileMatchCard key={m.num} match={m} />
             ))}
           </div>
         </div>
@@ -377,14 +369,14 @@ function MobileBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone:
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export function KnockoutBracket({ rounds, timezone }: { rounds: BracketRound[]; timezone: string }) {
+export function KnockoutBracket({ rounds }: { rounds: BracketRound[] }) {
   return (
     <>
       <div className="hidden md:block">
-        <DesktopBracket rounds={rounds} timezone={timezone} />
+        <DesktopBracket rounds={rounds} />
       </div>
       <div className="md:hidden">
-        <MobileBracket rounds={rounds} timezone={timezone} />
+        <MobileBracket rounds={rounds} />
       </div>
     </>
   )

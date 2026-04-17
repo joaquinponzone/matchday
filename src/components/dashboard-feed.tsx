@@ -17,7 +17,7 @@ interface UpcomingPayload {
   upcomingDaysForward: number
 }
 
-export function DashboardFeed({ timezone }: { timezone: string }) {
+export function DashboardFeed() {
   const { data, isLoading, error } = useQuery({
     queryKey: UPCOMING_QUERY_KEY,
     queryFn: async (): Promise<UpcomingPayload> => {
@@ -73,18 +73,14 @@ export function DashboardFeed({ timezone }: { timezone: string }) {
 
   return (
     <div className="space-y-4">
-      <MatchHero match={hero} timezone={timezone} />
+      <MatchHero match={hero} />
 
       {rest.length > 0 && (
         <>
           <h2 className="text-sm font-medium text-muted-foreground">Próximamente</h2>
           <div className="space-y-2">
             {rest.map((match) => (
-              <MatchCard
-                key={fixtureUiKey(match)}
-                match={match}
-                timezone={timezone}
-              />
+              <MatchCard key={fixtureUiKey(match)} match={match} />
             ))}
           </div>
         </>
