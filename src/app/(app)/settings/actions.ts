@@ -23,8 +23,8 @@ function buildTomorrow14IsoAr(): string {
   const y = Number(nowParts.find((p) => p.type === "year")?.value)
   const m = Number(nowParts.find((p) => p.type === "month")?.value)
   const d = Number(nowParts.find((p) => p.type === "day")?.value)
-  // Argentina is UTC-3 (no DST), so 14:00 AR == 17:00 UTC.
-  return new Date(Date.UTC(y, m - 1, d + 1, 17, 0, 0)).toISOString()
+  // Argentina is UTC-3 (no DST), so 16:00 AR == 19:00 UTC.
+  return new Date(Date.UTC(y, m - 1, d + 1, 19, 0, 0)).toISOString()
 }
 
 export async function followTeam(

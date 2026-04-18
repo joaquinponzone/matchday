@@ -105,15 +105,18 @@ export function NotificationPopover({ unread }: NotificationPopoverProps) {
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-80 p-0"
+        className="w-96 p-0"
         sideOffset={8}
       >
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <span className="text-sm font-medium">Notificaciones</span>
+        <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+          <span className="min-w-0 shrink text-sm font-medium leading-none">
+            Notificaciones
+          </span>
           {hasUnreadInApp && (
             <button
+              type="button"
               onClick={markAllRead}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="shrink-0 whitespace-nowrap text-left text-xs leading-none text-muted-foreground transition-colors hover:text-foreground"
             >
               Marcar todas como leídas
             </button>
