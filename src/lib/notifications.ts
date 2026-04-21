@@ -55,7 +55,7 @@ export function buildNotificationContent(
 
   const title = `${local} vs. ${visitor} — ${match.competition}`
   const bodyLines = [
-    `🏆 <b>${match.competition}</b>\n`,
+    `🏆 ${match.competition}\n`,
     `▶️ ${local} vs. ${visitor}`,
     `📅 ${relativeLabel} ${timeStr} hs`,
   ]
