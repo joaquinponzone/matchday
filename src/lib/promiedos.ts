@@ -14,8 +14,14 @@ const DEFAULT_PROMIEDOS_X_VER = "1.11.7.5"
 /** Promiedos uses Argentina time for `start_time` without offset. */
 export const PROMIEDOS_WALL_CLOCK_TIMEZONE = "America/Argentina/Buenos_Aires"
 
-/** Hours to add to wall-clock (ART) to get UTC (no DST in Argentina). */
-const ART_OFFSET_HOURS_UTC = 3
+/**
+ * Hours to add to Promiedos `start_time` to get UTC.
+ * The Promiedos API returns times as if Argentina = UTC-5 (wrong — ART is UTC-3),
+ * so we add 5 instead of the expected 3. Confirmed empirically: Brighton vs Chelsea
+ * returned "14:00" while the actual ART time is 16:00, and Boca-River returned "15:00"
+ * for a 17:00 ART kickoff.
+ */
+const ART_OFFSET_HOURS_UTC = 5
 
 export function getPromiedosHeaders(): Record<string, string> {
   return {
