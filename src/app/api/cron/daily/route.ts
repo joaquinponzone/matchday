@@ -18,7 +18,9 @@ export async function GET(req: NextRequest) {
   let notificationErrors: string[] = []
   try {
     const result = await processDailyDigestNotifications()
-    processed = result.processed
+    if ("processed" in result) {
+      processed = result.processed
+    }
     notificationErrors = result.errors
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"

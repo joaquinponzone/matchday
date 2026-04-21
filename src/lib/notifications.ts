@@ -18,6 +18,18 @@ import { sendTelegramMessage } from "./telegram"
 
 export type MatchNotificationTiming = "day_before" | "match_day"
 
+export interface NotificationDiagnosticEntry {
+  userId: number
+  channel: string
+  timing: string
+  teamKey: string
+  externalMatchId: string
+  rawStartTime: string
+  computedMatchDateUtc: string
+  formattedArt: string
+  alreadySent: boolean
+}
+
 interface NotificationContent {
   title: string
   body: string
@@ -119,16 +131,23 @@ async function dispatchNotification(
 /**
  * Daily digest: fetch Promiedos for today/tomorrow (Argentina wall clock),
  * then notify for followed teams.
+ *
+ * Pass `dryRun: true` to skip actual sends and return a full diagnostic
+ * of what would be dispatched (useful for debugging timezone issues).
  */
-export async function processDailyDigestNotifications(): Promise<{
-  processed: number
-  errors: string[]
-}> {
+export async function processDailyDigestNotifications(options?: {
+  dryRun?: boolean
+}): Promise<
+  | { processed: number; errors: string[] }
+  | { dryRun: true; would_send: NotificationDiagnosticEntry[]; errors: string[] }
+> {
+  const dryRun = options?.dryRun ?? false
   const allUsers = await getAllActiveUsersWithSettings()
   if (allUsers.length === 0) return { processed: 0, errors: [] }
 
   const errors: string[] = []
   let processed = 0
+  const diagnostics: NotificationDiagnosticEntry[] = []
 
   let rawToday: Awaited<ReturnType<typeof fetchGamesForDate>>
   let rawTomorrow: Awaited<ReturnType<typeof fetchGamesForDate>>
@@ -202,19 +221,34 @@ export async function processDailyDigestNotifications(): Promise<{
           const row = mapPromiedosGameToMatch(league, game, pid, meta)
           if (row.status !== "scheduled") continue
           for (const channel of channels) {
-            try {
-              await dispatchNotification(
-                userSettings.userId,
-                row,
-                userSettings,
+            if (dryRun) {
+              const idempotencyKey = `${userSettings.userId}_${row.externalMatchId}_${row.teamKey}_${channel}_${timing}`
+              diagnostics.push({
+                userId: userSettings.userId,
                 channel,
                 timing,
-              )
-              processed++
-            } catch (err) {
-              errors.push(
-                `user:${userSettings.userId}/${channel}/${row.externalMatchId}: ${err instanceof Error ? err.message : err}`,
-              )
+                teamKey: row.teamKey,
+                externalMatchId: row.externalMatchId,
+                rawStartTime: game.start_time,
+                computedMatchDateUtc: row.matchDate,
+                formattedArt: formatMatchTimeOnly(row.matchDate),
+                alreadySent: await notificationExists(idempotencyKey),
+              })
+            } else {
+              try {
+                await dispatchNotification(
+                  userSettings.userId,
+                  row,
+                  userSettings,
+                  channel,
+                  timing,
+                )
+                processed++
+              } catch (err) {
+                errors.push(
+                  `user:${userSettings.userId}/${channel}/${row.externalMatchId}: ${err instanceof Error ? err.message : err}`,
+                )
+              }
             }
           }
         }
@@ -230,6 +264,9 @@ export async function processDailyDigestNotifications(): Promise<{
     }
   }
 
+  if (dryRun) {
+    return { dryRun: true, would_send: diagnostics, errors }
+  }
   return { processed, errors }
 }
 
