@@ -88,6 +88,7 @@ async function dispatchNotification(
 
   if (await notificationExists(idempotencyKey)) return
 
+  console.log(`[cron/daily] dispatch ${timing}/${channel} ${match.externalMatchId}: matchDate=${match.matchDate} formatted=${formatMatchTimeOnly(match.matchDate)}`)
   const { title, body, telegramHtml } = buildNotificationContent(match, timing)
   let status: "sent" | "failed" = "sent"
   let error: string | undefined
@@ -137,6 +138,21 @@ export async function processDailyDigestNotifications(): Promise<{
       new Date(Date.now() + 86400000),
       APP_TIMEZONE,
     )
+    console.log("[cron/daily] Promiedos fetch diagnostic:", {
+      fetchedAt: new Date().toISOString(),
+      sampleTodayTimes: rawToday.leagues?.flatMap((l) =>
+        (l.games ?? []).map((g) => ({
+          teams: g.teams?.map((t) => t.short_name).join(" vs "),
+          start_time: g.start_time,
+        })),
+      ).slice(0, 5),
+      sampleTomorrowTimes: rawTomorrow.leagues?.flatMap((l) =>
+        (l.games ?? []).map((g) => ({
+          teams: g.teams?.map((t) => t.short_name).join(" vs "),
+          start_time: g.start_time,
+        })),
+      ).slice(0, 5),
+    })
   } catch (err) {
     errors.push(err instanceof Error ? err.message : String(err))
     return { processed, errors }

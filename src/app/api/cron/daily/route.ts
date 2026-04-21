@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
+
 import { fetchFinishedWCMatchScores } from "@/lib/fifa"
 import { processDailyDigestNotifications } from "@/lib/notifications"
 import { calculateMatchPoints } from "@/server/db/queries"

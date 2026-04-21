@@ -63,7 +63,7 @@ function promiedosUrl(path: string): string {
 async function promiedosFetch(path: string): Promise<Response> {
   return fetch(promiedosUrl(path), {
     headers: getPromiedosHeaders(),
-    next: { revalidate: 0 },
+    cache: "no-store",
   })
 }
 
