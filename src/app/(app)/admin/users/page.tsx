@@ -5,6 +5,7 @@ import { getAllUsers } from "@/server/db/queries"
 import { Badge } from "@/components/ui/badge"
 import { UserActions } from "./user-actions"
 import { ToggleUserStatusButton } from "./deactivate-user-button"
+import { DeleteUserButton } from "./delete-user-button"
 import clsx from "clsx"
 import { Button } from "@/components/ui/button"
 import { Shield } from "lucide-react"
@@ -30,12 +31,21 @@ export default async function AdminUsersPage() {
             </div>
             <div className="flex items-center justify-between gap-2">
               <UserActions user={user} systemAdminUserId={systemAdminUserId} />
-              {user.email !== systemAdminUserId ? 
-                <ToggleUserStatusButton user={user} /> : 
-                <Button size="sm" variant="ghost" className="text-xs bg-blue-400/40 text-white" disabled>
-                  <Shield className="size-4" />
-                  Admin del sistema
-              </Button>}
+              <div className="flex items-center gap-2">
+                {user.email !== systemAdminUserId ? (
+                  <>
+                    <DeleteUserButton user={user} />
+                    {(user.status === "active" || user.status === "inactive") && (
+                      <ToggleUserStatusButton user={user} />
+                    )}
+                  </>
+                ) : (
+                  <Button size="sm" variant="ghost" className="text-xs bg-blue-400/40 text-white" disabled>
+                    <Shield className="size-4" />
+                    Admin del sistema
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}

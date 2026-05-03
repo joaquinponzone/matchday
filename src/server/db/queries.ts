@@ -95,6 +95,14 @@ export async function activateUser(userId: number) {
   revalidatePath("/admin/users")
 }
 
+export async function deleteUser(userId: number) {
+  await db.delete(followedTeams).where(eq(followedTeams.userId, userId))
+  await db.delete(notifications).where(eq(notifications.userId, userId))
+  await db.delete(prodePredictions).where(eq(prodePredictions.userId, userId))
+  await db.delete(settings).where(eq(settings.userId, userId))
+  await db.delete(users).where(eq(users.id, userId))
+}
+
 export async function updateUserName(userId: number, name: string) {
   await db
     .update(users)

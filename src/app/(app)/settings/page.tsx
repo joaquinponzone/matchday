@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   if (!settings) {
     return (
       <p className="text-muted-foreground">
-        Configuración no inicializada. Ejecutá <code>bun run db:seed</code>.
+        Configuración no inicializada. El usuario no tiene una configuración asociada. Por favor, contactá al administrador.
       </p>
     )
   }
