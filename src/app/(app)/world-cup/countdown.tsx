@@ -58,11 +58,7 @@ export function WorldCupCountdown({
   }, [targetDate])
 
   if (!timeLeft) {
-    return (
-      <div className="py-4 text-center">
-        <p className="text-lg font-semibold">¡El Mundial ha comenzado!</p>
-      </div>
-    )
+    return null
   }
 
   return (
