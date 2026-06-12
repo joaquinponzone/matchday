@@ -9,6 +9,9 @@ export interface WCMatch {
   team2FlagUrl?: string
   group?: string
   ground: string
+  homeScore?: number | null
+  awayScore?: number | null
+  finished?: boolean
 }
 
 export interface GroupTeam {

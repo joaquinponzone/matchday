@@ -40,8 +40,16 @@ function MatchRow({ match }: { match: WCMatch }) {
           />
         )}
       </span>
-      <span className="text-muted-foreground text-center w-24 shrink-0 font-mono text-[10px]">
-        {formatMatchDate(utcDate)}
+      <span className="text-center w-24 shrink-0 font-mono">
+        {match.finished && match.homeScore != null && match.awayScore != null ? (
+          <span className="text-sm font-semibold tabular-nums">
+            {match.homeScore} - {match.awayScore}
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-[10px]">
+            {formatMatchDate(utcDate)}
+          </span>
+        )}
       </span>
       <span className="flex-1 flex items-center gap-1.5 truncate">
         {match.team2FlagUrl && (

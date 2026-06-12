@@ -21,6 +21,14 @@ function isLocked(match: WCMatch): boolean {
   return new Date() >= new Date(toUtcIso(match.date, match.time))
 }
 
+function isFinished(match: WCMatch): boolean {
+  return (
+    match.finished === true &&
+    match.homeScore != null &&
+    match.awayScore != null
+  )
+}
+
 function PointsBadge({ points }: { points: number | null }) {
   if (points === null) return null
   return (
@@ -113,6 +121,7 @@ function MatchPredictionRow({
   prediction: ProdePrediction | undefined
 }) {
   const locked = isLocked(match)
+  const finished = isFinished(match)
   const initialHome = prediction?.homeScore ?? 0
   const initialAway = prediction?.awayScore ?? 0
   const [home, setHome] = useState(initialHome)
@@ -161,9 +170,20 @@ function MatchPredictionRow({
         )}
       </span>
 
-      {/* Score steppers or locked display */}
+      {/* Score steppers, real result, or locked prediction display */}
       <div className="flex items-center gap-1 shrink-0">
-        {locked ? (
+        {finished ? (
+          <span className="flex flex-col items-center w-14">
+            <span className="font-mono text-sm font-semibold tabular-nums">
+              {match.homeScore} - {match.awayScore}
+            </span>
+            {prediction != null && (
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {prediction.homeScore}-{prediction.awayScore}
+              </span>
+            )}
+          </span>
+        ) : locked ? (
           <span className="font-mono text-sm text-muted-foreground w-14 text-center">
             {prediction != null
               ? `${prediction.homeScore} - ${prediction.awayScore}`

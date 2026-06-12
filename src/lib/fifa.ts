@@ -59,7 +59,7 @@ interface FIFAMatch {
   MatchNumber: number
   Date: string
   TimeDefined: boolean
-  MatchStatus: number  // 0=upcoming, 1=live, 3=finished
+  MatchStatus: number  // 0=finished, 1=upcoming, 3=live
   HomeTeamScore: number | null
   AwayTeamScore: number | null
   Home: FIFAMatchTeam | null
@@ -335,6 +335,9 @@ function mapFIFAMatch(m: FIFAMatch): WCMatch {
     team2FlagUrl,
     group: isGroup ? getLocale(m.GroupName) : undefined,
     ground,
+    homeScore: m.HomeTeamScore,
+    awayScore: m.AwayTeamScore,
+    finished: m.MatchStatus === 0,
   }
 }
 
@@ -370,7 +373,7 @@ export async function fetchFinishedWCMatchScores(opts?: {
     return allMatches
       .filter(
         (m) =>
-          m.MatchStatus === 3 &&
+          m.MatchStatus === 0 &&
           m.HomeTeamScore !== null &&
           m.AwayTeamScore !== null,
       )
