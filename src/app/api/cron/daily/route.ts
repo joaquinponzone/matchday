@@ -3,9 +3,8 @@ import { NextRequest, NextResponse } from "next/server"
 export const dynamic = "force-dynamic"
 export const fetchCache = "force-no-store"
 
-import { fetchFinishedWCMatchScores } from "@/lib/fifa"
 import { processDailyDigestNotifications } from "@/lib/notifications"
-import { calculateMatchPoints } from "@/server/db/queries"
+import { syncProdeResults } from "@/server/db/queries"
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -30,11 +29,8 @@ export async function GET(req: NextRequest) {
   // 2. Prode: finished World Cup matches
   let prodeCalculated = 0
   try {
-    const finishedMatches = await fetchFinishedWCMatchScores()
-    for (const { matchNumber, homeScore, awayScore } of finishedMatches) {
-      await calculateMatchPoints(matchNumber, homeScore, awayScore)
-      prodeCalculated++
-    }
+    const result = await syncProdeResults()
+    prodeCalculated = result.calculated
   } catch {
     // Non-critical
   }

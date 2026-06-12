@@ -12,9 +12,9 @@ export default async function SettingsPage() {
     getFollowedTeamsWithMeta(user.id),
   ])
 
-  if (!settings) {
+  if (settings) {
     return (
-      <p className="text-muted-foreground">
+      <p className="text-muted-foreground py-20">
         Configuración no inicializada. El usuario no tiene una configuración asociada. Por favor, contactá al administrador.
       </p>
     )

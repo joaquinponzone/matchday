@@ -1,8 +1,9 @@
 "use server"
 
-import { getUser } from "@/lib/dal"
+import { revalidatePath } from "next/cache"
+import { getUser, requireAdmin } from "@/lib/dal"
 import { fetchAllWCMatches } from "@/lib/fifa"
-import { upsertProdePrediction } from "@/server/db/queries"
+import { syncProdeResults, upsertProdePrediction } from "@/server/db/queries"
 import { toUtcIso } from "../lib"
 
 export async function savePrediction(
@@ -27,4 +28,18 @@ export async function savePrediction(
   })
 
   return { success: true }
+}
+
+// Admin-only: manually sync finished World Cup results and award prode points.
+// Lets the admin trigger the calculation on-demand (e.g. right after a match
+// ends) instead of waiting for the once-a-day cron. Uses a fresh FIFA fetch.
+export async function syncProdeResultsAction() {
+  await requireAdmin()
+  try {
+    const result = await syncProdeResults({ fresh: true })
+    revalidatePath("/world-cup")
+    return { success: true as const, ...result }
+  } catch {
+    return { error: "No se pudieron sincronizar los resultados" }
+  }
 }

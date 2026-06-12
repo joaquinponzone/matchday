@@ -19,6 +19,7 @@ import { Trophy } from "lucide-react"
 import type { WCMatch } from "./types"
 import { PredictionsList } from "./prode/predictions-list"
 import { Leaderboard } from "./prode/leaderboard"
+import { SyncResultsButton } from "./prode/sync-results-button"
 import { WorldCupCountdown } from "./countdown"
 
 function MatchRow({ match }: { match: WCMatch }) {
@@ -142,7 +143,12 @@ export default async function WorldCupPage() {
           initialPredictions={userPredictions}
         />
       </div>
-      <div>
+      <div className="flex flex-col gap-3">
+        {user.role === "admin" && (
+          <div className="flex justify-end">
+            <SyncResultsButton />
+          </div>
+        )}
         <Leaderboard entries={leaderboard} currentUserId={user.id} />
       </div>
     </div>

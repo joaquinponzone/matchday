@@ -11,7 +11,7 @@ También recibís notificaciones por Telegram de los partidos de Chelsea y la Se
 - **Dashboard** — Countdown al próximo partido + próximos partidos de tus equipos
 - **Notificaciones** — Alertas automáticas por Telegram e in-app (día anterior y día del partido)
 - **Multi-equipo** — Seguí a Chelsea FC y la Selección Argentina
-- **Multi-usuario** — Registro con aprobación de admin, roles, gestión de usuarios
+- **Multi-usuario** — Registro con aprobación de admin, roles, activación/desactivación y eliminación de usuarios
 
 ## Tech Stack
 
@@ -159,7 +159,7 @@ Un cron diario corre a las 12:00 UTC (`/api/cron/daily`):
 - Usar `cn()` de `@/lib/utils` para clases condicionales de Tailwind.
 - Cron endpoints protegidos por header `CRON_SECRET`.
 - Roles: `admin` \| `user`. Admin pages bajo `(app)/admin/`.
-- User status: `pending` \| `active` \| `inactive`.
+- User status: `pending` \| `active` \| `inactive` \| `rejected`.
 
 ## Documentación
 

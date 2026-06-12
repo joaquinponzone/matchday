@@ -270,9 +270,15 @@ export async function fetchWCStandings(): Promise<GroupStanding[]> {
   }
 }
 
-async function fetchRawWCMatches(): Promise<FIFAMatch[]> {
+async function fetchRawWCMatches(opts?: {
+  fresh?: boolean
+}): Promise<FIFAMatch[]> {
   const allMatches: FIFAMatch[] = []
   let token: string | null = null
+
+  const fetchInit: RequestInit & { next?: { revalidate: number } } = opts?.fresh
+    ? { cache: "no-store" }
+    : { next: { revalidate: 3600 } }
 
   do {
     const url = new URL(`${FIFA_BASE}/calendar/matches`)
@@ -282,7 +288,7 @@ async function fetchRawWCMatches(): Promise<FIFAMatch[]> {
     url.searchParams.set("language", "es")
     if (token) url.searchParams.set("continuationToken", token)
 
-    const res = await fetch(url.toString(), { next: { revalidate: 3600 } })
+    const res = await fetch(url.toString(), fetchInit)
     if (!res.ok) break
 
     const data: FIFAMatchesResponse = await res.json()
@@ -354,11 +360,13 @@ export async function fetchAllWCMatches(): Promise<WCMatch[]> {
   }
 }
 
-export async function fetchFinishedWCMatchScores(): Promise<
+export async function fetchFinishedWCMatchScores(opts?: {
+  fresh?: boolean
+}): Promise<
   { matchNumber: number; homeScore: number; awayScore: number }[]
 > {
   try {
-    const allMatches = await fetchRawWCMatches()
+    const allMatches = await fetchRawWCMatches(opts)
     return allMatches
       .filter(
         (m) =>

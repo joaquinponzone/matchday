@@ -3,6 +3,7 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm"
 
 import { db } from "./index"
+import { fetchFinishedWCMatchScores } from "@/lib/fifa"
 import {
   type InsertNotification,
   type TeamKind,
@@ -393,4 +394,17 @@ export async function calculateMatchPoints(
       .set({ points, updatedAt: new Date().toISOString() })
       .where(eq(prodePredictions.id, pred.id))
   }
+}
+
+// Fetch finished WC matches and award prode points for any pending predictions.
+// Used by the daily cron (cached fetch) and the admin manual-sync button
+// (fresh fetch, to pick up matches that just finished).
+export async function syncProdeResults(opts?: { fresh?: boolean }) {
+  const finished = await fetchFinishedWCMatchScores(opts)
+  let calculated = 0
+  for (const { matchNumber, homeScore, awayScore } of finished) {
+    await calculateMatchPoints(matchNumber, homeScore, awayScore)
+    calculated++
+  }
+  return { calculated, matches: finished.length }
 }

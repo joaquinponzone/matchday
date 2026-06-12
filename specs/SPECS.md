@@ -110,7 +110,7 @@ Multi-user system with email/password login (iron-session + Bun.password). Admin
 | `name`                   | text    | Display name                             |
 | `password_hash`          | text    | bcrypt hash via `Bun.password`           |
 | `role`                   | text    | `admin` or `user`                        |
-| `status`                 | text    | `pending`, `active`, or `rejected`       |
+| `status`                 | text    | `pending`, `active`, `inactive`, or `rejected` |
 | `reset_token`            | text    | SHA-256 hash of reset token (nullable)   |
 | `reset_token_expires_at` | text    | ISO 8601 expiry timestamp (nullable)     |
 | `created_at`             | text    | ISO 8601 timestamp                       |
@@ -342,7 +342,9 @@ The same content is adapted per channel:
 
 - **User list**: All users with email, name, role, status, and registration date
 - **Pending queue**: Approve or reject pending registrations (approved users get a settings row created automatically)
-- **Role management**: Toggle admin/user role for any user
+- **Role management**: Toggle admin/user role for active users
+- **Activation toggle**: Deactivate active users (status → `inactive`) or reactivate them
+- **Delete**: Permanently delete inactive users and all their associated data (settings, notifications, followed teams, predictions)
 - **Password reset**: Admin can trigger a password reset for any user
 - **Access control**: Only visible to users with `admin` role; non-admins get 403
 
