@@ -6,8 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { SyncResultsButton } from "./sync-results-button"
 
 interface LeaderboardEntry {
   userId: number
@@ -21,9 +22,10 @@ interface LeaderboardEntry {
 interface LeaderboardProps {
   entries: LeaderboardEntry[]
   currentUserId: number
+  isAdmin?: boolean
 }
 
-export function Leaderboard({ entries, currentUserId }: LeaderboardProps) {
+export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProps) {
   return (
     <Card className="lg:sticky lg:top-4 bg-transparent border-none">
       <CardHeader className="pb-2">
@@ -82,6 +84,11 @@ export function Leaderboard({ entries, currentUserId }: LeaderboardProps) {
           </Table>
         )}
       </CardContent>
+      {isAdmin && (
+        <CardFooter className="justify-end pt-3">
+          <SyncResultsButton />
+        </CardFooter>
+      )}
     </Card>
   )
 }

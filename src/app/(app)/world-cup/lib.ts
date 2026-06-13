@@ -1,4 +1,4 @@
-import { APP_TIMEZONE } from "@/lib/utils"
+import { APP_TIMEZONE, isToday, isTomorrow } from "@/lib/utils"
 import type { WCMatch, GroupStanding, GroupTeam, BracketMatch, BracketRound } from "./types"
 
 // Parses "13:00 UTC-6" → UTC ISO string for the given date
@@ -21,6 +21,44 @@ export function formatMatchDate(isoDate: string): string {
     timeZone: APP_TIMEZONE,
   }).format(new Date(isoDate))
   return `${formatted} hs`
+}
+
+// Calendar-day key (YYYY-MM-DD) in the app timezone
+export function dayKey(iso: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(
+    new Date(iso),
+  )
+}
+
+// Friendly matchday label: "Hoy" / "Mañana" / "Sábado 13 de junio"
+export function dayLabel(iso: string): string {
+  if (isToday(iso)) return "Hoy"
+  if (isTomorrow(iso)) return "Mañana"
+  const s = new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: APP_TIMEZONE,
+  }).format(new Date(iso))
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+export interface MatchDay {
+  key: string
+  iso: string
+  matches: WCMatch[]
+}
+
+// Groups matches by calendar day, preserving the chronological input order
+export function groupMatchesByDay(matches: WCMatch[]): MatchDay[] {
+  const days = new Map<string, MatchDay>()
+  for (const m of matches) {
+    const iso = toUtcIso(m.date, m.time)
+    const key = dayKey(iso)
+    if (!days.has(key)) days.set(key, { key, iso, matches: [] })
+    days.get(key)!.matches.push(m)
+  }
+  return [...days.values()].sort((a, b) => a.key.localeCompare(b.key))
 }
 
 export function extractGroupStandings(matches: WCMatch[]): GroupStanding[] {

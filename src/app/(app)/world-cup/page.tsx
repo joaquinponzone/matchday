@@ -5,6 +5,7 @@ import { getUserPredictions, getProdeLeaderboard } from "@/server/db/queries"
 import { getUser } from "@/lib/dal"
 import { WcTabs } from "./wc-tabs"
 import { GroupStandings } from "./group-standings"
+import { GroupsTab } from "./groups-tab"
 import { KnockoutBracket } from "./knockout-bracket"
 import {
   extractGroupStandings,
@@ -19,7 +20,6 @@ import { Trophy } from "lucide-react"
 import type { WCMatch } from "./types"
 import { PredictionsList } from "./prode/predictions-list"
 import { Leaderboard } from "./prode/leaderboard"
-import { SyncResultsButton } from "./prode/sync-results-button"
 import { WorldCupCountdown } from "./countdown"
 
 function MatchRow({ match }: { match: WCMatch }) {
@@ -138,10 +138,10 @@ export default async function WorldCupPage() {
       <div className="lg:col-span-3 mb-2">
         <Alert>
           <Trophy className="size-4" />
-          <AlertTitle>Pozo de premios - Próximamente</AlertTitle>
+          <AlertTitle>Pozo de premios - Pendiente</AlertTitle>
           <AlertDescription>
-            Pronto podrás inscribirte al prode pagando una entrada para competir
-            por premios para los 3 primeros puestos.
+            Aun no se decidió que premios se repartirán entre los participantes.
+            La idea será que los ganadores sean los 3 primeros puestos.
           </AlertDescription>
         </Alert>
       </div>
@@ -152,12 +152,7 @@ export default async function WorldCupPage() {
         />
       </div>
       <div className="flex flex-col gap-3">
-        {user.role === "admin" && (
-          <div className="flex justify-end">
-            <SyncResultsButton />
-          </div>
-        )}
-        <Leaderboard entries={leaderboard} currentUserId={user.id} />
+        <Leaderboard entries={leaderboard} currentUserId={user.id} isAdmin={user.role === "admin"} />
       </div>
     </div>
   )
@@ -174,11 +169,15 @@ export default async function WorldCupPage() {
         />
       )}
       <WcTabs
-        standingsContent={<GroupStandings standings={activeStandings} />}
-        matchesContent={
-          <MatchesView
-            groupedMatches={groupedMatches}
-            sortedGroups={sortedGroups}
+        standingsContent={
+          <GroupsTab
+            standingsContent={<GroupStandings standings={activeStandings} />}
+            matchesContent={
+              <MatchesView
+                groupedMatches={groupedMatches}
+                sortedGroups={sortedGroups}
+              />
+            }
           />
         }
         bracketContent={<KnockoutBracket rounds={bracketRounds} />}

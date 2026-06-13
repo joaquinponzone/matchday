@@ -1,16 +1,22 @@
 "use client"
 
-import { useState, useTransition, type KeyboardEvent } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type KeyboardEvent,
+} from "react"
 import Image from "next/image"
 import { Minus, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn, isToday } from "@/lib/utils"
 import type { WCMatch } from "../types"
 import type { ProdePrediction } from "@/server/db/schema"
 import { savePrediction } from "./actions"
-import { toUtcIso } from "../lib"
+import { dayLabel, groupMatchesByDay, toUtcIso } from "../lib"
 
 interface PredictionsListProps {
   matches: WCMatch[]
@@ -34,14 +40,16 @@ function PointsBadge({ points }: { points: number | null }) {
   return (
     <Badge
       variant="outline"
+      title="Puntos que sumaste en este partido"
       className={cn(
-        "text-xs font-mono shrink-0",
+        "text-[10px] font-mono shrink-0 gap-0.5",
         points === 3 && "border-green-500 text-green-500",
         points === 1 && "border-yellow-500 text-yellow-500",
         points === 0 && "border-muted-foreground text-muted-foreground",
       )}
     >
       {points === 3 ? "+3" : points === 1 ? "+1" : "0"}
+      <span className="opacity-60">pts</span>
     </Badge>
   )
 }
@@ -228,7 +236,7 @@ function MatchPredictionRow({
       </span>
 
       {/* Right side: save button or points badge */}
-      <div className="shrink-0 w-12 flex justify-end">
+      <div className="shrink-0 w-14 flex justify-end">
         {!locked && (
           <button
             onClick={handleSave}
@@ -256,40 +264,48 @@ function MatchPredictionRow({
 
 export function PredictionsList({ matches, initialPredictions }: PredictionsListProps) {
   const predByMatch = new Map(initialPredictions.map((p) => [p.matchNumber, p]))
+  const todayRef = useRef<HTMLDivElement>(null)
 
-  // Group matches by round
-  const rounds: Record<string, WCMatch[]> = {}
-  for (const m of matches) {
-    if (!m.num) continue
-    const key = m.round || "Otros"
-    if (!rounds[key]) rounds[key] = []
-    rounds[key].push(m)
-  }
+  // Bring today's matchday into view when the tab opens
+  useEffect(() => {
+    todayRef.current?.scrollIntoView({ block: "start" })
+  }, [])
 
-  const sortedRounds = Object.entries(rounds).sort(([, a], [, b]) => {
-    const dateA = new Date(toUtcIso(a[0].date, a[0].time))
-    const dateB = new Date(toUtcIso(b[0].date, b[0].time))
-    return dateA.getTime() - dateB.getTime()
-  })
+  const sortedDays = groupMatchesByDay(matches.filter((m) => m.num != null))
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      {sortedRounds.map(([round, roundMatches]) => (
-        <Card key={round}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">{round}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {roundMatches.map((match) => (
-              <MatchPredictionRow
-                key={match.num}
-                match={match}
-                prediction={predByMatch.get(match.num!)}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      ))}
+      {sortedDays.map(({ key, iso, matches: dayMatches }) => {
+        const today = isToday(iso)
+        return (
+          <Card
+            key={key}
+            ref={today ? todayRef : undefined}
+            className={cn("scroll-mt-4", today && "border-primary")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center justify-between gap-2 text-sm font-semibold">
+                <span className={cn(today && "text-primary")}>
+                  {dayLabel(iso)}
+                </span>
+                <span className="text-[10px] font-normal text-muted-foreground">
+                  {dayMatches.length}{" "}
+                  {dayMatches.length === 1 ? "partido" : "partidos"}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {dayMatches.map((match) => (
+                <MatchPredictionRow
+                  key={match.num}
+                  match={match}
+                  prediction={predByMatch.get(match.num!)}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }
