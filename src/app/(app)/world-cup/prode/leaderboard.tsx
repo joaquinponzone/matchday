@@ -42,9 +42,9 @@ export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProp
               <TableRow>
                 <TableHead className="w-8">#</TableHead>
                 <TableHead>Usuario</TableHead>
-                <TableHead className="text-right">Pts</TableHead>
-                <TableHead className="text-right hidden sm:table-cell">Exactos</TableHead>
-                <TableHead className="text-right hidden sm:table-cell">Correctos</TableHead>
+                <TableHead className="text-right text-xs">Pts</TableHead>
+                <TableHead className="text-right hidden sm:table-cell text-xs">Exacto</TableHead>
+                <TableHead className="text-right hidden sm:table-cell text-xs">Bien</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
