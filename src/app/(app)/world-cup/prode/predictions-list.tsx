@@ -35,6 +35,32 @@ function isFinished(match: WCMatch): boolean {
   )
 }
 
+// In progress: kickoff has passed, not finished yet, but a live score exists.
+function isLive(match: WCMatch): boolean {
+  return (
+    isLocked(match) &&
+    !isFinished(match) &&
+    match.homeScore != null &&
+    match.awayScore != null
+  )
+}
+
+function LiveBadge() {
+  return (
+    <Badge
+      variant="outline"
+      title="Partido en juego"
+      className="text-[9px] font-mono shrink-0 gap-1 px-1 border-red-500/50 text-red-500"
+    >
+      <span className="relative flex size-1.5">
+        <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-75" />
+        <span className="relative inline-flex size-1.5 rounded-full bg-red-500" />
+      </span>
+      EN VIVO
+    </Badge>
+  )
+}
+
 function PointsBadge({ points }: { points: number | null }) {
   if (points === null) return null
   return (
@@ -130,6 +156,7 @@ function MatchPredictionRow({
 }) {
   const locked = isLocked(match)
   const finished = isFinished(match)
+  const live = isLive(match)
   const initialHome = prediction?.homeScore ?? 0
   const initialAway = prediction?.awayScore ?? 0
   const [home, setHome] = useState(initialHome)
@@ -186,9 +213,14 @@ function MatchPredictionRow({
 
       {/* Score steppers, real result, or locked prediction display */}
       <div className="flex items-center gap-1 shrink-0">
-        {finished ? (
+        {finished || live ? (
           <span className="flex flex-col items-center w-14">
-            <span className="font-mono text-sm font-semibold tabular-nums">
+            <span
+              className={cn(
+                "font-mono text-sm font-semibold tabular-nums",
+                live && "text-red-500",
+              )}
+            >
               {match.homeScore} - {match.awayScore}
             </span>
             {prediction != null && (
@@ -258,7 +290,12 @@ function MatchPredictionRow({
             {isPending ? "..." : saved && !dirty ? "✓" : "Guardar"}
           </button>
         )}
-        {locked && <PointsBadge points={prediction?.points ?? null} />}
+        {locked &&
+          (live ? (
+            <LiveBadge />
+          ) : (
+            <PointsBadge points={prediction?.points ?? null} />
+          ))}
       </div>
       </div>
       {error && (
@@ -280,7 +317,9 @@ export function PredictionsList({ matches, initialPredictions }: PredictionsList
 
   const validMatches = matches.filter((m) => m.num != null)
   const filteredMatches =
-    filter === "pending" ? validMatches.filter((m) => !isLocked(m)) : validMatches
+    filter === "pending"
+      ? validMatches.filter((m) => !isFinished(m))
+      : validMatches
   const sortedDays = groupMatchesByDay(filteredMatches)
 
   return (

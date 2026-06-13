@@ -151,7 +151,15 @@ export default async function WorldCupPage() {
           initialPredictions={userPredictions}
         />
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
+        {/* Reserva el alto del toggle Pendientes/Todos para alinear el Ranking
+            con la primera tarjeta de partidos en pantallas grandes */}
+        <div
+          aria-hidden
+          className="hidden lg:flex invisible items-center gap-1 rounded-md border p-0.5 self-start"
+        >
+          <span className="px-2.5 py-1 text-xs">Pendientes</span>
+        </div>
         <Leaderboard entries={leaderboard} currentUserId={user.id} isAdmin={user.role === "admin"} />
       </div>
     </div>
