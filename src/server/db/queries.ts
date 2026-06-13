@@ -331,7 +331,7 @@ export async function getProdeLeaderboard() {
       name: sql<string>`COALESCE(${users.nickname}, ${users.name})`,
       email: users.email,
       totalPoints: sql<number>`COALESCE(SUM(${prodePredictions.points}), 0)`,
-      exactCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 3 THEN 1 END)`,
+      exactCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`,
       correctCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 1 THEN 1 END)`,
     })
     .from(users)
@@ -340,7 +340,7 @@ export async function getProdeLeaderboard() {
     .groupBy(users.id, users.name, users.nickname, users.email)
     .orderBy(
       desc(sql`COALESCE(SUM(${prodePredictions.points}), 0)`),
-      desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 3 THEN 1 END)`),
+      desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`),
     )
 }
 
@@ -382,7 +382,7 @@ export async function calculateMatchPoints(
   for (const pred of preds) {
     let points = 0
     if (pred.homeScore === realHome && pred.awayScore === realAway) {
-      points = 3
+      points = 2
     } else {
       const outcome = (h: number, a: number) => (h > a ? "1" : h < a ? "2" : "X")
       if (outcome(pred.homeScore, pred.awayScore) === outcome(realHome, realAway)) {

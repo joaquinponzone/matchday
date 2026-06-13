@@ -43,12 +43,12 @@ function PointsBadge({ points }: { points: number | null }) {
       title="Puntos que sumaste en este partido"
       className={cn(
         "text-[10px] font-mono shrink-0 gap-0.5",
-        points === 3 && "border-green-500 text-green-500",
+        points === 2 && "border-green-500 text-green-500",
         points === 1 && "border-yellow-500 text-yellow-500",
         points === 0 && "border-muted-foreground text-muted-foreground",
       )}
     >
-      {points === 3 ? "+3" : points === 1 ? "+1" : "0"}
+      {points === 2 ? "+2" : points === 1 ? "+1" : "0"}
       <span className="opacity-60">pts</span>
     </Badge>
   )
@@ -265,47 +265,76 @@ function MatchPredictionRow({
 export function PredictionsList({ matches, initialPredictions }: PredictionsListProps) {
   const predByMatch = new Map(initialPredictions.map((p) => [p.matchNumber, p]))
   const todayRef = useRef<HTMLDivElement>(null)
+  const [filter, setFilter] = useState<"pending" | "all">("pending")
 
   // Bring today's matchday into view when the tab opens
   useEffect(() => {
     todayRef.current?.scrollIntoView({ block: "start" })
   }, [])
 
-  const sortedDays = groupMatchesByDay(matches.filter((m) => m.num != null))
+  const validMatches = matches.filter((m) => m.num != null)
+  const filteredMatches =
+    filter === "pending" ? validMatches.filter((m) => !isLocked(m)) : validMatches
+  const sortedDays = groupMatchesByDay(filteredMatches)
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      {sortedDays.map(({ key, iso, matches: dayMatches }) => {
-        const today = isToday(iso)
-        return (
-          <Card
-            key={key}
-            ref={today ? todayRef : undefined}
-            className={cn("scroll-mt-4", today && "border-primary")}
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-1 rounded-md border border-border p-0.5 self-start">
+        {(["pending", "all"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={cn(
+              "px-2.5 py-1 text-xs rounded-sm transition-colors",
+              filter === f
+                ? "bg-foreground text-background font-medium"
+                : "text-muted-foreground hover:text-foreground",
+            )}
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center justify-between gap-2 text-sm font-semibold">
-                <span className={cn(today && "text-primary")}>
-                  {dayLabel(iso)}
-                </span>
-                <span className="text-[10px] font-normal text-muted-foreground">
-                  {dayMatches.length}{" "}
-                  {dayMatches.length === 1 ? "partido" : "partidos"}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {dayMatches.map((match) => (
-                <MatchPredictionRow
-                  key={match.num}
-                  match={match}
-                  prediction={predByMatch.get(match.num!)}
-                />
-              ))}
-            </CardContent>
-          </Card>
-        )
-      })}
+            {f === "pending" ? "Pendientes" : "Todos"}
+          </button>
+        ))}
+      </div>
+
+      {sortedDays.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4">
+          No hay partidos pendientes.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {sortedDays.map(({ key, iso, matches: dayMatches }) => {
+            const today = isToday(iso)
+            return (
+              <Card
+                key={key}
+                ref={today ? todayRef : undefined}
+                className={cn("scroll-mt-4", today && "border-primary")}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center justify-between gap-2 text-sm font-semibold">
+                    <span className={cn(today && "text-primary")}>
+                      {dayLabel(iso)}
+                    </span>
+                    <span className="text-[10px] font-normal text-muted-foreground">
+                      {dayMatches.length}{" "}
+                      {dayMatches.length === 1 ? "partido" : "partidos"}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {dayMatches.map((match) => (
+                    <MatchPredictionRow
+                      key={match.num}
+                      match={match}
+                      prediction={predByMatch.get(match.num!)}
+                    />
+                  ))}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
