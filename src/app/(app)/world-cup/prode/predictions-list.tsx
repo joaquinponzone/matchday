@@ -12,7 +12,7 @@ import { Minus, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { cn, isToday } from "@/lib/utils"
+import { cn, isToday, formatMatchTimeOnly } from "@/lib/utils"
 import type { WCMatch } from "../types"
 import type { ProdePrediction } from "@/server/db/schema"
 import { savePrediction } from "./actions"
@@ -159,10 +159,16 @@ function MatchPredictionRow({
   }
 
   const dirty = home !== lastSavedHome || away !== lastSavedAway
+  const kickoff = formatMatchTimeOnly(toUtcIso(match.date, match.time))
 
   return (
     <div className="border-b last:border-0">
       <div className="flex items-center gap-2 px-3 py-2.5 text-xs">
+      {/* Kickoff time */}
+      <span className="shrink-0 w-10 text-[10px] text-muted-foreground tabular-nums">
+        {kickoff}
+      </span>
+
       {/* Team 1 */}
       <span className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
         <span className="truncate text-right">{match.team1}</span>
