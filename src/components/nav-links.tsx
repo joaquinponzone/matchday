@@ -7,6 +7,7 @@ import { logout } from "@/app/actions/logout"
 import { NotificationPopover } from "@/components/notification-popover"
 import { cn } from "@/lib/utils"
 import { HomeIcon, LogOutIcon, SettingsIcon, TrophyIcon, UsersIcon } from "lucide-react"
+import { ThemeToggle } from "./theme-toggle"
 
 const links = [
   { href: "/", label: "Inicio", exact: true, icon: <HomeIcon className="block md:hidden size-5" /> },
@@ -42,6 +43,7 @@ export function NavLinks({ unread, role }: { unread: number; role: string }) {
           )
         })}
         <NotificationPopover unread={unread} />
+        <ThemeToggle />
         <form action={logout}>
           <button
             type="submit"

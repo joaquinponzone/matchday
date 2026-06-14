@@ -188,116 +188,154 @@ function MatchPredictionRow({
   const dirty = home !== lastSavedHome || away !== lastSavedAway
   const kickoff = formatMatchTimeOnly(toUtcIso(match.date, match.time))
 
-  return (
-    <div className="border-b last:border-0">
-      <div className="flex items-center gap-2 px-3 py-2.5 text-xs">
-      {/* Kickoff time */}
-      <span className="shrink-0 w-10 text-[10px] text-muted-foreground tabular-nums">
-        {kickoff}
-      </span>
-
-      {/* Team 1 */}
-      <span className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
-        <span className="truncate text-right">{match.team1}</span>
-        {match.team1FlagUrl && (
-          <Image
-            src={match.team1FlagUrl}
-            alt={match.team1}
-            width={16}
-            height={16}
-            className="shrink-0 rounded-sm"
-            unoptimized
-          />
-        )}
-      </span>
-
-      {/* Score steppers, real result, or locked prediction display */}
-      <div className="flex items-center gap-1 shrink-0">
-        {finished || live ? (
-          <span className="flex flex-col items-center w-14">
-            <span
-              className={cn(
-                "font-mono text-sm font-semibold tabular-nums",
-                live && "text-red-500",
-              )}
-            >
-              {match.homeScore} - {match.awayScore}
-            </span>
-            {prediction != null && (
-              <span className="font-mono text-[10px] text-muted-foreground">
-                {prediction.homeScore}-{prediction.awayScore}
-              </span>
-            )}
-          </span>
-        ) : locked ? (
-          <span className="font-mono text-sm text-muted-foreground w-14 text-center">
-            {prediction != null
-              ? `${prediction.homeScore} - ${prediction.awayScore}`
-              : "— - —"}
-          </span>
-        ) : (
-          <>
-            <GoalStepper
-              value={home}
-              teamName={match.team1}
-              onChange={(v) => {
-                setHome(v)
-                setSaved(false)
-              }}
-            />
-            <span className="text-muted-foreground px-0.5">-</span>
-            <GoalStepper
-              value={away}
-              teamName={match.team2}
-              onChange={(v) => {
-                setAway(v)
-                setSaved(false)
-              }}
-            />
-          </>
-        )}
-      </div>
-
-      {/* Team 2 */}
-      <span className="flex-1 flex items-center gap-1.5 min-w-0">
-        {match.team2FlagUrl && (
-          <Image
-            src={match.team2FlagUrl}
-            alt={match.team2}
-            width={16}
-            height={16}
-            className="shrink-0 rounded-sm"
-            unoptimized
-          />
-        )}
-        <span className="truncate">{match.team2}</span>
-      </span>
-
-      {/* Right side: save button or points badge */}
-      <div className="shrink-0 w-14 flex justify-end">
-        {!locked && (
-          <button
-            onClick={handleSave}
-            disabled={isPending || (!dirty && saved)}
+  // Score steppers, real result, or locked prediction display — shared between
+  // the mobile (stacked) and desktop (inline) layouts.
+  const scoreArea = (
+    <div className="flex items-center gap-1 shrink-0">
+      {finished || live ? (
+        <span className="flex flex-col items-center w-14">
+          <span
             className={cn(
-              "text-[10px] px-1.5 py-0.5 rounded border transition-colors",
-              saved && !dirty
-                ? "border-green-500/40 text-green-500/70 cursor-default"
-                : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
-              isPending && "opacity-50 cursor-not-allowed",
+              "font-mono text-sm font-semibold tabular-nums",
+              live && "text-red-500",
             )}
           >
-            {isPending ? "..." : saved && !dirty ? "✓" : "Guardar"}
-          </button>
-        )}
-        {locked &&
-          (live ? (
-            <LiveBadge />
-          ) : (
-            <PointsBadge points={prediction?.points ?? null} />
-          ))}
+            {match.homeScore} - {match.awayScore}
+          </span>
+          {prediction != null && (
+            <span className="font-mono text-[10px] text-muted-foreground">
+              {prediction.homeScore}-{prediction.awayScore}
+            </span>
+          )}
+        </span>
+      ) : locked ? (
+        <span className="font-mono text-sm text-muted-foreground w-14 text-center">
+          {prediction != null
+            ? `${prediction.homeScore} - ${prediction.awayScore}`
+            : "— - —"}
+        </span>
+      ) : (
+        <>
+          <GoalStepper
+            value={home}
+            teamName={match.team1}
+            onChange={(v) => {
+              setHome(v)
+              setSaved(false)
+            }}
+          />
+          <span className="text-muted-foreground px-0.5">-</span>
+          <GoalStepper
+            value={away}
+            teamName={match.team2}
+            onChange={(v) => {
+              setAway(v)
+              setSaved(false)
+            }}
+          />
+        </>
+      )}
+    </div>
+  )
+
+  // Save button or points/live badge — shared between layouts.
+  const actionArea = !locked ? (
+    <button
+      onClick={handleSave}
+      disabled={isPending || (!dirty && saved)}
+      className={cn(
+        "text-[10px] px-1.5 py-0.5 rounded border transition-colors",
+        saved && !dirty
+          ? "border-green-500/40 text-green-500/70 cursor-default"
+          : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+        isPending && "opacity-50 cursor-not-allowed",
+      )}
+    >
+      {isPending ? "..." : saved && !dirty ? "✓" : "Guardar"}
+    </button>
+  ) : live ? (
+    <LiveBadge />
+  ) : (
+    <PointsBadge points={prediction?.points ?? null} />
+  )
+
+  return (
+    <div className="border-b last:border-0">
+      {/* Desktop layout: time | team1 | score | team2 | action */}
+      <div className="hidden sm:flex items-center gap-2 px-3 py-2.5 text-xs">
+        <span className="shrink-0 w-10 text-[10px] text-muted-foreground tabular-nums">
+          {kickoff}
+        </span>
+        <span className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
+          <span className="truncate text-right">{match.team1}</span>
+          {match.team1FlagUrl && (
+            <Image
+              src={match.team1FlagUrl}
+              alt={match.team1}
+              width={16}
+              height={16}
+              className="shrink-0 rounded-sm"
+              unoptimized
+            />
+          )}
+        </span>
+        {scoreArea}
+        <span className="flex-1 flex items-center gap-1.5 min-w-0">
+          {match.team2FlagUrl && (
+            <Image
+              src={match.team2FlagUrl}
+              alt={match.team2}
+              width={16}
+              height={16}
+              className="shrink-0 rounded-sm"
+              unoptimized
+            />
+          )}
+          <span className="truncate">{match.team2}</span>
+        </span>
+        <div className="shrink-0 w-14 flex justify-end">{actionArea}</div>
       </div>
+
+      {/* Mobile layout: teams flanking the kickoff time (like group matches),
+          with score + action below */}
+      <div className="flex flex-col gap-1.5 px-3 py-2.5 text-xs sm:hidden">
+        <div className="flex items-center gap-2">
+          <span className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
+            <span className="truncate text-right">{match.team1}</span>
+            {match.team1FlagUrl && (
+              <Image
+                src={match.team1FlagUrl}
+                alt={match.team1}
+                width={20}
+                height={20}
+                className="shrink-0 rounded-sm"
+                unoptimized
+              />
+            )}
+          </span>
+          <span className="shrink-0 w-12 text-center text-[10px] text-muted-foreground tabular-nums">
+            {kickoff}
+          </span>
+          <span className="flex-1 flex items-center gap-1.5 min-w-0">
+            {match.team2FlagUrl && (
+              <Image
+                src={match.team2FlagUrl}
+                alt={match.team2}
+                width={20}
+                height={20}
+                className="shrink-0 rounded-sm"
+                unoptimized
+              />
+            )}
+            <span className="truncate">{match.team2}</span>
+          </span>
+        </div>
+        <div className="flex items-center justify-center gap-3">
+          {scoreArea}
+          {actionArea}
+        </div>
       </div>
+
       {error && (
         <div className="px-3 pb-2 text-[10px] text-destructive">{error}</div>
       )}

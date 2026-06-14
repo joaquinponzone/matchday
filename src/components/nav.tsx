@@ -3,7 +3,6 @@ import Link from "next/link"
 import { getUser } from "@/lib/dal"
 import { getUnreadCount } from "@/server/db/queries"
 import { NavLinks } from "@/components/nav-links"
-import { ThemeToggle } from "@/components/theme-toggle"
 
 export async function Nav() {
   let unread = 0
@@ -20,10 +19,9 @@ export async function Nav() {
     <nav className="border-b">
       <div className="mx-auto w-full xl:max-w-[70%] px-4 flex justify-between items-center gap-6 px-4 py-3">
         <div className="flex items-center gap-3">
-          <Link href="/" className="font-medium text-xl text-blue-300">
-            <span className="hidden md:inline">⚽️</span> Dia de partido
+          <Link href="/" className="font-medium text-2xl text-blue-300">
+            ⚽️ <span className="hidden md:inline">Dia de partido</span>
           </Link>
-          <ThemeToggle />
         </div>
         <NavLinks unread={unread} role={role} />
       </div>

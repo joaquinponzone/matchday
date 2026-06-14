@@ -16,13 +16,13 @@ Cuando termina un partido, se compara tu predicción contra el resultado real:
 
 | Qué acertaste | Puntos |
 |---|---|
-| **Marcador exacto** (ej: dijiste 2-1 y salió 2-1) | **3 pts** |
+| **Marcador exacto** (ej: dijiste 2-1 y salió 2-1) | **2 pts** |
 | **Resultado correcto** (acertaste quién ganó o si fue empate, pero no el marcador) | **1 pt** |
 | **Nada** | **0 pts** |
 
 **Ejemplos:**
 
-- El partido termina **2-1** y vos pusiste **2-1** → te llevás **3 puntos** (clavaste el resultado exacto)
+- El partido termina **2-1** y vos pusiste **2-1** → te llevás **2 puntos** (clavaste el resultado exacto)
 - El partido termina **2-1** y vos pusiste **1-0** → te llevás **1 punto** (dijiste que ganaba el local y ganó, pero el marcador fue otro)
 - El partido termina **2-1** y vos pusiste **0-2** → te llevás **0 puntos** (le pifiaste al resultado)
 
@@ -31,10 +31,10 @@ Cuando termina un partido, se compara tu predicción contra el resultado real:
 A la derecha de las predicciones (en desktop) o arriba (en el celu) vas a ver la tabla de ranking con todos los usuarios. Se ordena por puntos totales, y si hay empate, por cantidad de marcadores exactos.
 
 El ranking muestra:
-- **Posición** y **nombre**
+- **#** (posición) y **Usuario** (nombre)
 - **Pts** — puntos totales acumulados
-- **Exactos** — cuántos resultados clavaste exacto (los de +3)
-- **Correctos** — cuántos acertaste el ganador/empate sin el marcador exacto (los de +1)
+- **Exacto** — cuántos resultados clavaste exacto (los de +2)
+- **Bien** — cuántos acertaste el ganador/empate sin el marcador exacto (los de +1)
 
 ### Visibilidad de predicciones
 

@@ -40,11 +40,11 @@ export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProp
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-8">#</TableHead>
-                <TableHead>Usuario</TableHead>
-                <TableHead className="text-right text-xs">Pts</TableHead>
-                <TableHead className="text-right hidden sm:table-cell text-xs">Exacto</TableHead>
-                <TableHead className="text-right hidden sm:table-cell text-xs">Bien</TableHead>
+                <TableHead className="w-8 px-2">#</TableHead>
+                <TableHead className="px-2">Usuario</TableHead>
+                <TableHead className="text-right text-xs px-2">Pts</TableHead>
+                <TableHead className="text-right text-xs px-2">Exacto</TableHead>
+                <TableHead className="text-right text-xs px-2">Bien</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -53,10 +53,10 @@ export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProp
                   key={entry.userId}
                   className={cn(entry.userId === currentUserId && "bg-muted/40")}
                 >
-                  <TableCell className="font-mono text-muted-foreground text-xs">
+                  <TableCell className="font-mono text-muted-foreground text-xs px-2">
                     {i + 1}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2">
                     <div className="font-medium leading-tight">
                       {entry.name}
                       {entry.userId === currentUserId && (
@@ -69,13 +69,13 @@ export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProp
                       ({entry.email})
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-mono font-semibold">
+                  <TableCell className="text-right font-mono font-semibold px-2">
                     {entry.totalPoints}
                   </TableCell>
-                  <TableCell className="text-right font-mono text-muted-foreground hidden sm:table-cell">
+                  <TableCell className="text-right font-mono text-muted-foreground px-2">
                     {entry.exactCount}
                   </TableCell>
-                  <TableCell className="text-right font-mono text-muted-foreground hidden sm:table-cell">
+                  <TableCell className="text-right font-mono text-muted-foreground px-2">
                     {entry.correctCount}
                   </TableCell>
                 </TableRow>

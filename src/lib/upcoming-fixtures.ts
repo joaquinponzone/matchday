@@ -1,5 +1,6 @@
 import "server-only"
 
+import { buildWcFlagLookup } from "@/lib/fifa"
 import {
   fetchGamesForDate,
   filterGamesForTeamIds,
@@ -118,5 +119,19 @@ export async function getUpcomingFixturesForUser(
   }
 
   collected.sort((a, b) => a.matchDate.localeCompare(b.matchDate))
-  return collected.slice(0, limit)
+  const fixtures = collected.slice(0, limit)
+
+  // For national teams, prefer FIFA's flat flags over Promiedos' inconsistent
+  // crests (some return a round federation badge). Clubs don't match and keep
+  // their original crest.
+  const flags = await buildWcFlagLookup()
+  return fixtures.map((f) => {
+    const ownFlag = flags.resolve(f.teamName ?? f.teamShortName ?? f.teamKey)
+    const opponentFlag = flags.resolve(f.opponent)
+    return {
+      ...f,
+      teamCrest: ownFlag ?? f.teamCrest,
+      opponentLogo: opponentFlag ?? f.opponentLogo,
+    }
+  })
 }

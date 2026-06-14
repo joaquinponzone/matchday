@@ -166,6 +166,75 @@ function getFlagUrl(pictureUrl: string | null): string | undefined {
   return pictureUrl.replace("{format}", "sq").replace("{size}", "3")
 }
 
+/** Lowercase, strip diacritics and collapse whitespace for team-name matching. */
+function normalizeTeamKey(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ")
+}
+
+/**
+ * Promiedos (es) team names that differ from FIFA's (es) names, mapped to the
+ * FIFA abbreviation so we can resolve the right flag. Keyed by normalized name.
+ */
+const PROMIEDOS_TO_FIFA_ABBR: Record<string, string> = {
+  "cabo verde": "CPV",
+  iran: "IRN",
+  "arabia saudita": "KSA",
+  "corea del sur": "KOR",
+  "republica checa": "CZE",
+  qatar: "QAT",
+  "bosnia herzegovina": "BIH",
+  "estados unidos": "USA",
+}
+
+export interface WcFlagLookup {
+  /** Resolves a national-team flag URL by name, or `undefined` for non-countries. */
+  resolve: (name: string | null | undefined) => string | undefined
+}
+
+/**
+ * Builds a lookup that maps a (Spanish) national-team name to its FIFA flag URL,
+ * using the WC squad list. Names that don't match a WC nation resolve to
+ * `undefined` (e.g. clubs), so callers can keep their original crest.
+ */
+export async function buildWcFlagLookup(): Promise<WcFlagLookup> {
+  const teams = await fetchFifaWCNationalTeamsForSearch()
+
+  const byName = new Map<string, string>()
+  const byAbbr = new Map<string, string>()
+  for (const t of teams) {
+    if (!t.flagUrl) continue
+    byName.set(normalizeTeamKey(t.nameEs), t.flagUrl)
+    if (t.abbreviation) byAbbr.set(t.abbreviation.toUpperCase(), t.flagUrl)
+  }
+
+  const resolve = (name: string | null | undefined): string | undefined => {
+    if (!name) return undefined
+    const key = normalizeTeamKey(name)
+
+    const aliasAbbr = PROMIEDOS_TO_FIFA_ABBR[key]
+    if (aliasAbbr) {
+      const flag = byAbbr.get(aliasAbbr)
+      if (flag) return flag
+    }
+
+    const exact = byName.get(key)
+    if (exact) return exact
+
+    for (const [fifaName, flag] of byName) {
+      if (fifaName.includes(key) || key.includes(fifaName)) return flag
+    }
+
+    return undefined
+  }
+
+  return { resolve }
+}
+
 export interface FifaWcNationalTeamForSearch {
   idTeam: string
   nameEs: string
