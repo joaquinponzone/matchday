@@ -1,6 +1,6 @@
 "use server"
 
-import { and, desc, eq, isNull, sql } from "drizzle-orm"
+import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm"
 
 import { db } from "./index"
 import { fetchFinishedWCMatchScores } from "@/lib/fifa"
@@ -352,6 +352,10 @@ export async function getProdeLeaderboard() {
       totalPoints: sql<number>`COALESCE(SUM(${prodePredictions.points}), 0)`,
       exactCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`,
       correctCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 1 THEN 1 END)`,
+      // Total de pronósticos cargados y, de esos, cuántos ya se jugaron
+      // (COUNT ignora los NULL → points es NULL hasta que el partido termina).
+      totalPredictions: sql<number>`COUNT(${prodePredictions.id})`,
+      scoredPredictions: sql<number>`COUNT(${prodePredictions.points})`,
     })
     .from(users)
     .leftJoin(prodePredictions, eq(users.id, prodePredictions.userId))
@@ -361,6 +365,37 @@ export async function getProdeLeaderboard() {
       desc(sql`COALESCE(SUM(${prodePredictions.points}), 0)`),
       desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`)
     )
+}
+
+// Ranking con métricas extra (racha actual) para el modal "Ver más datos".
+// La racha = corrida final de partidos consecutivos sumando puntos (points > 0),
+// contando desde el último partido evaluado hacia atrás (orden por matchNumber).
+export async function getProdeLeaderboardDetailed() {
+  const [entries, scored] = await Promise.all([
+    getProdeLeaderboard(),
+    db
+      .select({
+        userId: prodePredictions.userId,
+        matchNumber: prodePredictions.matchNumber,
+        points: prodePredictions.points,
+      })
+      .from(prodePredictions)
+      .where(isNotNull(prodePredictions.points))
+      .orderBy(prodePredictions.userId, prodePredictions.matchNumber),
+  ])
+
+  const streaks = new Map<number, number>()
+  for (const { userId, points } of scored) {
+    // Recorremos por matchNumber ascendente: la racha se reinicia al fallar
+    // (points === 0) y crece mientras se sume. Al final queda la corrida vigente.
+    const current = points && points > 0 ? (streaks.get(userId) ?? 0) + 1 : 0
+    streaks.set(userId, current)
+  }
+
+  return entries.map((entry) => ({
+    ...entry,
+    currentStreak: streaks.get(entry.userId) ?? 0,
+  }))
 }
 
 export async function upsertProdePrediction(data: {

@@ -1,7 +1,10 @@
 export const dynamic = "force-dynamic"
 
 import Image from "next/image"
-import { getUserPredictions, getProdeLeaderboard } from "@/server/db/queries"
+import {
+  getUserPredictions,
+  getProdeLeaderboardDetailed,
+} from "@/server/db/queries"
 import { getUser } from "@/lib/dal"
 import { WcTabs } from "./wc-tabs"
 import { GroupStandings } from "./group-standings"
@@ -109,7 +112,7 @@ export default async function WorldCupPage() {
       fetchWCGroupMatches(),
       fetchAllWCMatches(),
       getUserPredictions(user.id),
-      getProdeLeaderboard(),
+      getProdeLeaderboardDetailed(),
     ])
 
   // Bracket from knockout matches returned by the API

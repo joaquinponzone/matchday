@@ -9,14 +9,18 @@ import {
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { SyncResultsButton } from "./sync-results-button"
+import { LeaderboardDialog } from "./leaderboard-dialog"
 
-interface LeaderboardEntry {
+export interface LeaderboardEntry {
   userId: number
   name: string
   email: string
   totalPoints: number
   exactCount: number
   correctCount: number
+  totalPredictions: number
+  scoredPredictions: number
+  currentStreak: number
 }
 
 interface LeaderboardProps {
@@ -84,9 +88,10 @@ export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProp
           </Table>
         )}
       </CardContent>
-      {isAdmin && (
-        <CardFooter className="justify-end pt-3">
-          <SyncResultsButton />
+      {entries.length > 0 && (
+        <CardFooter className="justify-between gap-2 pt-3">
+          <LeaderboardDialog entries={entries} currentUserId={currentUserId} />
+          {isAdmin && <SyncResultsButton />}
         </CardFooter>
       )}
     </Card>
