@@ -21,7 +21,7 @@ import { cn, formatMatchTimeOnly } from "@/lib/utils"
 import type { WCMatch } from "../types"
 import { toUtcIso } from "../lib"
 import { getMatchPredictionsAction, type MatchPrediction } from "./actions"
-import { PointsBadge, isFinished, isLive } from "./predictions-list"
+import { LiveBadge, PointsBadge, isFinished, isLive } from "./predictions-list"
 
 function sortPredictions(
   predictions: MatchPrediction[],
@@ -117,17 +117,19 @@ export function MatchPredictionsDialog({
               )}
             </span>
           </DialogTitle>
-          <DialogDescription className="text-center">
+          <DialogDescription asChild className="text-center">
             {finished || live ? (
-              <span
-                className={cn(
-                  "font-mono text-lg font-semibold text-foreground tabular-nums",
-                  live && "text-red-500"
-                )}
-              >
-                {match.homeScore} - {match.awayScore}
-                {live && <span className="ml-1.5 text-[10px]">EN VIVO</span>}
-              </span>
+              <div className="flex items-center justify-center gap-2">
+                <span
+                  className={cn(
+                    "font-mono text-lg font-semibold text-foreground tabular-nums",
+                    live && "text-red-500"
+                  )}
+                >
+                  {match.homeScore} - {match.awayScore}
+                </span>
+                {live && <LiveBadge />}
+              </div>
             ) : (
               <span>
                 {hasScore

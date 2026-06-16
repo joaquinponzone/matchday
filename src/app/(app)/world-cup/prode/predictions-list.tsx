@@ -47,7 +47,7 @@ export function isLive(match: WCMatch): boolean {
   )
 }
 
-function LiveBadge() {
+export function LiveBadge() {
   return (
     <Badge
       variant="outline"
