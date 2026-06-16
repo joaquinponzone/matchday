@@ -16,18 +16,20 @@ import { cn, isToday, formatMatchTimeOnly } from "@/lib/utils"
 import type { WCMatch } from "../types"
 import type { ProdePrediction } from "@/server/db/schema"
 import { savePrediction } from "./actions"
+import { MatchPredictionsDialog } from "./match-predictions-dialog"
 import { dayLabel, groupMatchesByDay, toUtcIso } from "../lib"
 
 interface PredictionsListProps {
   matches: WCMatch[]
   initialPredictions: ProdePrediction[]
+  currentUserId: number
 }
 
-function isLocked(match: WCMatch): boolean {
+export function isLocked(match: WCMatch): boolean {
   return new Date() >= new Date(toUtcIso(match.date, match.time))
 }
 
-function isFinished(match: WCMatch): boolean {
+export function isFinished(match: WCMatch): boolean {
   return (
     match.finished === true &&
     match.homeScore != null &&
@@ -36,7 +38,7 @@ function isFinished(match: WCMatch): boolean {
 }
 
 // In progress: kickoff has passed, not finished yet, but a live score exists.
-function isLive(match: WCMatch): boolean {
+export function isLive(match: WCMatch): boolean {
   return (
     isLocked(match) &&
     !isFinished(match) &&
@@ -50,7 +52,7 @@ function LiveBadge() {
     <Badge
       variant="outline"
       title="Partido en juego"
-      className="text-[9px] font-mono shrink-0 gap-1 px-1 border-red-500/50 text-red-500"
+      className="shrink-0 gap-1 border-red-500/50 px-1 font-mono text-[9px] text-red-500"
     >
       <span className="relative flex size-1.5">
         <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-75" />
@@ -61,17 +63,17 @@ function LiveBadge() {
   )
 }
 
-function PointsBadge({ points }: { points: number | null }) {
+export function PointsBadge({ points }: { points: number | null }) {
   if (points === null) return null
   return (
     <Badge
       variant="outline"
       title="Puntos que sumaste en este partido"
       className={cn(
-        "text-[10px] font-mono shrink-0 gap-0.5",
+        "shrink-0 gap-0.5 font-mono text-[10px]",
         points === 2 && "border-green-500 text-green-500",
         points === 1 && "border-yellow-500 text-yellow-500",
-        points === 0 && "border-muted-foreground text-muted-foreground",
+        points === 0 && "border-muted-foreground text-muted-foreground"
       )}
     >
       {points === 2 ? "+2" : points === 1 ? "+1" : "0"}
@@ -127,7 +129,7 @@ function GoalStepper({
         <Minus data-icon="inline-start" />
       </Button>
       <span
-        className="min-w-6 text-center text-sm font-mono tabular-nums"
+        className="min-w-6 text-center font-mono text-sm tabular-nums"
         aria-live="polite"
         aria-atomic="true"
       >
@@ -150,9 +152,11 @@ function GoalStepper({
 function MatchPredictionRow({
   match,
   prediction,
+  currentUserId,
 }: {
   match: WCMatch
   prediction: ProdePrediction | undefined
+  currentUserId: number
 }) {
   const locked = isLocked(match)
   const finished = isFinished(match)
@@ -191,13 +195,13 @@ function MatchPredictionRow({
   // Score steppers, real result, or locked prediction display — shared between
   // the mobile (stacked) and desktop (inline) layouts.
   const scoreArea = (
-    <div className="flex items-center gap-1 shrink-0">
+    <div className="flex shrink-0 items-center gap-1">
       {finished || live ? (
-        <span className="flex flex-col items-center w-14">
+        <span className="flex w-14 flex-col items-center">
           <span
             className={cn(
               "font-mono text-sm font-semibold tabular-nums",
-              live && "text-red-500",
+              live && "text-red-500"
             )}
           >
             {match.homeScore} - {match.awayScore}
@@ -209,7 +213,7 @@ function MatchPredictionRow({
           )}
         </span>
       ) : locked ? (
-        <span className="font-mono text-sm text-muted-foreground w-14 text-center">
+        <span className="w-14 text-center font-mono text-sm text-muted-foreground">
           {prediction != null
             ? `${prediction.homeScore} - ${prediction.awayScore}`
             : "— - —"}
@@ -224,7 +228,7 @@ function MatchPredictionRow({
               setSaved(false)
             }}
           />
-          <span className="text-muted-foreground px-0.5">-</span>
+          <span className="px-0.5 text-muted-foreground">-</span>
           <GoalStepper
             value={away}
             teamName={match.team2}
@@ -244,29 +248,34 @@ function MatchPredictionRow({
       onClick={handleSave}
       disabled={isPending || (!dirty && saved)}
       className={cn(
-        "text-[10px] px-1.5 py-0.5 rounded border transition-colors",
+        "rounded border px-1.5 py-0.5 text-[10px] transition-colors",
         saved && !dirty
-          ? "border-green-500/40 text-green-500/70 cursor-default"
+          ? "cursor-default border-green-500/40 text-green-500/70"
           : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
-        isPending && "opacity-50 cursor-not-allowed",
+        isPending && "cursor-not-allowed opacity-50"
       )}
     >
       {isPending ? "..." : saved && !dirty ? "✓" : "Guardar"}
     </button>
-  ) : live ? (
-    <LiveBadge />
   ) : (
-    <PointsBadge points={prediction?.points ?? null} />
+    <div className="flex items-center gap-1.5">
+      {live ? (
+        <LiveBadge />
+      ) : (
+        <PointsBadge points={prediction?.points ?? null} />
+      )}
+      <MatchPredictionsDialog match={match} currentUserId={currentUserId} />
+    </div>
   )
 
   return (
     <div className="border-b last:border-0">
       {/* Desktop layout: time | team1 | score | team2 | action */}
-      <div className="hidden sm:flex items-center gap-2 px-3 py-2.5 text-xs">
-        <span className="shrink-0 w-10 text-[10px] text-muted-foreground tabular-nums">
+      <div className="hidden items-center gap-2 px-3 py-2.5 text-xs sm:flex">
+        <span className="w-10 shrink-0 text-[10px] text-muted-foreground tabular-nums">
           {kickoff}
         </span>
-        <span className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
+        <span className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
           <span className="truncate text-right">{match.team1}</span>
           {match.team1FlagUrl && (
             <Image
@@ -280,7 +289,7 @@ function MatchPredictionRow({
           )}
         </span>
         {scoreArea}
-        <span className="flex-1 flex items-center gap-1.5 min-w-0">
+        <span className="flex min-w-0 flex-1 items-center gap-1.5">
           {match.team2FlagUrl && (
             <Image
               src={match.team2FlagUrl}
@@ -293,14 +302,14 @@ function MatchPredictionRow({
           )}
           <span className="truncate">{match.team2}</span>
         </span>
-        <div className="shrink-0 w-14 flex justify-end">{actionArea}</div>
+        <div className="flex shrink-0 justify-end">{actionArea}</div>
       </div>
 
       {/* Mobile layout: teams flanking the kickoff time (like group matches),
           with score + action below */}
       <div className="flex flex-col gap-1.5 px-3 py-2.5 text-xs sm:hidden">
         <div className="flex items-center gap-2">
-          <span className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
+          <span className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
             <span className="truncate text-right">{match.team1}</span>
             {match.team1FlagUrl && (
               <Image
@@ -313,10 +322,10 @@ function MatchPredictionRow({
               />
             )}
           </span>
-          <span className="shrink-0 w-12 text-center text-[10px] text-muted-foreground tabular-nums">
+          <span className="w-12 shrink-0 text-center text-[10px] text-muted-foreground tabular-nums">
             {kickoff}
           </span>
-          <span className="flex-1 flex items-center gap-1.5 min-w-0">
+          <span className="flex min-w-0 flex-1 items-center gap-1.5">
             {match.team2FlagUrl && (
               <Image
                 src={match.team2FlagUrl}
@@ -330,9 +339,10 @@ function MatchPredictionRow({
             <span className="truncate">{match.team2}</span>
           </span>
         </div>
-        <div className="flex items-center justify-center gap-3">
-          {scoreArea}
-          {actionArea}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <span aria-hidden />
+          <div className="flex justify-center">{scoreArea}</div>
+          <div className="flex justify-end">{actionArea}</div>
         </div>
       </div>
 
@@ -343,7 +353,11 @@ function MatchPredictionRow({
   )
 }
 
-export function PredictionsList({ matches, initialPredictions }: PredictionsListProps) {
+export function PredictionsList({
+  matches,
+  initialPredictions,
+  currentUserId,
+}: PredictionsListProps) {
   const predByMatch = new Map(initialPredictions.map((p) => [p.matchNumber, p]))
   const todayRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] = useState<"pending" | "all">("pending")
@@ -362,16 +376,16 @@ export function PredictionsList({ matches, initialPredictions }: PredictionsList
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-1 rounded-md border border-border p-0.5 self-start">
+      <div className="flex items-center gap-1 self-start rounded-md border border-border p-0.5">
         {(["pending", "all"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={cn(
-              "px-2.5 py-1 text-xs rounded-sm transition-colors",
+              "rounded-sm px-2.5 py-1 text-xs transition-colors",
               filter === f
-                ? "bg-foreground text-background font-medium"
-                : "text-muted-foreground hover:text-foreground",
+                ? "bg-foreground font-medium text-background"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {f === "pending" ? "Pendientes" : "Todos"}
@@ -380,7 +394,7 @@ export function PredictionsList({ matches, initialPredictions }: PredictionsList
       </div>
 
       {sortedDays.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4">
+        <p className="py-4 text-sm text-muted-foreground">
           No hay partidos pendientes.
         </p>
       ) : (
@@ -410,6 +424,7 @@ export function PredictionsList({ matches, initialPredictions }: PredictionsList
                       key={match.num}
                       match={match}
                       prediction={predByMatch.get(match.num!)}
+                      currentUserId={currentUserId}
                     />
                   ))}
                 </CardContent>

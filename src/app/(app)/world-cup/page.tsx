@@ -13,7 +13,11 @@ import {
   toUtcIso,
   formatMatchDate,
 } from "./lib"
-import { fetchWCStandings, fetchWCGroupMatches, fetchAllWCMatches } from "@/lib/fifa"
+import {
+  fetchWCStandings,
+  fetchWCGroupMatches,
+  fetchAllWCMatches,
+} from "@/lib/fifa"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Trophy } from "lucide-react"
@@ -26,8 +30,8 @@ function MatchRow({ match }: { match: WCMatch }) {
   const utcDate = toUtcIso(match.date, match.time)
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 border-b last:border-0 text-xs">
-      <span className="flex-1 flex items-center justify-end gap-1.5 truncate">
+    <div className="flex items-center gap-2 border-b px-3 py-2 text-xs last:border-0">
+      <span className="flex flex-1 items-center justify-end gap-1.5 truncate">
         <span className="truncate">{match.team1}</span>
         {match.team1FlagUrl && (
           <Image
@@ -40,18 +44,20 @@ function MatchRow({ match }: { match: WCMatch }) {
           />
         )}
       </span>
-      <span className="text-center w-24 shrink-0 font-mono">
-        {match.finished && match.homeScore != null && match.awayScore != null ? (
+      <span className="w-24 shrink-0 text-center font-mono">
+        {match.finished &&
+        match.homeScore != null &&
+        match.awayScore != null ? (
           <span className="text-sm font-semibold tabular-nums">
             {match.homeScore} - {match.awayScore}
           </span>
         ) : (
-          <span className="text-muted-foreground text-[10px]">
+          <span className="text-[10px] text-muted-foreground">
             {formatMatchDate(utcDate)}
           </span>
         )}
       </span>
-      <span className="flex-1 flex items-center gap-1.5 truncate">
+      <span className="flex flex-1 items-center gap-1.5 truncate">
         {match.team2FlagUrl && (
           <Image
             src={match.team2FlagUrl}
@@ -129,13 +135,13 @@ export default async function WorldCupPage() {
       acc[key].push(m)
       return acc
     },
-    {},
+    {}
   )
   const sortedGroups = Object.keys(groupedMatches).sort()
 
   const prodeContent = (
-    <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-4">
-      <div className="lg:col-span-3 mb-2">
+    <div className="flex flex-col-reverse gap-4 lg:grid lg:grid-cols-3">
+      <div className="mb-2 lg:col-span-3">
         <Alert>
           <Trophy className="size-4" />
           <AlertTitle>Pozo de premios - Pendiente</AlertTitle>
@@ -149,6 +155,7 @@ export default async function WorldCupPage() {
         <PredictionsList
           matches={allMatches}
           initialPredictions={userPredictions}
+          currentUserId={user.id}
         />
       </div>
       <div className="flex flex-col gap-4">
@@ -156,18 +163,22 @@ export default async function WorldCupPage() {
             con la primera tarjeta de partidos en pantallas grandes */}
         <div
           aria-hidden
-          className="hidden lg:flex invisible items-center gap-1 rounded-md border p-0.5 self-start"
+          className="invisible hidden items-center gap-1 self-start rounded-md border p-0.5 lg:flex"
         >
           <span className="px-2.5 py-1 text-xs">Pendientes</span>
         </div>
-        <Leaderboard entries={leaderboard} currentUserId={user.id} isAdmin={user.role === "admin"} />
+        <Leaderboard
+          entries={leaderboard}
+          currentUserId={user.id}
+          isAdmin={user.role === "admin"}
+        />
       </div>
     </div>
   )
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl md:text-2xl lg:text-3xl font-medium">
+      <h1 className="text-xl font-medium md:text-2xl lg:text-3xl">
         FIFA World Cup 2026
       </h1>
       {firstMatchDate && (

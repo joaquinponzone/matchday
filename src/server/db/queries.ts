@@ -19,7 +19,11 @@ import { revalidatePath } from "next/cache"
 // Users
 
 export async function getUserByEmail(email: string) {
-  const rows = await db.select().from(users).where(eq(users.email, email)).limit(1)
+  const rows = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1)
   return rows[0] ?? null
 }
 
@@ -122,7 +126,9 @@ export async function isNicknameTaken(nickname: string, excludeUserId: number) {
   const rows = await db
     .select({ id: users.id })
     .from(users)
-    .where(and(eq(users.nickname, nickname), sql`${users.id} != ${excludeUserId}`))
+    .where(
+      and(eq(users.nickname, nickname), sql`${users.id} != ${excludeUserId}`)
+    )
     .limit(1)
   return rows.length > 0
 }
@@ -130,11 +136,18 @@ export async function isNicknameTaken(nickname: string, excludeUserId: number) {
 // Settings
 
 export async function getSettings(userId: number) {
-  const rows = await db.select().from(settings).where(eq(settings.userId, userId)).limit(1)
+  const rows = await db
+    .select()
+    .from(settings)
+    .where(eq(settings.userId, userId))
+    .limit(1)
   return rows[0] ?? null
 }
 
-export async function updateSettings(userId: number, data: Partial<typeof settings.$inferInsert>) {
+export async function updateSettings(
+  userId: number,
+  data: Partial<typeof settings.$inferInsert>
+) {
   await db
     .update(settings)
     .set({ ...data, updatedAt: new Date().toISOString() })
@@ -171,7 +184,11 @@ export async function getFollowedTeams(userId: number): Promise<string[]> {
   return rows.map((r) => r.teamKey)
 }
 
-export async function setTeamEnabled(userId: number, teamKey: string, enabled: boolean) {
+export async function setTeamEnabled(
+  userId: number,
+  teamKey: string,
+  enabled: boolean
+) {
   await db
     .insert(followedTeams)
     .values({ userId, teamKey, enabled: enabled ? 1 : 0 })
@@ -252,10 +269,11 @@ export async function getFollowedTeamsWithMeta(userId: number) {
 
 export async function getNotifications(
   userId: number,
-  filters?: { channel?: string; status?: string },
+  filters?: { channel?: string; status?: string }
 ) {
   const conditions = [eq(notifications.userId, userId)]
-  if (filters?.channel) conditions.push(eq(notifications.channel, filters.channel))
+  if (filters?.channel)
+    conditions.push(eq(notifications.channel, filters.channel))
   if (filters?.status) conditions.push(eq(notifications.status, filters.status))
 
   return db
@@ -284,8 +302,8 @@ export async function getUnreadCount(userId: number) {
       and(
         eq(notifications.userId, userId),
         eq(notifications.channel, "in_app"),
-        eq(notifications.status, "sent"),
-      ),
+        eq(notifications.status, "sent")
+      )
     )
   return rows.length
 }
@@ -318,6 +336,7 @@ export async function getMatchPredictions(matchNumber: number) {
       awayScore: prodePredictions.awayScore,
       points: prodePredictions.points,
       userName: sql<string>`COALESCE(${users.nickname}, ${users.name})`,
+      email: users.email,
     })
     .from(prodePredictions)
     .innerJoin(users, eq(prodePredictions.userId, users.id))
@@ -340,7 +359,7 @@ export async function getProdeLeaderboard() {
     .groupBy(users.id, users.name, users.nickname, users.email)
     .orderBy(
       desc(sql`COALESCE(SUM(${prodePredictions.points}), 0)`),
-      desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`),
+      desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`)
     )
 }
 
@@ -367,7 +386,7 @@ export async function upsertProdePrediction(data: {
 export async function calculateMatchPoints(
   matchNumber: number,
   realHome: number,
-  realAway: number,
+  realAway: number
 ) {
   const preds = await db
     .select()
@@ -375,8 +394,8 @@ export async function calculateMatchPoints(
     .where(
       and(
         eq(prodePredictions.matchNumber, matchNumber),
-        isNull(prodePredictions.points),
-      ),
+        isNull(prodePredictions.points)
+      )
     )
 
   for (const pred of preds) {
@@ -384,8 +403,11 @@ export async function calculateMatchPoints(
     if (pred.homeScore === realHome && pred.awayScore === realAway) {
       points = 2
     } else {
-      const outcome = (h: number, a: number) => (h > a ? "1" : h < a ? "2" : "X")
-      if (outcome(pred.homeScore, pred.awayScore) === outcome(realHome, realAway)) {
+      const outcome = (h: number, a: number) =>
+        h > a ? "1" : h < a ? "2" : "X"
+      if (
+        outcome(pred.homeScore, pred.awayScore) === outcome(realHome, realAway)
+      ) {
         points = 1
       }
     }
