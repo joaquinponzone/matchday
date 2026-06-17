@@ -1,15 +1,13 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { SyncResultsButton } from "./sync-results-button"
 import { LeaderboardDialog } from "./leaderboard-dialog"
+import { LeaderboardTable } from "./leaderboard-table"
 
 export interface LeaderboardEntry {
   userId: number
@@ -29,9 +27,13 @@ interface LeaderboardProps {
   isAdmin?: boolean
 }
 
-export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProps) {
+export function Leaderboard({
+  entries,
+  currentUserId,
+  isAdmin,
+}: LeaderboardProps) {
   return (
-    <Card className="lg:sticky lg:top-4 bg-transparent border-none">
+    <Card className="2xl:sticky 2xl:top-4 bg-transparent border-none">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold">Ranking</CardTitle>
       </CardHeader>
@@ -41,57 +43,40 @@ export function Leaderboard({ entries, currentUserId, isAdmin }: LeaderboardProp
             No hay usuarios registrados todavía.
           </p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8 px-2">#</TableHead>
-                <TableHead className="px-2">Usuario</TableHead>
-                <TableHead className="text-right text-xs px-2">Pts</TableHead>
-                <TableHead className="text-right text-xs px-2">Exacto</TableHead>
-                <TableHead className="text-right text-xs px-2">Bien</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {entries.map((entry, i) => (
-                <TableRow
-                  key={entry.userId}
-                  className={cn(entry.userId === currentUserId && "bg-muted/40")}
-                >
-                  <TableCell className="font-mono text-muted-foreground text-xs px-2">
-                    {i + 1}
-                  </TableCell>
-                  <TableCell className="px-2">
-                    <div className="font-medium leading-tight">
-                      {entry.name}
-                      {entry.userId === currentUserId && (
-                        <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">
-                          (vos)
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-0.5 font-mono text-[10px] text-muted-foreground break-all">
-                      ({entry.email})
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right font-mono font-semibold px-2">
-                    {entry.totalPoints}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-muted-foreground px-2">
-                    {entry.exactCount}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-muted-foreground px-2">
-                    {entry.correctCount}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <>
+            {/* Compacta: mobile (<md) y sidebar angosto (>=2xl) */}
+            <div className="block md:hidden 2xl:block">
+              <LeaderboardTable
+                entries={entries}
+                currentUserId={currentUserId}
+              />
+            </div>
+            {/* Detallada inline: ranking full-width entre md y xl */}
+            <div className="hidden md:block 2xl:hidden">
+              <LeaderboardTable
+                entries={entries}
+                currentUserId={currentUserId}
+                detailed
+              />
+            </div>
+          </>
         )}
       </CardContent>
       {entries.length > 0 && (
-        <CardFooter className="justify-between gap-2 pt-3">
-          <LeaderboardDialog entries={entries} currentUserId={currentUserId} />
-          {isAdmin && <SyncResultsButton />}
+        <CardFooter className="flex items-center gap-2 pt-3">
+          {/* El dialog "Ver más datos" solo se justifica donde se ve la tabla
+              compacta: mobile (<md) y sidebar angosto (>=2xl). */}
+          <div className="md:hidden 2xl:block">
+            <LeaderboardDialog
+              entries={entries}
+              currentUserId={currentUserId}
+            />
+          </div>
+          {isAdmin && (
+            <div className="ml-auto">
+              <SyncResultsButton />
+            </div>
+          )}
         </CardFooter>
       )}
     </Card>

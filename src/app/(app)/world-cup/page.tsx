@@ -149,8 +149,8 @@ export default async function WorldCupPage() {
   const sortedGroups = Object.keys(groupedMatches).sort()
 
   const prodeContent = (
-    <div className="flex flex-col-reverse gap-4 lg:grid lg:grid-cols-3">
-      <div className="mb-2 lg:col-span-3">
+    <div className="flex flex-col-reverse gap-4 2xl:grid 2xl:grid-cols-3">
+      <div className="mb-2 2xl:col-span-3">
         <Alert>
           <Trophy className="size-4" />
           <AlertTitle>Pozo de premios - Pendiente</AlertTitle>
@@ -160,7 +160,7 @@ export default async function WorldCupPage() {
           </AlertDescription>
         </Alert>
       </div>
-      <div className="lg:col-span-2">
+      <div className="2xl:col-span-2">
         <PredictionsList
           matches={allMatches}
           initialPredictions={userPredictions}
@@ -172,7 +172,7 @@ export default async function WorldCupPage() {
             con la primera tarjeta de partidos en pantallas grandes */}
         <div
           aria-hidden
-          className="invisible hidden items-center gap-1 self-start rounded-md border p-0.5 lg:flex"
+          className="invisible hidden items-center gap-1 self-start rounded-md border p-0.5 2xl:flex"
         >
           <span className="px-2.5 py-1 text-xs">Pendientes</span>
         </div>
