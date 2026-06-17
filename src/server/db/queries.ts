@@ -369,8 +369,13 @@ export async function getProdeLeaderboard() {
 
 // Ranking con métricas extra (racha actual) para el modal "Ver más datos".
 // La racha = corrida final de partidos consecutivos sumando puntos (points > 0),
-// contando desde el último partido evaluado hacia atrás (orden por matchNumber).
-export async function getProdeLeaderboardDetailed() {
+// contando desde el último partido jugado hacia atrás.
+//
+// IMPORTANTE: el `matchNumber` de FIFA NO coincide con el orden cronológico de
+// juego, así que la racha se debe ordenar por el orden real de los partidos.
+// `matchOrder` es la lista de matchNumbers en orden cronológico (de
+// `fetchAllWCMatches`). Si no se provee, se cae al orden por matchNumber.
+export async function getProdeLeaderboardDetailed(matchOrder?: number[]) {
   const [entries, scored] = await Promise.all([
     getProdeLeaderboard(),
     db
@@ -380,15 +385,31 @@ export async function getProdeLeaderboardDetailed() {
         points: prodePredictions.points,
       })
       .from(prodePredictions)
-      .where(isNotNull(prodePredictions.points))
-      .orderBy(prodePredictions.userId, prodePredictions.matchNumber),
+      .where(isNotNull(prodePredictions.points)),
   ])
 
+  // Ranking cronológico por matchNumber. Fallback: el propio matchNumber.
+  const chronoRank = new Map<number, number>()
+  matchOrder?.forEach((num, i) => chronoRank.set(num, i))
+  const rankOf = (num: number) => chronoRank.get(num) ?? num
+
+  // Agrupamos las predicciones evaluadas por usuario y las ordenamos
+  // cronológicamente para calcular la corrida vigente de cada uno.
+  const byUser = new Map<number, { matchNumber: number; points: number | null }[]>()
+  for (const row of scored) {
+    const list = byUser.get(row.userId) ?? []
+    list.push(row)
+    byUser.set(row.userId, list)
+  }
+
   const streaks = new Map<number, number>()
-  for (const { userId, points } of scored) {
-    // Recorremos por matchNumber ascendente: la racha se reinicia al fallar
-    // (points === 0) y crece mientras se sume. Al final queda la corrida vigente.
-    const current = points && points > 0 ? (streaks.get(userId) ?? 0) + 1 : 0
+  for (const [userId, rows] of byUser) {
+    rows.sort((a, b) => rankOf(a.matchNumber) - rankOf(b.matchNumber))
+    let current = 0
+    for (const { points } of rows) {
+      // La racha se reinicia al fallar (points === 0) y crece mientras se sume.
+      current = points && points > 0 ? current + 1 : 0
+    }
     streaks.set(userId, current)
   }
 

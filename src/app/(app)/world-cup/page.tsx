@@ -106,14 +106,20 @@ export default async function WorldCupPage() {
   const user = await getUser()
 
   // Live data from FIFA API + prode data
-  const [standings, apiGroupMatches, allMatches, userPredictions, leaderboard] =
+  const [standings, apiGroupMatches, allMatches, userPredictions] =
     await Promise.all([
       fetchWCStandings(),
       fetchWCGroupMatches(),
       fetchAllWCMatches(),
       getUserPredictions(user.id),
-      getProdeLeaderboardDetailed(),
     ])
+
+  // `allMatches` viene ordenado cronológicamente: lo usamos para que la racha
+  // del leaderboard se calcule en el orden real de juego (el matchNumber de
+  // FIFA no es cronológico).
+  const leaderboard = await getProdeLeaderboardDetailed(
+    allMatches.map((m) => m.num).filter((n): n is number => n !== undefined)
+  )
 
   // Bracket from knockout matches returned by the API
   const bracketRounds = buildBracketRounds(allMatches)
