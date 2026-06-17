@@ -402,20 +402,24 @@ export async function getProdeLeaderboardDetailed(matchOrder?: number[]) {
     byUser.set(row.userId, list)
   }
 
-  const streaks = new Map<number, number>()
+  const streaks = new Map<number, { current: number; longest: number }>()
   for (const [userId, rows] of byUser) {
     rows.sort((a, b) => rankOf(a.matchNumber) - rankOf(b.matchNumber))
     let current = 0
+    let longest = 0
     for (const { points } of rows) {
       // La racha se reinicia al fallar (points === 0) y crece mientras se sume.
       current = points && points > 0 ? current + 1 : 0
+      // `longest` guarda la mejor corrida histórica, aunque después se corte.
+      longest = Math.max(longest, current)
     }
-    streaks.set(userId, current)
+    streaks.set(userId, { current, longest })
   }
 
   return entries.map((entry) => ({
     ...entry,
-    currentStreak: streaks.get(entry.userId) ?? 0,
+    currentStreak: streaks.get(entry.userId)?.current ?? 0,
+    longestStreak: streaks.get(entry.userId)?.longest ?? 0,
   }))
 }
 

@@ -51,6 +51,11 @@ export const COLUMNS: { key: string; label: string; help: string }[] = [
   { key: "carg", label: "Carg", help: "Pronósticos cargados (total)" },
   { key: "eval", label: "Eval", help: "Partidos ya jugados de los cargados" },
   { key: "racha", label: "Racha", help: "Partidos consecutivos sumando puntos" },
+  {
+    key: "maxracha",
+    label: "Máx",
+    help: "Racha más larga alcanzada (histórica)",
+  },
 ]
 
 export function LeaderboardTable({
@@ -148,6 +153,9 @@ export function LeaderboardTable({
                   </TableCell>
                   <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
                     {entry.currentStreak}
+                  </TableCell>
+                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    {entry.longestStreak}
                   </TableCell>
                 </>
               )}

@@ -19,6 +19,7 @@ export interface LeaderboardEntry {
   totalPredictions: number
   scoredPredictions: number
   currentStreak: number
+  longestStreak: number
 }
 
 interface LeaderboardProps {
