@@ -1,4 +1,8 @@
-import type { WCMatch, GroupStanding, GroupTeam } from "@/app/(app)/world-cup/types"
+import type {
+  WCMatch,
+  GroupStanding,
+  GroupTeam,
+} from "@/app/(app)/world-cup/types"
 
 const FIFA_BASE = "https://api.fifa.com/api/v3"
 const COMPETITION_ID = "17"
@@ -59,7 +63,7 @@ interface FIFAMatch {
   MatchNumber: number
   Date: string
   TimeDefined: boolean
-  MatchStatus: number  // 0=finished, 1=upcoming, 3=live
+  MatchStatus: number // 0=finished, 1=upcoming, 3=live
   HomeTeamScore: number | null
   AwayTeamScore: number | null
   Home: FIFAMatchTeam | null
@@ -86,75 +90,75 @@ function getLocale(arr: LocalizedString[]): string {
 const TEAM_NAME_ES: Record<string, string> = {
   // Americas
   "United States": "Estados Unidos",
-  "USA": "EE.UU.",
-  "Mexico": "México",
-  "Canada": "Canadá",
-  "Brazil": "Brasil",
-  "Peru": "Perú",
-  "Haiti": "Haití",
-  "Panama": "Panamá",
+  USA: "EE.UU.",
+  Mexico: "México",
+  Canada: "Canadá",
+  Brazil: "Brasil",
+  Peru: "Perú",
+  Haiti: "Haití",
+  Panama: "Panamá",
   "Trinidad and Tobago": "Trinidad y Tobago",
   "Dominican Republic": "República Dominicana",
-  "Bolivia": "Bolivia",
+  Bolivia: "Bolivia",
   // Europe
-  "England": "Inglaterra",
-  "Scotland": "Escocia",
-  "Wales": "Gales",
+  England: "Inglaterra",
+  Scotland: "Escocia",
+  Wales: "Gales",
   "Northern Ireland": "Irlanda del Norte",
-  "Ireland": "Irlanda",
-  "Germany": "Alemania",
-  "Netherlands": "Países Bajos",
-  "Switzerland": "Suiza",
-  "Belgium": "Bélgica",
-  "Denmark": "Dinamarca",
-  "Sweden": "Suecia",
-  "Norway": "Noruega",
-  "Finland": "Finlandia",
-  "Iceland": "Islandia",
-  "Poland": "Polonia",
-  "Hungary": "Hungría",
-  "Turkey": "Turquía",
-  "Greece": "Grecia",
-  "Romania": "Rumania",
+  Ireland: "Irlanda",
+  Germany: "Alemania",
+  Netherlands: "Países Bajos",
+  Switzerland: "Suiza",
+  Belgium: "Bélgica",
+  Denmark: "Dinamarca",
+  Sweden: "Suecia",
+  Norway: "Noruega",
+  Finland: "Finlandia",
+  Iceland: "Islandia",
+  Poland: "Polonia",
+  Hungary: "Hungría",
+  Turkey: "Turquía",
+  Greece: "Grecia",
+  Romania: "Rumania",
   "Czech Republic": "República Checa",
-  "Czechia": "República Checa",
-  "Slovakia": "Eslovaquia",
-  "Slovenia": "Eslovenia",
-  "Croatia": "Croacia",
-  "Serbia": "Serbia",
-  "Ukraine": "Ucrania",
+  Czechia: "República Checa",
+  Slovakia: "Eslovaquia",
+  Slovenia: "Eslovenia",
+  Croatia: "Croacia",
+  Serbia: "Serbia",
+  Ukraine: "Ucrania",
   "North Macedonia": "Macedonia del Norte",
   "Bosnia and Herzegovina": "Bosnia y Herzegovina",
-  "Albania": "Albania",
-  "Austria": "Austria",
-  "Russia": "Rusia",
+  Albania: "Albania",
+  Austria: "Austria",
+  Russia: "Rusia",
   // Africa
-  "Morocco": "Marruecos",
+  Morocco: "Marruecos",
   "South Africa": "Sudáfrica",
   "Ivory Coast": "Costa de Marfil",
-  "Cameroon": "Camerún",
-  "Tunisia": "Túnez",
-  "Algeria": "Argelia",
+  Cameroon: "Camerún",
+  Tunisia: "Túnez",
+  Algeria: "Argelia",
   "Cape Verde": "Cabo Verde",
   "DR Congo": "Rep. Dem. del Congo",
-  "Egypt": "Egipto",
+  Egypt: "Egipto",
   // Asia
   "South Korea": "Corea del Sur",
   "Korea Republic": "Corea del Sur",
   "North Korea": "Corea del Norte",
-  "Japan": "Japón",
+  Japan: "Japón",
   "Saudi Arabia": "Arabia Saudita",
-  "Iran": "Irán",
+  Iran: "Irán",
   "IR Iran": "Irán",
-  "France": "Francia",
-  "Spain": "España",
-  "Jordan": "Jordania",
-  "Qatar": "Catar",
-  "Indonesia": "Indonesia",
+  France: "Francia",
+  Spain: "España",
+  Jordan: "Jordania",
+  Qatar: "Catar",
+  Indonesia: "Indonesia",
   "China PR": "China",
   // Oceania
   "New Zealand": "Nueva Zelanda",
-  "Australia": "Australia",
+  Australia: "Australia",
 }
 
 function translateTeamName(name: string): string {
@@ -253,7 +257,7 @@ export async function fetchFifaWCNationalTeamsForSearch(): Promise<
   try {
     const res = await fetch(
       `${FIFA_BASE}/calendar/${COMPETITION_ID}/${SEASON_ID}/${STAGE_ID}/Standing?language=es`,
-      { next: { revalidate: 3600 } },
+      { next: { revalidate: 3600 } }
     )
     if (!res.ok) return []
 
@@ -294,13 +298,19 @@ export async function fetchWCStandings(): Promise<GroupStanding[]> {
   try {
     const res = await fetch(
       `${FIFA_BASE}/calendar/${COMPETITION_ID}/${SEASON_ID}/${STAGE_ID}/Standing?language=es`,
-      { next: { revalidate: 3600 } },
+      { next: { revalidate: 3600 } }
     )
     if (!res.ok) return []
 
     const data: FIFAStandingsResponse = await res.json()
 
-    const grouped = new Map<string, { groupName: string; entries: Array<{ team: GroupTeam; position: number }> }>()
+    const grouped = new Map<
+      string,
+      {
+        groupName: string
+        entries: Array<{ team: GroupTeam; position: number }>
+      }
+    >()
 
     for (const entry of data.Results) {
       const groupName = getLocale(entry.Group)
@@ -312,7 +322,9 @@ export async function fetchWCStandings(): Promise<GroupStanding[]> {
         team: {
           name: entry.Team.Name?.length
             ? getLocale(entry.Team.Name)
-            : translateTeamName(entry.Team.ShortClubName || entry.Team.Abbreviation),
+            : translateTeamName(
+                entry.Team.ShortClubName || entry.Team.Abbreviation
+              ),
           played: entry.Played,
           won: entry.Won,
           drawn: entry.Drawn,
@@ -434,9 +446,7 @@ export async function fetchAllWCMatches(): Promise<WCMatch[]> {
 
 export async function fetchFinishedWCMatchScores(opts?: {
   fresh?: boolean
-}): Promise<
-  { matchNumber: number; homeScore: number; awayScore: number }[]
-> {
+}): Promise<{ matchNumber: number; homeScore: number; awayScore: number }[]> {
   try {
     const allMatches = await fetchRawWCMatches(opts)
     return allMatches
@@ -444,7 +454,7 @@ export async function fetchFinishedWCMatchScores(opts?: {
         (m) =>
           m.MatchStatus === 0 &&
           m.HomeTeamScore !== null &&
-          m.AwayTeamScore !== null,
+          m.AwayTeamScore !== null
       )
       .map((m) => ({
         matchNumber: m.MatchNumber,

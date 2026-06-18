@@ -99,7 +99,7 @@ export function promiedosStartTimeToUtcIso(startTime: string): string {
   const [hh, min] = timePart.split(":").map(Number)
   if (
     [dd, mm, yyyy, hh, min].some(
-      (n) => typeof n !== "number" || Number.isNaN(n),
+      (n) => typeof n !== "number" || Number.isNaN(n)
     )
   ) {
     throw new Error(`Invalid Promiedos start_time: ${startTime}`)
@@ -132,7 +132,7 @@ export function promiedosTeamCrestUrl(teamId: string): string {
  */
 export function promiedosFixtureWebUrl(
   league: PromiedosLeague,
-  game: PromiedosGame,
+  game: PromiedosGame
 ): string | null {
   const l = league.url_name?.trim()
   const g = game.url_name?.trim()
@@ -143,7 +143,7 @@ export function promiedosFixtureWebUrl(
 
 export async function fetchGamesForDate(
   date: Date,
-  timeZone: string,
+  timeZone: string
 ): Promise<PromiedosGamesResponse> {
   const segment = formatPromiedosGamesDate(date, timeZone)
   const res = await promiedosFetch(`/games/${segment}`)
@@ -166,7 +166,7 @@ export async function fetchGamesToday(): Promise<PromiedosGamesResponse> {
  * calendar day Promiedos expects (e.g. ART). Avoids timezone skew vs `Date` in UTC.
  */
 export async function fetchGamesForSegment(
-  segment: string,
+  segment: string
 ): Promise<PromiedosGamesResponse> {
   const res = await promiedosFetch(`/games/${segment}`)
   if (!res.ok) {
@@ -256,7 +256,7 @@ export async function fetchMundialPromiedosTeamsIndex(): Promise<
       } catch {
         // skip failed day
       }
-    }),
+    })
   )
 
   mundialIndexCache = { at: now, teams: collected }
@@ -264,7 +264,7 @@ export async function fetchMundialPromiedosTeamsIndex(): Promise<
 }
 
 export function flattenGamesFromResponse(
-  raw: PromiedosGamesResponse,
+  raw: PromiedosGamesResponse
 ): Array<{ league: PromiedosLeague; game: PromiedosGame }> {
   const out: Array<{ league: PromiedosLeague; game: PromiedosGame }> = []
   for (const league of raw.leagues ?? []) {
@@ -277,15 +277,15 @@ export function flattenGamesFromResponse(
 
 export function filterGamesForTeamIds(
   raw: PromiedosGamesResponse,
-  teamIds: Set<string>,
+  teamIds: Set<string>
 ): Array<{ league: PromiedosLeague; game: PromiedosGame }> {
   return flattenGamesFromResponse(raw).filter(({ game }) =>
-    game.teams?.some((t) => teamIds.has(t.id)),
+    game.teams?.some((t) => teamIds.has(t.id))
   )
 }
 
 function mapPromiedosStatusToMatchStatus(
-  status: PromiedosGame["status"],
+  status: PromiedosGame["status"]
 ): string {
   const name = (status?.name ?? "").toLowerCase()
   const short = (status?.short_name ?? "").toLowerCase()
@@ -307,7 +307,7 @@ export function mapPromiedosGameToMatch(
   league: PromiedosLeague,
   game: PromiedosGame,
   followedPromiedosTeamId: string,
-  teamMeta: { name: string; shortName: string; crest: string },
+  teamMeta: { name: string; shortName: string; crest: string }
 ): LiveFixture {
   const teams = game.teams ?? []
   const idx = teams.findIndex((t) => t.id === followedPromiedosTeamId)
@@ -380,7 +380,7 @@ function searchWindowDaysForward(): number {
 }
 
 function collectUniqueTeamsFromResponse(
-  raw: PromiedosGamesResponse,
+  raw: PromiedosGamesResponse
 ): PromiedosSearchTeamResult[] {
   const byId = new Map<string, PromiedosSearchTeamResult>()
   for (const { game } of flattenGamesFromResponse(raw)) {
@@ -411,13 +411,12 @@ export async function searchPromiedosTeams(
     timeZone?: string
     windowDaysBack?: number
     windowDaysForward?: number
-  },
+  }
 ): Promise<PromiedosSearchTeamResult[]> {
   const q = query.trim().toLowerCase()
   if (q.length < 3) return []
 
-  const tz =
-    options?.timeZone ?? PROMIEDOS_WALL_CLOCK_TIMEZONE
+  const tz = options?.timeZone ?? PROMIEDOS_WALL_CLOCK_TIMEZONE
   const back = options?.windowDaysBack ?? searchWindowDaysBack()
   const forward = options?.windowDaysForward ?? searchWindowDaysForward()
 
@@ -460,14 +459,14 @@ export async function searchPromiedosTeams(
 
 export function filterTeamResults(
   teams: PromiedosSearchTeamResult[],
-  q: string,
+  q: string
 ): PromiedosSearchTeamResult[] {
   return teams
     .filter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
         t.shortName.toLowerCase().includes(q) ||
-        t.tla.toLowerCase() === q,
+        t.tla.toLowerCase() === q
     )
     .slice(0, 20)
 }

@@ -61,33 +61,35 @@ export function NotificationPopover({ unread }: NotificationPopoverProps) {
     await fetch(`/api/notifications/${id}`, { method: "PATCH" })
     setNotifications((prev) =>
       prev.map((n) =>
-        n.id === id ? { ...n, status: "read", readAt: new Date().toISOString() } : n,
-      ),
+        n.id === id
+          ? { ...n, status: "read", readAt: new Date().toISOString() }
+          : n
+      )
     )
     setUnreadCount((c) => Math.max(0, c - 1))
   }
 
   async function markAllRead() {
     const unreadInApp = notifications.filter(
-      (n) => n.channel === "in_app" && n.status === "sent",
+      (n) => n.channel === "in_app" && n.status === "sent"
     )
     await Promise.all(
       unreadInApp.map((n) =>
-        fetch(`/api/notifications/${n.id}`, { method: "PATCH" }),
-      ),
+        fetch(`/api/notifications/${n.id}`, { method: "PATCH" })
+      )
     )
     setNotifications((prev) =>
       prev.map((n) =>
         n.channel === "in_app" && n.status === "sent"
           ? { ...n, status: "read", readAt: new Date().toISOString() }
-          : n,
-      ),
+          : n
+      )
     )
     setUnreadCount(0)
   }
 
   const hasUnreadInApp = notifications.some(
-    (n) => n.channel === "in_app" && n.status === "sent",
+    (n) => n.channel === "in_app" && n.status === "sent"
   )
 
   return (
@@ -95,28 +97,24 @@ export function NotificationPopover({ unread }: NotificationPopoverProps) {
       <PopoverTrigger asChild>
         <button className="relative flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground">
           <BellIcon className="size-5 md:hidden" />
-          <span className="hidden md:block text-sm">Notificaciones</span>
+          <span className="hidden text-sm md:block">Notificaciones</span>
           {unreadCount > 0 && (
-            <Badge className="h-3 min-w-3 px-1 text-[8px] bg-sky-500 text-white">
+            <Badge className="h-3 min-w-3 bg-sky-500 px-1 text-[8px] text-white">
               {unreadCount}
             </Badge>
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        className="w-96 p-0"
-        sideOffset={8}
-      >
+      <PopoverContent align="end" className="w-96 p-0" sideOffset={8}>
         <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
-          <span className="min-w-0 shrink text-sm font-medium leading-none">
+          <span className="min-w-0 shrink text-sm leading-none font-medium">
             Notificaciones
           </span>
           {hasUnreadInApp && (
             <button
               type="button"
               onClick={markAllRead}
-              className="shrink-0 whitespace-nowrap text-left text-xs leading-none text-muted-foreground transition-colors hover:text-foreground"
+              className="shrink-0 text-left text-xs leading-none whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
             >
               Marcar todas como leídas
             </button>
@@ -138,7 +136,7 @@ export function NotificationPopover({ unread }: NotificationPopoverProps) {
                 <div key={n.id} className="flex items-start gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{n.title}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                       {n.body}
                     </p>
                     <div className="mt-1.5 flex items-center gap-2">

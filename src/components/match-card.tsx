@@ -44,10 +44,14 @@ export function MatchCard({ match }: MatchCardProps) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{homeName} vs {awayName}</p>
+          <p className="truncate font-medium">
+            {homeName} vs {awayName}
+          </p>
           <p className="truncate text-xs text-muted-foreground">
             <span className="md:hidden">{time}</span>
-            <span className="hidden md:inline">{time} - {date}</span>
+            <span className="hidden md:inline">
+              {time} - {date}
+            </span>
           </p>
           <p className="truncate text-xs text-muted-foreground md:hidden">
             {date}

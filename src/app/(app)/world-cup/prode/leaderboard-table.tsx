@@ -42,17 +42,29 @@ export const COLUMNS: { key: string; label: string; help: string }[] = [
     label: "Bien",
     help: "Resultado acertado pero marcador distinto (1 pt)",
   },
-  { key: "fall", label: "Fall", help: "Fallados: partidos evaluados sin puntos" },
+  {
+    key: "fall",
+    label: "Fall",
+    help: "Fallados: partidos evaluados sin puntos",
+  },
   { key: "ac", label: "%Ac", help: "% de aciertos sobre partidos evaluados" },
   {
     key: "ex",
     label: "%Ex",
     help: "% de aciertos exactos sobre partidos evaluados",
   },
-  { key: "prom", label: "Prom", help: "Promedio de puntos por partido evaluado" },
+  {
+    key: "prom",
+    label: "Prom",
+    help: "Promedio de puntos por partido evaluado",
+  },
   { key: "carg", label: "Carg", help: "Pronósticos cargados (total)" },
   { key: "eval", label: "Eval", help: "Partidos ya jugados de los cargados" },
-  { key: "racha", label: "Racha", help: "Partidos consecutivos sumando puntos" },
+  {
+    key: "racha",
+    label: "Racha",
+    help: "Partidos consecutivos sumando puntos",
+  },
   {
     key: "maxracha",
     label: "Máx",
@@ -145,118 +157,123 @@ export function LeaderboardTable({
         </div>
       )}
       <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-8 px-2">#</TableHead>
-          <TableHead className="px-2">Usuario</TableHead>
-          {detailed ? (
-            COLUMNS.map((col) => {
-              const active = sort?.key === col.key
-              return (
-                <TableHead
-                  key={col.key}
-                  className="px-2 text-right text-xs whitespace-nowrap"
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => toggleSort(col.key)}
-                        className={cn(
-                          "ml-auto inline-flex cursor-pointer items-center gap-0.5 underline decoration-dotted underline-offset-2",
-                          active && "text-foreground"
-                        )}
-                      >
-                        {col.label}
-                        {active &&
-                          (sort.dir === "desc" ? (
-                            <ArrowDown className="size-3" />
-                          ) : (
-                            <ArrowUp className="size-3" />
-                          ))}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>{col.help}</TooltipContent>
-                  </Tooltip>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-8 px-2">#</TableHead>
+            <TableHead className="px-2">Usuario</TableHead>
+            {detailed ? (
+              COLUMNS.map((col) => {
+                const active = sort?.key === col.key
+                return (
+                  <TableHead
+                    key={col.key}
+                    className="px-2 text-right text-xs whitespace-nowrap"
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(col.key)}
+                          className={cn(
+                            "ml-auto inline-flex cursor-pointer items-center gap-0.5 underline decoration-dotted underline-offset-2",
+                            active && "text-foreground"
+                          )}
+                        >
+                          {col.label}
+                          {active &&
+                            (sort.dir === "desc" ? (
+                              <ArrowDown className="size-3" />
+                            ) : (
+                              <ArrowUp className="size-3" />
+                            ))}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{col.help}</TooltipContent>
+                    </Tooltip>
+                  </TableHead>
+                )
+              })
+            ) : (
+              <>
+                <TableHead className="px-2 text-right text-xs">Pts</TableHead>
+                <TableHead className="px-2 text-right text-xs">
+                  Exacto
                 </TableHead>
-              )
-            })
-          ) : (
-            <>
-              <TableHead className="px-2 text-right text-xs">Pts</TableHead>
-              <TableHead className="px-2 text-right text-xs">Exacto</TableHead>
-              <TableHead className="px-2 text-right text-xs">Bien</TableHead>
-            </>
-          )}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((entry, i) => {
-          const mine = entry.userId === currentUserId
-          const missed =
-            entry.scoredPredictions - entry.exactCount - entry.correctCount
-          return (
-            <TableRow key={entry.userId} className={cn(mine && "bg-muted/40")}>
-              <TableCell className="px-2 font-mono text-xs text-muted-foreground tabular-nums">
-                {i + 1}
-              </TableCell>
-              <TableCell className="px-2">
-                <div className="font-medium leading-tight">
-                  {entry.name}
-                  {mine && (
-                    <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">
-                      (vos)
-                    </span>
-                  )}
-                </div>
-                <div className="mt-0.5 font-mono text-[10px] text-muted-foreground break-all">
-                  ({entry.email})
-                </div>
-              </TableCell>
-              <TableCell className="px-2 text-right font-mono font-semibold tabular-nums">
-                {entry.totalPoints}
-              </TableCell>
-              <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                {entry.exactCount}
-              </TableCell>
-              <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                {entry.correctCount}
-              </TableCell>
-              {detailed && (
-                <>
-                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                    {missed}
-                  </TableCell>
-                  <TableCell className="px-2 text-right font-mono tabular-nums">
-                    {pct(
-                      entry.exactCount + entry.correctCount,
-                      entry.scoredPredictions
+                <TableHead className="px-2 text-right text-xs">Bien</TableHead>
+              </>
+            )}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((entry, i) => {
+            const mine = entry.userId === currentUserId
+            const missed =
+              entry.scoredPredictions - entry.exactCount - entry.correctCount
+            return (
+              <TableRow
+                key={entry.userId}
+                className={cn(mine && "bg-muted/40")}
+              >
+                <TableCell className="px-2 font-mono text-xs text-muted-foreground tabular-nums">
+                  {i + 1}
+                </TableCell>
+                <TableCell className="px-2">
+                  <div className="leading-tight font-medium">
+                    {entry.name}
+                    {mine && (
+                      <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">
+                        (vos)
+                      </span>
                     )}
-                  </TableCell>
-                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                    {pct(entry.exactCount, entry.scoredPredictions)}
-                  </TableCell>
-                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                    {avg(entry.totalPoints, entry.scoredPredictions)}
-                  </TableCell>
-                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                    {entry.totalPredictions}
-                  </TableCell>
-                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                    {entry.scoredPredictions}
-                  </TableCell>
-                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                    {entry.currentStreak}
-                  </TableCell>
-                  <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
-                    {entry.longestStreak}
-                  </TableCell>
-                </>
-              )}
-            </TableRow>
-          )
-        })}
-      </TableBody>
+                  </div>
+                  <div className="mt-0.5 font-mono text-[10px] break-all text-muted-foreground">
+                    ({entry.email})
+                  </div>
+                </TableCell>
+                <TableCell className="px-2 text-right font-mono font-semibold tabular-nums">
+                  {entry.totalPoints}
+                </TableCell>
+                <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                  {entry.exactCount}
+                </TableCell>
+                <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                  {entry.correctCount}
+                </TableCell>
+                {detailed && (
+                  <>
+                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                      {missed}
+                    </TableCell>
+                    <TableCell className="px-2 text-right font-mono tabular-nums">
+                      {pct(
+                        entry.exactCount + entry.correctCount,
+                        entry.scoredPredictions
+                      )}
+                    </TableCell>
+                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                      {pct(entry.exactCount, entry.scoredPredictions)}
+                    </TableCell>
+                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                      {avg(entry.totalPoints, entry.scoredPredictions)}
+                    </TableCell>
+                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                      {entry.totalPredictions}
+                    </TableCell>
+                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                      {entry.scoredPredictions}
+                    </TableCell>
+                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                      {entry.currentStreak}
+                    </TableCell>
+                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                      {entry.longestStreak}
+                    </TableCell>
+                  </>
+                )}
+              </TableRow>
+            )
+          })}
+        </TableBody>
       </Table>
     </>
   )

@@ -50,14 +50,14 @@ export default function LoginPage() {
           <div className="mt-4 flex items-center justify-between text-sm">
             <Link
               href="/register"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
               Crear una cuenta
             </Link>
             {state?.emailConfigured && (
               <Link
                 href="/forgot-password"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground transition-colors hover:text-foreground"
               >
                 ¿Olvidaste tu contraseña?
               </Link>

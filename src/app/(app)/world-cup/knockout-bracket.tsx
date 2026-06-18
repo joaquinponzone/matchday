@@ -1,7 +1,12 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { resolveTeamLabel, toUtcIso, formatMatchDate, getFeedsInto } from "./lib"
+import {
+  resolveTeamLabel,
+  toUtcIso,
+  formatMatchDate,
+  getFeedsInto,
+} from "./lib"
 import type { BracketMatch, BracketRound } from "./types"
 import { useState, useRef } from "react"
 
@@ -25,20 +30,28 @@ function slotPos(index: number, round: number) {
 function TreeCard({ match }: { match: BracketMatch }) {
   const utcDate = toUtcIso(match.date, match.time)
   const dateStr = formatMatchDate(utcDate)
-  const isSpecial = match.round === "Final" || match.round === "Match for third place"
+  const isSpecial =
+    match.round === "Final" || match.round === "Match for third place"
 
   return (
     <div
       className={cn(
-        "rounded border bg-card text-[9px] leading-tight shadow-sm p-1.5 w-[118px]",
+        "w-[118px] rounded border bg-card p-1.5 text-[9px] leading-tight shadow-sm",
         isSpecial && "border-yellow-500/60 bg-yellow-500/5"
       )}
     >
-      <div className="text-muted-foreground font-mono truncate mb-0.5">
-        {isSpecial ? (match.round === "Final" ? "Final" : "3er puesto") : `P${match.num}`} · {dateStr}
+      <div className="mb-0.5 truncate font-mono text-muted-foreground">
+        {isSpecial
+          ? match.round === "Final"
+            ? "Final"
+            : "3er puesto"
+          : `P${match.num}`}{" "}
+        · {dateStr}
       </div>
-      <div className="font-medium truncate">{resolveTeamLabel(match.team1)}</div>
-      <div className="border-t border-dashed mt-0.5 pt-0.5 font-medium truncate">
+      <div className="truncate font-medium">
+        {resolveTeamLabel(match.team1)}
+      </div>
+      <div className="mt-0.5 truncate border-t border-dashed pt-0.5 font-medium">
         {resolveTeamLabel(match.team2)}
       </div>
     </div>
@@ -103,19 +116,47 @@ function Connector({
         return (
           <svg
             key={i}
-            className="absolute left-0 top-0 overflow-visible pointer-events-none"
+            className="pointer-events-none absolute top-0 left-0 overflow-visible"
             width={20}
             height={TOTAL_H}
             style={{ top: 0 }}
           >
             {/* top arm */}
-            <line x1={x1} y1={y1} x2={x2} y2={y1} className="stroke-border" strokeWidth="1" />
+            <line
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y1}
+              className="stroke-border"
+              strokeWidth="1"
+            />
             {/* vertical */}
-            <line x1={x2} y1={y1} x2={x2} y2={y2} className="stroke-border" strokeWidth="1" />
+            <line
+              x1={x2}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              className="stroke-border"
+              strokeWidth="1"
+            />
             {/* bottom arm */}
-            <line x1={x1} y1={y2} x2={x2} y2={y2} className="stroke-border" strokeWidth="1" />
+            <line
+              x1={x1}
+              y1={y2}
+              x2={x2}
+              y2={y2}
+              className="stroke-border"
+              strokeWidth="1"
+            />
             {/* center line to next column */}
-            <line x1={x2} y1={mid} x2={x3} y2={mid} className="stroke-border" strokeWidth="1" />
+            <line
+              x1={x2}
+              y1={mid}
+              x2={x3}
+              y2={mid}
+              className="stroke-border"
+              strokeWidth="1"
+            />
           </svg>
         )
       })}
@@ -127,15 +168,35 @@ function Connector({
 
 function CenterCol({ centerRound }: { centerRound: BracketRound }) {
   const final = centerRound.matches.find((m) => m.round === "Final")
-  const third = centerRound.matches.find((m) => m.round === "Match for third place")
+  const third = centerRound.matches.find(
+    (m) => m.round === "Match for third place"
+  )
   const sfCenter = TOTAL_H / 2 // center of the full bracket
 
   return (
     <div className="relative shrink-0" style={{ width: 130, height: TOTAL_H }}>
       {/* Horizontal line from left SF connector to Final card */}
-      <svg className="absolute left-0 top-0 pointer-events-none" width={130} height={TOTAL_H}>
-        <line x1={0} y1={sfCenter} x2={6} y2={sfCenter} className="stroke-border" strokeWidth="1" />
-        <line x1={124} y1={sfCenter} x2={130} y2={sfCenter} className="stroke-border" strokeWidth="1" />
+      <svg
+        className="pointer-events-none absolute top-0 left-0"
+        width={130}
+        height={TOTAL_H}
+      >
+        <line
+          x1={0}
+          y1={sfCenter}
+          x2={6}
+          y2={sfCenter}
+          className="stroke-border"
+          strokeWidth="1"
+        />
+        <line
+          x1={124}
+          y1={sfCenter}
+          x2={130}
+          y2={sfCenter}
+          className="stroke-border"
+          strokeWidth="1"
+        />
       </svg>
 
       {/* Final */}
@@ -154,7 +215,9 @@ function CenterCol({ centerRound }: { centerRound: BracketRound }) {
           className="absolute left-1/2 -translate-x-1/2"
           style={{ top: sfCenter + 44 }}
         >
-          <div className="text-[8px] text-muted-foreground text-center mb-0.5">3er puesto</div>
+          <div className="mb-0.5 text-center text-[8px] text-muted-foreground">
+            3er puesto
+          </div>
           <TreeCard match={third} />
         </div>
       )}
@@ -178,15 +241,25 @@ function DesktopBracket({ rounds }: { rounds: BracketRound[] }) {
   return (
     <div className="overflow-x-auto pb-4">
       {/* Column labels */}
-      <div className="flex mb-2 text-[9px] text-muted-foreground font-medium">
+      <div className="mb-2 flex text-[9px] font-medium text-muted-foreground">
         {leftRounds.map((_, i) => (
-          <div key={`ll-${i}`} className="shrink-0 text-center" style={{ width: i < leftRounds.length - 1 ? 118 + 20 : 118 }}>
+          <div
+            key={`ll-${i}`}
+            className="shrink-0 text-center"
+            style={{ width: i < leftRounds.length - 1 ? 118 + 20 : 118 }}
+          >
             {ROUND_LABELS_LEFT[i]}
           </div>
         ))}
-        <div className="shrink-0 text-center" style={{ width: 20 + 130 + 20 }}>Final</div>
+        <div className="shrink-0 text-center" style={{ width: 20 + 130 + 20 }}>
+          Final
+        </div>
         {rightRounds.map((_, i) => (
-          <div key={`rl-${i}`} className="shrink-0 text-center" style={{ width: i > 0 ? 118 + 20 : 118 }}>
+          <div
+            key={`rl-${i}`}
+            className="shrink-0 text-center"
+            style={{ width: i > 0 ? 118 + 20 : 118 }}
+          >
             {ROUND_LABELS_RIGHT[i]}
           </div>
         ))}
@@ -205,9 +278,23 @@ function DesktopBracket({ rounds }: { rounds: BracketRound[] }) {
         ))}
 
         {/* Left SF → center gap */}
-        <div className="relative shrink-0" style={{ width: 20, height: TOTAL_H }}>
-          <svg className="absolute left-0 top-0 pointer-events-none" width={20} height={TOTAL_H}>
-            <line x1={0} y1={TOTAL_H / 2} x2={20} y2={TOTAL_H / 2} className="stroke-border" strokeWidth="1" />
+        <div
+          className="relative shrink-0"
+          style={{ width: 20, height: TOTAL_H }}
+        >
+          <svg
+            className="pointer-events-none absolute top-0 left-0"
+            width={20}
+            height={TOTAL_H}
+          >
+            <line
+              x1={0}
+              y1={TOTAL_H / 2}
+              x2={20}
+              y2={TOTAL_H / 2}
+              className="stroke-border"
+              strokeWidth="1"
+            />
           </svg>
         </div>
 
@@ -215,9 +302,23 @@ function DesktopBracket({ rounds }: { rounds: BracketRound[] }) {
         <CenterCol centerRound={centerRound} />
 
         {/* Right SF → center gap */}
-        <div className="relative shrink-0" style={{ width: 20, height: TOTAL_H }}>
-          <svg className="absolute left-0 top-0 pointer-events-none" width={20} height={TOTAL_H}>
-            <line x1={0} y1={TOTAL_H / 2} x2={20} y2={TOTAL_H / 2} className="stroke-border" strokeWidth="1" />
+        <div
+          className="relative shrink-0"
+          style={{ width: 20, height: TOTAL_H }}
+        >
+          <svg
+            className="pointer-events-none absolute top-0 left-0"
+            width={20}
+            height={TOTAL_H}
+          >
+            <line
+              x1={0}
+              y1={TOTAL_H / 2}
+              x2={20}
+              y2={TOTAL_H / 2}
+              className="stroke-border"
+              strokeWidth="1"
+            />
           </svg>
         </div>
 
@@ -261,24 +362,40 @@ function MobileMatchCard({ match }: { match: BracketMatch }) {
   const utcDate = toUtcIso(match.date, match.time)
   const dateStr = formatMatchDate(utcDate)
   const feedsInto = getFeedsInto(match.num)
-  const isSpecial = match.round === "Final" || match.round === "Match for third place"
+  const isSpecial =
+    match.round === "Final" || match.round === "Match for third place"
 
   return (
-    <div className={cn("rounded-lg border bg-card px-3 py-2", isSpecial && "border-yellow-500/50 bg-yellow-500/5")}>
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-mono text-muted-foreground">
+    <div
+      className={cn(
+        "rounded-lg border bg-card px-3 py-2",
+        isSpecial && "border-yellow-500/50 bg-yellow-500/5"
+      )}
+    >
+      <div className="mb-1 flex items-center justify-between">
+        <span className="font-mono text-[10px] text-muted-foreground">
           {isSpecial ? match.round : `Partido ${match.num}`}
         </span>
         <span className="text-[10px] text-muted-foreground">{dateStr}</span>
       </div>
       <div className="flex items-center gap-2 text-xs">
-        <span className="flex-1 font-medium truncate">{resolveTeamLabel(match.team1)}</span>
-        <span className="text-muted-foreground shrink-0 text-[10px]">vs</span>
-        <span className="flex-1 font-medium truncate text-right">{resolveTeamLabel(match.team2)}</span>
+        <span className="flex-1 truncate font-medium">
+          {resolveTeamLabel(match.team1)}
+        </span>
+        <span className="shrink-0 text-[10px] text-muted-foreground">vs</span>
+        <span className="flex-1 truncate text-right font-medium">
+          {resolveTeamLabel(match.team2)}
+        </span>
       </div>
-      <div className="flex items-center justify-between mt-1">
-        <span className="text-[10px] text-muted-foreground truncate">{match.ground}</span>
-        {feedsInto && <span className="text-[10px] text-muted-foreground ml-2 shrink-0">→ P{feedsInto}</span>}
+      <div className="mt-1 flex items-center justify-between">
+        <span className="truncate text-[10px] text-muted-foreground">
+          {match.ground}
+        </span>
+        {feedsInto && (
+          <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">
+            → P{feedsInto}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -299,24 +416,32 @@ function MobileBracket({ rounds }: { rounds: BracketRound[] }) {
     if (container && pill) {
       const containerCenter = container.offsetWidth / 2
       const pillCenter = pill.offsetLeft + pill.offsetWidth / 2
-      container.scrollTo({ left: pillCenter - containerCenter, behavior: "smooth" })
+      container.scrollTo({
+        left: pillCenter - containerCenter,
+        behavior: "smooth",
+      })
     }
   }
 
   return (
     <div className="space-y-3">
       {/* Round pills */}
-      <div ref={pillsRef} className="flex gap-2 overflow-x-auto py-1 scroll-smooth">
+      <div
+        ref={pillsRef}
+        className="flex gap-2 overflow-x-auto scroll-smooth py-1"
+      >
         {rounds.map((_, i) => (
           <button
             key={i}
-            ref={(el) => { pillRefs.current[i] = el }}
+            ref={(el) => {
+              pillRefs.current[i] = el
+            }}
             onClick={() => goTo(i)}
             className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border whitespace-nowrap",
+              "shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
               active === i
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-muted text-muted-foreground border-transparent"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-transparent bg-muted text-muted-foreground"
             )}
           >
             {SLIDE_LABELS[i]}
@@ -327,7 +452,7 @@ function MobileBracket({ rounds }: { rounds: BracketRound[] }) {
       {/* Active slide */}
       {rounds.map((round, i) => (
         <div key={i} className={active === i ? "block" : "hidden"}>
-          <h3 className="text-sm font-semibold mb-3">
+          <h3 className="mb-3 text-sm font-semibold">
             {round.name}
             {round.side !== "center" && (
               <span className="ml-1 text-xs font-normal text-muted-foreground">
@@ -348,7 +473,7 @@ function MobileBracket({ rounds }: { rounds: BracketRound[] }) {
         <button
           onClick={() => goTo(active - 1)}
           disabled={active === 0}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border bg-muted text-muted-foreground disabled:opacity-30 transition-opacity"
+          className="flex items-center gap-1.5 rounded-lg border bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-opacity disabled:opacity-30"
         >
           ← {active > 0 ? SLIDE_LABELS[active - 1] : ""}
         </button>
@@ -358,7 +483,7 @@ function MobileBracket({ rounds }: { rounds: BracketRound[] }) {
         <button
           onClick={() => goTo(active + 1)}
           disabled={active === rounds.length - 1}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border bg-muted text-muted-foreground disabled:opacity-30 transition-opacity"
+          className="flex items-center gap-1.5 rounded-lg border bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-opacity disabled:opacity-30"
         >
           {active < rounds.length - 1 ? SLIDE_LABELS[active + 1] : ""} →
         </button>

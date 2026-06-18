@@ -7,22 +7,28 @@ import type { SessionData } from "@/lib/types"
 import { getSettings, updateSettings } from "@/server/db/queries"
 
 async function getUserId() {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions
+  )
   return session.userId
 }
 
 export async function GET() {
   const userId = await getUserId()
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const data = await getSettings(userId)
-  if (!data) return NextResponse.json({ error: "Settings not found" }, { status: 404 })
+  if (!data)
+    return NextResponse.json({ error: "Settings not found" }, { status: 404 })
   return NextResponse.json(data)
 }
 
 export async function PUT(req: NextRequest) {
   const userId = await getUserId()
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const body = await req.json()
   const updated = await updateSettings(userId, body)

@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache"
 import { verifySession } from "@/lib/dal"
 import type { TeamKind } from "@/server/db/schema"
-import { getSettings, isNicknameTaken, setTeamEnabled, updateUserName, updateUserNickname, upsertTeam } from "@/server/db/queries"
+import {
+  getSettings,
+  isNicknameTaken,
+  setTeamEnabled,
+  updateUserName,
+  updateUserNickname,
+  upsertTeam,
+} from "@/server/db/queries"
 import { sendTelegramMessage } from "@/lib/telegram"
 import { buildNotificationContent } from "@/lib/notifications"
 import { APP_TIMEZONE } from "@/lib/utils"
@@ -34,7 +41,7 @@ export async function followTeam(
   tla: string,
   crest: string,
   teamKind: TeamKind,
-  promiedosUrlName?: string | null,
+  promiedosUrlName?: string | null
 ) {
   const { userId } = await verifySession()
   await upsertTeam({
@@ -67,7 +74,9 @@ export async function updateDisplayName(name: string) {
   revalidatePath("/settings")
 }
 
-export async function updateNickname(nickname: string): Promise<{ ok: boolean; error?: string }> {
+export async function updateNickname(
+  nickname: string
+): Promise<{ ok: boolean; error?: string }> {
   const { userId } = await verifySession()
   const trimmed = nickname.trim().toLowerCase().replace(/\s+/g, "_")
   if (!trimmed) return { ok: false, error: "El nickname no puede estar vacío." }
@@ -82,11 +91,17 @@ export async function updateNickname(nickname: string): Promise<{ ok: boolean; e
   return { ok: true }
 }
 
-export async function testTelegramNotification(): Promise<{ ok: boolean; error?: string }> {
+export async function testTelegramNotification(): Promise<{
+  ok: boolean
+  error?: string
+}> {
   const { userId } = await verifySession()
   const s = await getSettings(userId)
   if (!s?.telegramEnabled || !s.telegramChatId) {
-    return { ok: false, error: "Telegram is not enabled or chat ID is missing." }
+    return {
+      ok: false,
+      error: "Telegram is not enabled or chat ID is missing.",
+    }
   }
   try {
     const sample: LiveFixture = {
@@ -111,6 +126,9 @@ export async function testTelegramNotification(): Promise<{ ok: boolean; error?:
     await sendTelegramMessage(s.telegramChatId, telegramHtml)
     return { ok: true }
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    }
   }
 }

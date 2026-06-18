@@ -30,7 +30,7 @@ function CountdownBlock({ value, label }: { value: number; label: string }) {
       <span className="text-4xl font-bold tabular-nums sm:text-5xl md:text-6xl">
         {String(value).padStart(2, "0")}
       </span>
-      <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground sm:text-xs">
+      <span className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase sm:text-xs">
         {label}
       </span>
     </div>
@@ -47,7 +47,7 @@ export function WorldCupCountdown({
   firstMatchLabel,
 }: WorldCupCountdownProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() =>
-    computeTimeLeft(targetDate),
+    computeTimeLeft(targetDate)
   )
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function WorldCupCountdown({
 
   return (
     <div className="rounded-lg border bg-card px-6 py-5 text-card-foreground shadow-sm">
-      <p className="mb-4 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
+      <p className="mb-4 text-center text-xs font-medium tracking-widest text-muted-foreground uppercase">
         Faltan
       </p>
       <div className="flex items-start justify-center gap-4 sm:gap-8">

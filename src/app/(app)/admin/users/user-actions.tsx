@@ -6,9 +6,22 @@ import { approveUser, rejectUser, changeRole } from "./actions"
 import type { User } from "@/server/db/schema"
 import clsx from "clsx"
 import { Loader2, ShieldCheckIcon, ShieldXIcon } from "lucide-react"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
-export function UserActions({ user, systemAdminUserId }: { user: Pick<User, "id" | "role" | "status" | "email">, systemAdminUserId: string }) {
+export function UserActions({
+  user,
+  systemAdminUserId,
+}: {
+  user: Pick<User, "id" | "role" | "status" | "email">
+  systemAdminUserId: string
+}) {
   const [pending, startTransition] = useTransition()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -40,15 +53,24 @@ export function UserActions({ user, systemAdminUserId }: { user: Pick<User, "id"
         <Button
           size="sm"
           variant="ghost"
-          className={clsx("bg-muted text-xs", user.role !== "admin" ? "text-teal-400" : "text-red-400")}
+          className={clsx(
+            "bg-muted text-xs",
+            user.role !== "admin" ? "text-teal-400" : "text-red-400"
+          )}
           disabled={pending}
-          onClick={() =>{
+          onClick={() => {
             startTransition(() =>
-              changeRole(user.id, user.role === "admin" ? "user" : "admin"),
+              changeRole(user.id, user.role === "admin" ? "user" : "admin")
             )
           }}
         >
-          {pending ? <Loader2 className="size-4 animate-spin" /> : user.role !== "admin" ? <ShieldCheckIcon className="size-4" /> : <ShieldXIcon className="size-4" />}
+          {pending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : user.role !== "admin" ? (
+            <ShieldCheckIcon className="size-4" />
+          ) : (
+            <ShieldXIcon className="size-4" />
+          )}
           {user.role === "admin" ? "Quitar admin" : "Hacer admin"}
         </Button>
       )}

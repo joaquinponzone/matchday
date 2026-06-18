@@ -6,7 +6,6 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core"
 
-
 /** Promiedos-backed team: club competition vs national (Mundial) selection */
 export type TeamKind = "club" | "national"
 
@@ -37,8 +36,12 @@ export const users = sqliteTable("users", {
   status: text("status").notNull().default("pending"),
   resetToken: text("reset_token"),
   resetTokenExpiresAt: text("reset_token_expires_at"),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
-  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+  createdAt: text("created_at")
+    .notNull()
+    .$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at")
+    .notNull()
+    .$defaultFn(() => new Date().toISOString()),
 })
 
 export const settings = sqliteTable("settings", {
@@ -46,15 +49,21 @@ export const settings = sqliteTable("settings", {
     .primaryKey()
     .references(() => users.id),
   telegramChatId: text("telegram_chat_id"),
-  timezone: text("timezone").notNull().default("America/Argentina/Buenos_Aires"),
+  timezone: text("timezone")
+    .notNull()
+    .default("America/Argentina/Buenos_Aires"),
   telegramEnabled: integer("telegram_enabled").notNull().default(0),
   inAppEnabled: integer("in_app_enabled").notNull().default(1),
   notifyDayBefore: integer("notify_day_before").notNull().default(1),
   notifyMatchDay: integer("notify_match_day").notNull().default(1),
   dayBeforeHour: integer("day_before_hour").notNull().default(20),
   matchDayHour: integer("match_day_hour").notNull().default(9),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
-  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+  createdAt: text("created_at")
+    .notNull()
+    .$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at")
+    .notNull()
+    .$defaultFn(() => new Date().toISOString()),
 })
 
 export const notifications = sqliteTable(
@@ -73,10 +82,12 @@ export const notifications = sqliteTable(
     error: text("error"),
     sentAt: text("sent_at"),
     readAt: text("read_at"),
-    createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+    createdAt: text("created_at")
+      .notNull()
+      .$defaultFn(() => new Date().toISOString()),
     promiedosFixtureUrl: text("promiedos_fixture_url"),
   },
-  (table) => [uniqueIndex("idempotency_key_idx").on(table.idempotencyKey)],
+  (table) => [uniqueIndex("idempotency_key_idx").on(table.idempotencyKey)]
 )
 
 export const followedTeams = sqliteTable(
@@ -88,7 +99,7 @@ export const followedTeams = sqliteTable(
     teamKey: text("team_key").notNull(),
     enabled: integer("enabled").notNull().default(1),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.teamKey] })],
+  (table) => [primaryKey({ columns: [table.userId, table.teamKey] })]
 )
 
 export const prodePredictions = sqliteTable(
@@ -102,10 +113,16 @@ export const prodePredictions = sqliteTable(
     homeScore: integer("home_score").notNull(),
     awayScore: integer("away_score").notNull(),
     points: integer("points"),
-    createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
-    updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+    createdAt: text("created_at")
+      .notNull()
+      .$defaultFn(() => new Date().toISOString()),
+    updatedAt: text("updated_at")
+      .notNull()
+      .$defaultFn(() => new Date().toISOString()),
   },
-  (table) => [uniqueIndex("prode_user_match_idx").on(table.userId, table.matchNumber)],
+  (table) => [
+    uniqueIndex("prode_user_match_idx").on(table.userId, table.matchNumber),
+  ]
 )
 
 export type User = typeof users.$inferSelect

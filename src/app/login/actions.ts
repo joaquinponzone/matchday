@@ -16,7 +16,10 @@ type LoginState = {
   emailConfigured?: boolean
 }
 
-export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
+export async function login(
+  _prevState: LoginState,
+  formData: FormData
+): Promise<LoginState> {
   const emailConfigured = isEmailConfigured()
 
   const parsed = LoginSchema.safeParse({
@@ -48,7 +51,10 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
     return { error: "Invalid email or password", emailConfigured }
   }
 
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions
+  )
   session.userId = user.id
   await session.save()
 

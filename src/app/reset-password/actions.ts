@@ -12,7 +12,7 @@ import { users } from "@/server/db/schema"
 
 export async function resetPassword(
   _prevState: FormState,
-  formData: FormData,
+  formData: FormData
 ): Promise<FormState> {
   const token = formData.get("token") as string
   if (!token) {

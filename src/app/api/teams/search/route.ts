@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   if (q.length < 3) {
     return NextResponse.json(
       { error: "Query must be at least 3 characters" },
-      { status: 400 },
+      { status: 400 }
     )
   }
 

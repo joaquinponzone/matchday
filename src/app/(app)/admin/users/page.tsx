@@ -17,17 +17,30 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-sm font-medium text-muted-foreground">Gestión de usuarios</h1>
+      <h1 className="text-sm font-medium text-muted-foreground">
+        Gestión de usuarios
+      </h1>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
         {users.map((user) => (
-          <div key={user.id} className="rounded-md border p-4 space-y-3">
+          <div key={user.id} className="space-y-3 rounded-md border p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className={clsx("font-medium truncate", user.email === systemAdminUserId ? "text-blue-300" : "")}>{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                <p
+                  className={clsx(
+                    "truncate font-medium",
+                    user.email === systemAdminUserId ? "text-blue-300" : ""
+                  )}
+                >
+                  {user.name}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </p>
               </div>
-              <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role}</Badge>
+              <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                {user.role}
+              </Badge>
             </div>
             <div className="flex items-center justify-between gap-2">
               <UserActions user={user} systemAdminUserId={systemAdminUserId} />
@@ -35,12 +48,18 @@ export default async function AdminUsersPage() {
                 {user.email !== systemAdminUserId ? (
                   <>
                     <DeleteUserButton user={user} />
-                    {(user.status === "active" || user.status === "inactive") && (
+                    {(user.status === "active" ||
+                      user.status === "inactive") && (
                       <ToggleUserStatusButton user={user} />
                     )}
                   </>
                 ) : (
-                  <Button size="sm" variant="ghost" className="text-xs bg-blue-400/40 text-white" disabled>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="bg-blue-400/40 text-xs text-white"
+                    disabled
+                  >
                     <Shield className="size-4" />
                     Admin del sistema
                   </Button>

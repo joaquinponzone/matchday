@@ -34,7 +34,7 @@ export function Leaderboard({
   isAdmin,
 }: LeaderboardProps) {
   return (
-    <Card className="2xl:sticky 2xl:top-4 bg-transparent border-none">
+    <Card className="border-none bg-transparent 2xl:sticky 2xl:top-4">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold">Ranking</CardTitle>
         <p className="hidden text-xs text-muted-foreground md:block 2xl:hidden">
@@ -43,7 +43,7 @@ export function Leaderboard({
       </CardHeader>
       <CardContent className="p-0">
         {entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="py-8 text-center text-sm text-muted-foreground">
             No hay usuarios registrados todavía.
           </p>
         ) : (

@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
         serverTimezone,
         artNow,
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }

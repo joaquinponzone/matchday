@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 
 export function useDebounce<T extends (...args: Parameters<T>) => void>(
   fn: T,
-  delay: number,
+  delay: number
 ): T {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 

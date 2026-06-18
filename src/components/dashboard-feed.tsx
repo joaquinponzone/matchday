@@ -61,7 +61,7 @@ export function DashboardFeed() {
   if (!hero) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2 px-4 text-center">
-        <p className="text-muted-foreground max-w-md">
+        <p className="max-w-md text-muted-foreground">
           No hay partidos programados en los próximos {daysForward} días
           {daysBack > 0
             ? ` (también se revisan los ${daysBack} días anteriores al calendario).`
@@ -77,7 +77,9 @@ export function DashboardFeed() {
 
       {rest.length > 0 && (
         <>
-          <h2 className="text-sm font-medium text-muted-foreground">Próximamente</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Próximamente
+          </h2>
           <div className="space-y-2">
             {rest.map((match) => (
               <MatchCard key={fixtureUiKey(match)} match={match} />

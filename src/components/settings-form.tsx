@@ -17,7 +17,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { followTeam, unfollowTeam, testTelegramNotification, updateDisplayName, updateNickname } from "@/app/(app)/settings/actions"
+import {
+  followTeam,
+  unfollowTeam,
+  testTelegramNotification,
+  updateDisplayName,
+  updateNickname,
+} from "@/app/(app)/settings/actions"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useSaveStatus } from "@/hooks/use-save-status"
 import { cn } from "@/lib/utils"
@@ -135,7 +141,7 @@ function FollowedTeamBlock({
           {searchPanelOpen &&
             (searchResults.length > 0 || isSearching) &&
             searchQuery.length >= 3 && (
-              <div className="absolute top-full left-0 right-0 z-20 mt-1 max-h-60 overflow-auto rounded-md border bg-popover shadow-md">
+              <div className="absolute top-full right-0 left-0 z-20 mt-1 max-h-60 overflow-auto rounded-md border bg-popover shadow-md">
                 {isSearching ? (
                   <p className="p-3 text-sm text-muted-foreground">
                     Buscando...
@@ -203,7 +209,10 @@ export function SettingsForm({
   const [values, setValues] = useState(settings)
   const [isPending, startTransition] = useTransition()
   const [isTeamSyncing, startTeamTransition] = useTransition()
-  const [testResult, setTestResult] = useState<{ ok: boolean; error?: string } | null>(null)
+  const [testResult, setTestResult] = useState<{
+    ok: boolean
+    error?: string
+  } | null>(null)
 
   const [displayName, setDisplayName] = useState(userName)
   const [nickname, setNickname] = useState(userNickname)
@@ -211,7 +220,7 @@ export function SettingsForm({
   const [searchQueryClubs, setSearchQueryClubs] = useState("")
   const [searchQueryNations, setSearchQueryNations] = useState("")
   const [searchResultsClubs, setSearchResultsClubs] = useState<SearchResult[]>(
-    [],
+    []
   )
   const [searchResultsNations, setSearchResultsNations] = useState<
     SearchResult[]
@@ -235,7 +244,8 @@ export function SettingsForm({
     function handlePointerDown(e: PointerEvent) {
       const t = e.target as Node
       if (!searchRefClubs.current?.contains(t)) setSearchPanelOpenClubs(false)
-      if (!searchRefNations.current?.contains(t)) setSearchPanelOpenNations(false)
+      if (!searchRefNations.current?.contains(t))
+        setSearchPanelOpenNations(false)
     }
     document.addEventListener("pointerdown", handlePointerDown)
     return () => document.removeEventListener("pointerdown", handlePointerDown)
@@ -244,38 +254,74 @@ export function SettingsForm({
   const followedIds = new Set(followed.map((t) => t.teamKey))
   const followedClubs = useMemo(
     () => followed.filter((t) => t.teamKind === "club"),
-    [followed],
+    [followed]
   )
   const followedNations = useMemo(
     () => followed.filter((t) => t.teamKind === "national"),
-    [followed],
+    [followed]
   )
 
-  const persistName = useDebounce(useCallback(async (name: string) => {
-    await nameStatus.wrap(() => updateDisplayName(name))
-  }, [nameStatus]), 1000)
+  const persistName = useDebounce(
+    useCallback(
+      async (name: string) => {
+        await nameStatus.wrap(() => updateDisplayName(name))
+      },
+      [nameStatus]
+    ),
+    1000
+  )
 
-  const persistNickname = useDebounce(useCallback(async (value: string) => {
-    const result = await nicknameStatus.wrap(() => updateNickname(value))
-    if (!result.ok) setNicknameError(result.error ?? "Error al guardar.")
-    else setNicknameError(null)
-  }, [nicknameStatus]), 1000)
+  const persistNickname = useDebounce(
+    useCallback(
+      async (value: string) => {
+        const result = await nicknameStatus.wrap(() => updateNickname(value))
+        if (!result.ok) setNicknameError(result.error ?? "Error al guardar.")
+        else setNicknameError(null)
+      },
+      [nicknameStatus]
+    ),
+    1000
+  )
 
-  const persistInApp = useDebounce(useCallback(async (data: Partial<Settings>) => {
-    await inAppStatus.wrap(() => saveSettings(data))
-  }, [inAppStatus]), 1000)
+  const persistInApp = useDebounce(
+    useCallback(
+      async (data: Partial<Settings>) => {
+        await inAppStatus.wrap(() => saveSettings(data))
+      },
+      [inAppStatus]
+    ),
+    1000
+  )
 
-  const persistTelegramToggle = useDebounce(useCallback(async (data: Partial<Settings>) => {
-    await telegramToggleStatus.wrap(() => saveSettings(data))
-  }, [telegramToggleStatus]), 1000)
+  const persistTelegramToggle = useDebounce(
+    useCallback(
+      async (data: Partial<Settings>) => {
+        await telegramToggleStatus.wrap(() => saveSettings(data))
+      },
+      [telegramToggleStatus]
+    ),
+    1000
+  )
 
-  const persistTelegramChatId = useDebounce(useCallback(async (data: Partial<Settings>) => {
-    await telegramChatIdStatus.wrap(() => saveSettings(data))
-  }, [telegramChatIdStatus]), 1000)
+  const persistTelegramChatId = useDebounce(
+    useCallback(
+      async (data: Partial<Settings>) => {
+        await telegramChatIdStatus.wrap(() => saveSettings(data))
+      },
+      [telegramChatIdStatus]
+    ),
+    1000
+  )
 
-  const persistNotifications = useDebounce(useCallback(async (data: Partial<Settings>) => {
-    await notificationsStatus.wrap(() => saveSettings(data))
-  }, [notificationsStatus]), 1000)
+  const persistNotifications = useDebounce(
+    useCallback(
+      async (data: Partial<Settings>) => {
+        await notificationsStatus.wrap(() => saveSettings(data))
+      },
+      [notificationsStatus]
+    ),
+    1000
+  )
 
   const doSearchClubs = useDebounce(
     useCallback(async (q: string) => {
@@ -286,9 +332,7 @@ export function SettingsForm({
       }
       setIsSearchingClubs(true)
       try {
-        const res = await fetch(
-          `/api/teams/search?q=${encodeURIComponent(q)}`,
-        )
+        const res = await fetch(`/api/teams/search?q=${encodeURIComponent(q)}`)
         const data = await res.json()
         setSearchResultsClubs(data.teams ?? [])
       } catch {
@@ -297,7 +341,7 @@ export function SettingsForm({
         setIsSearchingClubs(false)
       }
     }, []),
-    400,
+    400
   )
 
   const doSearchNations = useDebounce(
@@ -310,7 +354,7 @@ export function SettingsForm({
       setIsSearchingNations(true)
       try {
         const res = await fetch(
-          `/api/teams/search?q=${encodeURIComponent(q)}&scope=nations`,
+          `/api/teams/search?q=${encodeURIComponent(q)}&scope=nations`
         )
         const data = await res.json()
         setSearchResultsNations(data.teams ?? [])
@@ -320,10 +364,14 @@ export function SettingsForm({
         setIsSearchingNations(false)
       }
     }, []),
-    400,
+    400
   )
 
-  function updateWith<K extends keyof Settings>(key: K, value: Settings[K], persist: (data: Partial<Settings>) => void) {
+  function updateWith<K extends keyof Settings>(
+    key: K,
+    value: Settings[K],
+    persist: (data: Partial<Settings>) => void
+  ) {
     setValues((prev) => ({ ...prev, [key]: value }))
     persist({ [key]: value })
   }
@@ -355,7 +403,7 @@ export function SettingsForm({
         team.tla,
         team.crest,
         teamKind,
-        team.urlName ?? null,
+        team.urlName ?? null
       )
     })
   }
@@ -368,10 +416,12 @@ export function SettingsForm({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 md:w-4xl mx-auto">
+    <div className="mx-auto grid grid-cols-1 gap-4 md:w-4xl lg:grid-cols-2">
       <div className="space-y-6">
         <section className="relative space-y-3 p-3">
-          <h2 className="text-sm font-medium italic border-b border-blue-300 pb-2 w-fit">🏆 Equipos seguidos</h2>
+          <h2 className="w-fit border-b border-blue-300 pb-2 text-sm font-medium italic">
+            🏆 Equipos seguidos
+          </h2>
 
           <FollowedTeamBlock
             title="Clubes"
@@ -432,7 +482,9 @@ export function SettingsForm({
 
       <div className="space-y-6 lg:border-l lg:pl-4">
         <section className="space-y-3">
-          <h2 className="text-sm font-medium italic border-b border-blue-300 pb-2 w-fit">👤 Información personal</h2>
+          <h2 className="w-fit border-b border-blue-300 pb-2 text-sm font-medium italic">
+            👤 Información personal
+          </h2>
 
           <h2 className="text-sm font-medium">Nombre</h2>
           <Input
@@ -478,19 +530,24 @@ export function SettingsForm({
         <Separator />
 
         <section className="space-y-4">
-          <h2 className="text-sm font-medium italic border-b border-blue-300 pb-2 w-fit">📣 Canales de aviso</h2>
+          <h2 className="w-fit border-b border-blue-300 pb-2 text-sm font-medium italic">
+            📣 Canales de aviso
+          </h2>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label>Notificaciones en la app</Label>
               <Switch
                 checked={Boolean(values.inAppEnabled)}
-                onCheckedChange={(v) => updateWith("inAppEnabled", v ? 1 : 0, persistInApp)}
+                onCheckedChange={(v) =>
+                  updateWith("inAppEnabled", v ? 1 : 0, persistInApp)
+                }
               />
             </div>
             <SaveStatus {...inAppStatus} />
             <p className="text-xs text-muted-foreground">
-              Cuando actives esta opción, te van a llegar notificaciones en la app. Podés verlas en el ícono de la campana en el menú.
+              Cuando actives esta opción, te van a llegar notificaciones en la
+              app. Podés verlas en el ícono de la campana en el menú.
             </p>
 
             <Separator />
@@ -518,7 +575,11 @@ export function SettingsForm({
                   <Switch
                     checked={Boolean(values.telegramEnabled)}
                     onCheckedChange={(v) => {
-                      updateWith("telegramEnabled", v ? 1 : 0, persistTelegramToggle)
+                      updateWith(
+                        "telegramEnabled",
+                        v ? 1 : 0,
+                        persistTelegramToggle
+                      )
                       setTestResult(null)
                     }}
                   />
@@ -526,7 +587,12 @@ export function SettingsForm({
               </div>
               <SaveStatus {...telegramToggleStatus} />
               {testResult && (
-                <p className={cn("text-xs", testResult.ok ? "text-green-500" : "text-destructive")}>
+                <p
+                  className={cn(
+                    "text-xs",
+                    testResult.ok ? "text-green-500" : "text-destructive"
+                  )}
+                >
                   {testResult.ok ? "¡Mensaje enviado!" : testResult.error}
                 </p>
               )}
@@ -536,24 +602,33 @@ export function SettingsForm({
                     placeholder="ID de chat de Telegram"
                     value={values.telegramChatId ?? ""}
                     onChange={(e) => {
-                      setValues((prev) => ({ ...prev, telegramChatId: e.target.value }))
+                      setValues((prev) => ({
+                        ...prev,
+                        telegramChatId: e.target.value,
+                      }))
                       persistTelegramChatId({ telegramChatId: e.target.value })
                     }}
                   />
                   <SaveStatus {...telegramChatIdStatus} />
                   <p className="text-xs text-muted-foreground">
-                    Para recibir notificaciones de nuestro bot, presentáte primero.
+                    Para recibir notificaciones de nuestro bot, presentáte
+                    primero.
                   </p>
                   <p className="text-xs text-muted-foreground">
                     1. Buscalo en Telegram como{" "}
-                    <span className="font-medium font-bold text-foreground">
+                    <span className="font-bold font-medium text-foreground">
                       @matchday_notifications_bot
                     </span>{" "}
                     y mandale un mensaje con{" "}
-                    <span className="font-medium italic text-foreground">{`"/start"`}</span>.
+                    <span className="font-medium text-foreground italic">{`"/start"`}</span>
+                    .
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    2. Después de eso, escribile a <span className="font-medium font-bold text-foreground">@userinfobot</span> para obtener tu ID de chat y pegalo acá arriba.
+                    2. Después de eso, escribile a{" "}
+                    <span className="font-bold font-medium text-foreground">
+                      @userinfobot
+                    </span>{" "}
+                    para obtener tu ID de chat y pegalo acá arriba.
                   </p>
                 </div>
               )}
@@ -566,14 +641,18 @@ export function SettingsForm({
         <section className="space-y-4">
           <div>
             <h2 className="text-sm font-medium">Momento de notificación</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">Se ejecuta una vez al día a las 8:00 AM (hora Argentina)</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Se ejecuta una vez al día a las 8:00 AM (hora Argentina)
+            </p>
           </div>
 
           <div className="flex items-center justify-between">
             <Label>Día anterior al partido</Label>
             <Switch
               checked={Boolean(values.notifyDayBefore)}
-              onCheckedChange={(v) => updateWith("notifyDayBefore", v ? 1 : 0, persistNotifications)}
+              onCheckedChange={(v) =>
+                updateWith("notifyDayBefore", v ? 1 : 0, persistNotifications)
+              }
             />
           </div>
 
@@ -581,7 +660,9 @@ export function SettingsForm({
             <Label>Día del partido</Label>
             <Switch
               checked={Boolean(values.notifyMatchDay)}
-              onCheckedChange={(v) => updateWith("notifyMatchDay", v ? 1 : 0, persistNotifications)}
+              onCheckedChange={(v) =>
+                updateWith("notifyMatchDay", v ? 1 : 0, persistNotifications)
+              }
             />
           </div>
 

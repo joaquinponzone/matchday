@@ -34,7 +34,9 @@ export function MatchHero({ match }: MatchHeroProps) {
               className="object-contain"
             />
           )}
-          <span className="text-sm text-muted-foreground">{match.competition}</span>
+          <span className="text-sm text-muted-foreground">
+            {match.competition}
+          </span>
           <Badge variant="outline" className="ml-auto text-xs">
             {match.isHome ? "Local" : "Visitante"}
           </Badge>
@@ -77,7 +79,9 @@ export function MatchHero({ match }: MatchHeroProps) {
         <div className="mt-4 space-y-1 border-t pt-4 text-sm text-muted-foreground">
           <p>
             <span className="md:hidden">{time}</span>
-            <span className="hidden md:inline">{time} - {date}</span>
+            <span className="hidden md:inline">
+              {time} - {date}
+            </span>
           </p>
           <p className="md:hidden">{date}</p>
           {match.venue && <p>{match.venue}</p>}

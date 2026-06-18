@@ -1,5 +1,11 @@
 import { APP_TIMEZONE, isToday, isTomorrow } from "@/lib/utils"
-import type { WCMatch, GroupStanding, GroupTeam, BracketMatch, BracketRound } from "./types"
+import type {
+  WCMatch,
+  GroupStanding,
+  GroupTeam,
+  BracketMatch,
+  BracketRound,
+} from "./types"
 
 // Parses "13:00 UTC-6" → UTC ISO string for the given date
 export function toUtcIso(date: string, time: string): string {
@@ -26,7 +32,7 @@ export function formatMatchDate(isoDate: string): string {
 // Calendar-day key (YYYY-MM-DD) in the app timezone
 export function dayKey(iso: string): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(
-    new Date(iso),
+    new Date(iso)
   )
 }
 
@@ -124,35 +130,48 @@ export function resolveTeamLabel(code: string): string {
 // key = match num, value = next match num
 const FEEDS_INTO: Record<number, number> = {
   // Left R32 → R16
-  74: 89, 77: 89,
-  73: 90, 75: 90,
+  74: 89,
+  77: 89,
+  73: 90,
+  75: 90,
   // Left R16 → QF
-  89: 97, 90: 97,
+  89: 97,
+  90: 97,
   // Left QF → SF
   97: 101,
   // Right R32 → R16
-  76: 91, 78: 91,
-  79: 92, 80: 92,
+  76: 91,
+  78: 91,
+  79: 92,
+  80: 92,
   // Right R16 → QF
-  91: 99, 92: 99,
+  91: 99,
+  92: 99,
   // Right QF → SF
   99: 102,
   // Bottom R32 → R16
-  83: 93, 84: 93,
-  81: 94, 82: 94,
+  83: 93,
+  84: 93,
+  81: 94,
+  82: 94,
   // Bottom R16 → QF
-  93: 98, 94: 98,
+  93: 98,
+  94: 98,
   // Bottom QF → SF
   98: 101,
   // Bottom-right R32 → R16
-  86: 95, 88: 95,
-  85: 96, 87: 96,
+  86: 95,
+  88: 95,
+  85: 96,
+  87: 96,
   // Bottom-right R16 → QF
-  95: 100, 96: 100,
+  95: 100,
+  96: 100,
   // Bottom-right QF → SF
   100: 102,
   // SF → Final
-  101: 104, 102: 104,
+  101: 104,
+  102: 104,
 }
 
 export function getFeedsInto(num: number): number | undefined {

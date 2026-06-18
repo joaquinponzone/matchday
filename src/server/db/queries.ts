@@ -395,7 +395,10 @@ export async function getProdeLeaderboardDetailed(matchOrder?: number[]) {
 
   // Agrupamos las predicciones evaluadas por usuario y las ordenamos
   // cronológicamente para calcular la corrida vigente de cada uno.
-  const byUser = new Map<number, { matchNumber: number; points: number | null }[]>()
+  const byUser = new Map<
+    number,
+    { matchNumber: number; points: number | null }[]
+  >()
   for (const row of scored) {
     const list = byUser.get(row.userId) ?? []
     list.push(row)

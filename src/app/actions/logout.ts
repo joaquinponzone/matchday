@@ -7,7 +7,10 @@ import { sessionOptions } from "@/lib/session"
 import type { SessionData } from "@/lib/types"
 
 export async function logout() {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions
+  )
   session.destroy()
   redirect("/login")
 }

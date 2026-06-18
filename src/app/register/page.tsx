@@ -36,7 +36,13 @@ export default function RegisterPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Correo electrónico</Label>
-                  <Input id="email" name="email" type="email" autoComplete="email" required />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Contraseña</Label>
@@ -59,7 +65,7 @@ export default function RegisterPage() {
               <div className="mt-4 text-sm">
                 <Link
                   href="/login"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
                 >
                   ¿Ya tenés cuenta? Iniciá sesión
                 </Link>

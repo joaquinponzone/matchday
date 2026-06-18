@@ -12,7 +12,10 @@ import { db } from "@/server/db/index"
 import { users } from "@/server/db/schema"
 
 export const verifySession = cache(async () => {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions
+  )
 
   if (!session.userId) {
     redirect("/login")

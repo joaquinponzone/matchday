@@ -36,7 +36,12 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={cn("antialiased h-100dvh", fontSans.variable, "font-mono", geistMono.variable)}
+      className={cn(
+        "h-100dvh antialiased",
+        fontSans.variable,
+        "font-mono",
+        geistMono.variable
+      )}
     >
       <body>
         <ThemeProvider>{children}</ThemeProvider>

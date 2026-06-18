@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
               <div className="mt-4 text-sm">
                 <Link
                   href="/login"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Volver al inicio de sesión
                 </Link>

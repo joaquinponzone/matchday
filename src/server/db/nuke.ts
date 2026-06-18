@@ -11,7 +11,8 @@
 import { createClient } from "@libsql/client"
 
 const url = process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL
-const authToken = process.env.TURSO_AUTH_TOKEN ?? process.env.DATABASE_AUTH_TOKEN
+const authToken =
+  process.env.TURSO_AUTH_TOKEN ?? process.env.DATABASE_AUTH_TOKEN
 
 if (!url) {
   console.error("Database URL not set (TURSO_DATABASE_URL or DATABASE_URL)")
@@ -20,7 +21,7 @@ if (!url) {
 
 if (process.env.ALLOW_DB_NUKE !== "1") {
   console.error(
-    "Refusing to run: set ALLOW_DB_NUKE=1 to wipe the database (dev only).",
+    "Refusing to run: set ALLOW_DB_NUKE=1 to wipe the database (dev only)."
   )
   process.exit(1)
 }
@@ -44,7 +45,7 @@ if (views.length === 0 && tables.length === 0) {
 }
 
 console.log(
-  `Dropping ${views.length} view(s), ${tables.length} table(s) on ${maskUrl(url)}`,
+  `Dropping ${views.length} view(s), ${tables.length} table(s) on ${maskUrl(url)}`
 )
 
 await client.execute("PRAGMA foreign_keys=OFF")
@@ -64,7 +65,7 @@ for (const row of tables) {
 await client.execute("PRAGMA foreign_keys=ON")
 
 console.log(
-  "Done. Run `bun run db:push` then `bun run db:seed` (ADMIN_EMAIL in .env).",
+  "Done. Run `bun run db:push` then `bun run db:seed` (ADMIN_EMAIL in .env)."
 )
 
 function maskUrl(u: string): string {

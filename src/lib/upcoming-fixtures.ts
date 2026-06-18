@@ -14,7 +14,10 @@ import { getFollowedTeams, getTeam } from "@/server/db/queries"
 const FALLBACK_DAYS_BACK = 0
 const FALLBACK_DAYS_FORWARD = 45
 
-function parseNonNegativeInt(raw: string | undefined, fallback: number): number {
+function parseNonNegativeInt(
+  raw: string | undefined,
+  fallback: number
+): number {
   if (raw === undefined || raw === "") return fallback
   const n = Number.parseInt(raw, 10)
   return Number.isFinite(n) && n >= 0 ? n : fallback
@@ -28,16 +31,20 @@ export function getUpcomingWindowConfig(): {
   return {
     daysBack: parseNonNegativeInt(
       process.env.PROMIEDOS_UPCOMING_DAYS_BACK,
-      FALLBACK_DAYS_BACK,
+      FALLBACK_DAYS_BACK
     ),
     daysForward: parseNonNegativeInt(
       process.env.PROMIEDOS_UPCOMING_DAYS_FORWARD,
-      FALLBACK_DAYS_FORWARD,
+      FALLBACK_DAYS_FORWARD
     ),
   }
 }
 
-function dateWindowDays(center: Date, daysBack: number, daysForward: number): Date[] {
+function dateWindowDays(
+  center: Date,
+  daysBack: number,
+  daysForward: number
+): Date[] {
   const days: Date[] = []
   for (let i = -daysBack; i <= daysForward; i++) {
     days.push(new Date(center.getTime() + i * 24 * 60 * 60 * 1000))
@@ -54,7 +61,7 @@ export async function getUpcomingFixturesForUser(
     limit?: number
     daysBack?: number
     daysForward?: number
-  },
+  }
 ): Promise<DashboardFixture[]> {
   const limit = options?.limit ?? 10
   const win = getUpcomingWindowConfig()
@@ -92,8 +99,8 @@ export async function getUpcomingFixturesForUser(
   const days = dateWindowDays(center, daysBack, daysForward)
   const rawByDay = await Promise.all(
     days.map((day) =>
-      fetchGamesForDate(day, APP_TIMEZONE).catch((): null => null),
-    ),
+      fetchGamesForDate(day, APP_TIMEZONE).catch((): null => null)
+    )
   )
 
   for (let i = 0; i < rawByDay.length; i++) {

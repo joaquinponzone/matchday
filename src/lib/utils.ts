@@ -56,9 +56,10 @@ export function formatMatchDate(isoDate: string): string {
   return `${date}\n${time} hs`
 }
 
-export function formatMatchDateParts(
-  isoDate: string,
-): { date: string; time: string } {
+export function formatMatchDateParts(isoDate: string): {
+  date: string
+  time: string
+} {
   const d = new Date(isoDate)
   const date = new Intl.DateTimeFormat("es-AR", {
     day: "numeric",
@@ -100,16 +101,22 @@ export function formatNotificationTimestamp(isoDate: Date | string): string {
 }
 
 export function isToday(isoDate: string): boolean {
-  const matchDay = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(new Date(isoDate))
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(new Date())
+  const matchDay = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
+  }).format(new Date(isoDate))
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
+  }).format(new Date())
   return matchDay === today
 }
 
 export function isTomorrow(isoDate: string): boolean {
-  const matchDay = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(new Date(isoDate))
-  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(
-    new Date(Date.now() + 86400000),
-  )
+  const matchDay = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
+  }).format(new Date(isoDate))
+  const tomorrow = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
+  }).format(new Date(Date.now() + 86400000))
   return matchDay === tomorrow
 }
 

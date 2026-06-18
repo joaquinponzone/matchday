@@ -25,7 +25,7 @@ function isLikelyFemaleVariant(name: string): boolean {
 function fifaMatchesQuery(
   nameEs: string,
   abbrev: string,
-  qNorm: string,
+  qNorm: string
 ): boolean {
   if (qNorm.length < 3) return false
   if (norm(nameEs).includes(qNorm)) return true
@@ -36,7 +36,7 @@ function fifaMatchesQuery(
 function promiedosCandidatesForFifa(
   pmTeams: PromiedosSearchTeamResult[],
   fifaName: string,
-  fifaAbbrev: string,
+  fifaAbbrev: string
 ): PromiedosSearchTeamResult[] {
   const nFifa = norm(fifaName)
   const abbrevU = fifaAbbrev.toUpperCase()
@@ -52,7 +52,7 @@ function promiedosCandidatesForFifa(
 
 function pickBestPromiedos(
   candidates: PromiedosSearchTeamResult[],
-  fifaName: string,
+  fifaName: string
 ): PromiedosSearchTeamResult | null {
   if (candidates.length === 0) return null
   const nFifa = norm(fifaName)
@@ -72,7 +72,7 @@ function pickBestPromiedos(
  * fixtures index. Only returns rows with a Promiedos match so sync/notifications work.
  */
 export async function searchWcNationalTeamsForSettings(
-  query: string,
+  query: string
 ): Promise<PromiedosSearchTeamResult[]> {
   const qRaw = query.trim().toLowerCase()
   if (qRaw.length < 3) return []
@@ -88,7 +88,7 @@ export async function searchWcNationalTeamsForSettings(
   const out: PromiedosSearchTeamResult[] = []
 
   const fifaFiltered = fifaTeams.filter((ft) =>
-    fifaMatchesQuery(ft.nameEs, ft.abbreviation, qNorm),
+    fifaMatchesQuery(ft.nameEs, ft.abbreviation, qNorm)
   )
 
   fifaFiltered.sort((a, b) => a.nameEs.localeCompare(b.nameEs, "es"))
@@ -97,7 +97,7 @@ export async function searchWcNationalTeamsForSettings(
     const candidates = promiedosCandidatesForFifa(
       pmIndex,
       ft.nameEs,
-      ft.abbreviation,
+      ft.abbreviation
     )
     const pm = pickBestPromiedos(candidates, ft.nameEs)
     if (!pm || seenPmKeys.has(pm.teamKey)) continue

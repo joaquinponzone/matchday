@@ -37,10 +37,7 @@ interface NotificationContent {
 }
 
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
 
 interface UserSettings {
@@ -56,7 +53,7 @@ interface UserSettings {
 
 export function buildNotificationContent(
   match: LiveFixture,
-  timing: MatchNotificationTiming,
+  timing: MatchNotificationTiming
 ): NotificationContent {
   const followedName = match.teamShortName ?? match.teamKey
   const local = (match.isHome ? followedName : match.opponent) ?? ""
@@ -94,13 +91,15 @@ async function dispatchNotification(
   match: LiveFixture,
   userSettings: UserSettings,
   channel: Channel,
-  timing: Timing,
+  timing: Timing
 ): Promise<void> {
   const idempotencyKey = `${userId}_${match.externalMatchId}_${match.teamKey}_${channel}_${timing}`
 
   if (await notificationExists(idempotencyKey)) return
 
-  console.log(`[cron/daily] dispatch ${timing}/${channel} ${match.externalMatchId}: matchDate=${match.matchDate} formatted=${formatMatchTimeOnly(match.matchDate)}`)
+  console.log(
+    `[cron/daily] dispatch ${timing}/${channel} ${match.externalMatchId}: matchDate=${match.matchDate} formatted=${formatMatchTimeOnly(match.matchDate)}`
+  )
   const { title, body, telegramHtml } = buildNotificationContent(match, timing)
   let status: "sent" | "failed" = "sent"
   let error: string | undefined
@@ -139,7 +138,11 @@ export async function processDailyDigestNotifications(options?: {
   dryRun?: boolean
 }): Promise<
   | { processed: number; errors: string[] }
-  | { dryRun: true; would_send: NotificationDiagnosticEntry[]; errors: string[] }
+  | {
+      dryRun: true
+      would_send: NotificationDiagnosticEntry[]
+      errors: string[]
+    }
 > {
   const dryRun = options?.dryRun ?? false
   const allUsers = await getAllActiveUsersWithSettings()
@@ -155,22 +158,26 @@ export async function processDailyDigestNotifications(options?: {
     rawToday = await fetchGamesForDate(new Date(), APP_TIMEZONE)
     rawTomorrow = await fetchGamesForDate(
       new Date(Date.now() + 86400000),
-      APP_TIMEZONE,
+      APP_TIMEZONE
     )
     console.log("[cron/daily] Promiedos fetch diagnostic:", {
       fetchedAt: new Date().toISOString(),
-      sampleTodayTimes: rawToday.leagues?.flatMap((l) =>
-        (l.games ?? []).map((g) => ({
-          teams: g.teams?.map((t) => t.short_name).join(" vs "),
-          start_time: g.start_time,
-        })),
-      ).slice(0, 5),
-      sampleTomorrowTimes: rawTomorrow.leagues?.flatMap((l) =>
-        (l.games ?? []).map((g) => ({
-          teams: g.teams?.map((t) => t.short_name).join(" vs "),
-          start_time: g.start_time,
-        })),
-      ).slice(0, 5),
+      sampleTodayTimes: rawToday.leagues
+        ?.flatMap((l) =>
+          (l.games ?? []).map((g) => ({
+            teams: g.teams?.map((t) => t.short_name).join(" vs "),
+            start_time: g.start_time,
+          }))
+        )
+        .slice(0, 5),
+      sampleTomorrowTimes: rawTomorrow.leagues
+        ?.flatMap((l) =>
+          (l.games ?? []).map((g) => ({
+            teams: g.teams?.map((t) => t.short_name).join(" vs "),
+            start_time: g.start_time,
+          }))
+        )
+        .slice(0, 5),
     })
   } catch (err) {
     errors.push(err instanceof Error ? err.message : String(err))
@@ -207,10 +214,7 @@ export async function processDailyDigestNotifications(options?: {
       })
     }
 
-    const dispatchForTiming = async (
-      raw: typeof rawToday,
-      timing: Timing,
-    ) => {
+    const dispatchForTiming = async (raw: typeof rawToday, timing: Timing) => {
       const filtered = filterGamesForTeamIds(raw, promiedosIds)
       for (const { league, game } of filtered) {
         for (const key of userTeams) {
@@ -241,12 +245,12 @@ export async function processDailyDigestNotifications(options?: {
                   row,
                   userSettings,
                   channel,
-                  timing,
+                  timing
                 )
                 processed++
               } catch (err) {
                 errors.push(
-                  `user:${userSettings.userId}/${channel}/${row.externalMatchId}: ${err instanceof Error ? err.message : err}`,
+                  `user:${userSettings.userId}/${channel}/${row.externalMatchId}: ${err instanceof Error ? err.message : err}`
                 )
               }
             }

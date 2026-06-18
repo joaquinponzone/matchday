@@ -12,7 +12,7 @@ import { eq } from "drizzle-orm"
 
 export async function forgotPassword(
   _prevState: FormState,
-  formData: FormData,
+  formData: FormData
 ): Promise<FormState> {
   if (!isEmailConfigured()) {
     return { error: "Email is not configured. Contact an admin." }
@@ -27,7 +27,8 @@ export async function forgotPassword(
   }
 
   const { email } = parsed.data
-  const genericSuccess = "If an account with that email exists, a reset link has been sent."
+  const genericSuccess =
+    "If an account with that email exists, a reset link has been sent."
 
   const user = await getUserByEmail(email)
   if (!user) {

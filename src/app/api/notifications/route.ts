@@ -7,8 +7,12 @@ import type { SessionData } from "@/lib/types"
 import { getNotifications } from "@/server/db/queries"
 
 export async function GET(req: NextRequest) {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
-  if (!session.userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions
+  )
+  if (!session.userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const { searchParams } = req.nextUrl
   const channel = searchParams.get("channel") ?? undefined

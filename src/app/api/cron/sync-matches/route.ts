@@ -15,6 +15,6 @@ export async function GET(req: NextRequest) {
       deprecated: true,
       message: "Gone: no DB match sync. Use Promiedos on-demand fixtures.",
     },
-    { status: 410 },
+    { status: 410 }
   )
 }

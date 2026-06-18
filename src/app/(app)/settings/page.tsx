@@ -14,8 +14,9 @@ export default async function SettingsPage() {
 
   if (!settings) {
     return (
-      <p className="text-muted-foreground py-20">
-        Configuración no inicializada. El usuario no tiene una configuración asociada. Por favor, contactá al administrador.
+      <p className="py-20 text-muted-foreground">
+        Configuración no inicializada. El usuario no tiene una configuración
+        asociada. Por favor, contactá al administrador.
       </p>
     )
   }
@@ -24,7 +25,12 @@ export default async function SettingsPage() {
     <div className="space-y-4">
       <h1 className="text- font-medium text-muted-foreground">Configuración</h1>
       <Separator />
-      <SettingsForm settings={settings} followedTeams={followedTeams} userName={user.name} userNickname={user.nickname ?? ""} />
+      <SettingsForm
+        settings={settings}
+        followedTeams={followedTeams}
+        userName={user.name}
+        userNickname={user.nickname ?? ""}
+      />
     </div>
   )
 }

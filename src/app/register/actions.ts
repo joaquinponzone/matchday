@@ -5,13 +5,13 @@ import bcrypt from "bcryptjs"
 import type { FormState } from "@/lib/types"
 import { RegisterSchema } from "@/lib/validations"
 import { db } from "@/server/db/index"
-import {
-  createUserSettings,
-  getUserByEmail,
-} from "@/server/db/queries"
+import { createUserSettings, getUserByEmail } from "@/server/db/queries"
 import { users } from "@/server/db/schema"
 
-export async function register(_prevState: FormState, formData: FormData): Promise<FormState> {
+export async function register(
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
   const parsed = RegisterSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),

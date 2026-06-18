@@ -15,7 +15,7 @@ export function useSaveStatus(savedDuration = 2000) {
       setTimeout(() => setSaved(false), savedDuration)
       return result
     },
-    [savedDuration],
+    [savedDuration]
   )
 
   return { isSaving, saved, wrap }
