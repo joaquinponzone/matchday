@@ -1,5 +1,7 @@
 "use client"
 
+import { useMemo, useState } from "react"
+import { ArrowDown, ArrowUp, RotateCcw } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -58,6 +60,43 @@ export const COLUMNS: { key: string; label: string; help: string }[] = [
   },
 ]
 
+// Valor numérico por columna para ordenar. Las tasas/promedio devuelven null
+// cuando no hay partidos evaluados ("—") para mandar esas filas al final.
+function sortValue(entry: LeaderboardEntry, key: string): number | null {
+  const scored = entry.scoredPredictions
+  const missed = scored - entry.exactCount - entry.correctCount
+  switch (key) {
+    case "pts":
+      return entry.totalPoints
+    case "exact":
+      return entry.exactCount
+    case "bien":
+      return entry.correctCount
+    case "fall":
+      return missed
+    case "ac":
+      return scored === 0
+        ? null
+        : (entry.exactCount + entry.correctCount) / scored
+    case "ex":
+      return scored === 0 ? null : entry.exactCount / scored
+    case "prom":
+      return scored === 0 ? null : entry.totalPoints / scored
+    case "carg":
+      return entry.totalPredictions
+    case "eval":
+      return scored
+    case "racha":
+      return entry.currentStreak
+    case "maxracha":
+      return entry.longestStreak
+    default:
+      return null
+  }
+}
+
+type SortState = { key: string; dir: "asc" | "desc" }
+
 export function LeaderboardTable({
   entries,
   currentUserId,
@@ -67,26 +106,81 @@ export function LeaderboardTable({
   currentUserId: number
   detailed?: boolean
 }) {
+  const [sort, setSort] = useState<SortState | null>(null)
+
+  function toggleSort(key: string) {
+    setSort((prev) =>
+      prev?.key === key
+        ? { key, dir: prev.dir === "desc" ? "asc" : "desc" }
+        : { key, dir: "desc" }
+    )
+  }
+
+  // Sin ordenamiento activo (o en vista compacta) respetamos el orden que llega
+  // del server (puntos desc). El sort es estable → empates mantienen ese orden.
+  const rows = useMemo(() => {
+    if (!detailed || !sort) return entries
+    return [...entries].sort((a, b) => {
+      const va = sortValue(a, sort.key)
+      const vb = sortValue(b, sort.key)
+      if (va === null && vb === null) return 0
+      if (va === null) return 1
+      if (vb === null) return -1
+      return sort.dir === "desc" ? vb - va : va - vb
+    })
+  }, [entries, detailed, sort])
+
   return (
-    <Table>
+    <>
+      {detailed && sort && (
+        <div className="flex justify-end px-2 pb-2">
+          <button
+            type="button"
+            onClick={() => setSort(null)}
+            className="inline-flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <RotateCcw className="size-3" />
+            Restablecer orden
+          </button>
+        </div>
+      )}
+      <Table>
       <TableHeader>
         <TableRow>
           <TableHead className="w-8 px-2">#</TableHead>
           <TableHead className="px-2">Usuario</TableHead>
           {detailed ? (
-            COLUMNS.map((col) => (
-              <TableHead
-                key={col.key}
-                className="px-2 text-right text-xs whitespace-nowrap"
-              >
-                <Tooltip>
-                  <TooltipTrigger className="cursor-help underline decoration-dotted underline-offset-2">
-                    {col.label}
-                  </TooltipTrigger>
-                  <TooltipContent>{col.help}</TooltipContent>
-                </Tooltip>
-              </TableHead>
-            ))
+            COLUMNS.map((col) => {
+              const active = sort?.key === col.key
+              return (
+                <TableHead
+                  key={col.key}
+                  className="px-2 text-right text-xs whitespace-nowrap"
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort(col.key)}
+                        className={cn(
+                          "ml-auto inline-flex cursor-pointer items-center gap-0.5 underline decoration-dotted underline-offset-2",
+                          active && "text-foreground"
+                        )}
+                      >
+                        {col.label}
+                        {active &&
+                          (sort.dir === "desc" ? (
+                            <ArrowDown className="size-3" />
+                          ) : (
+                            <ArrowUp className="size-3" />
+                          ))}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>{col.help}</TooltipContent>
+                  </Tooltip>
+                </TableHead>
+              )
+            })
           ) : (
             <>
               <TableHead className="px-2 text-right text-xs">Pts</TableHead>
@@ -97,7 +191,7 @@ export function LeaderboardTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {entries.map((entry, i) => {
+        {rows.map((entry, i) => {
           const mine = entry.userId === currentUserId
           const missed =
             entry.scoredPredictions - entry.exactCount - entry.correctCount
@@ -163,6 +257,7 @@ export function LeaderboardTable({
           )
         })}
       </TableBody>
-    </Table>
+      </Table>
+    </>
   )
 }

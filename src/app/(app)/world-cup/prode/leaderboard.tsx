@@ -37,6 +37,9 @@ export function Leaderboard({
     <Card className="2xl:sticky 2xl:top-4 bg-transparent border-none">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold">Ranking</CardTitle>
+        <p className="hidden text-xs text-muted-foreground md:block 2xl:hidden">
+          Clickeá los encabezados para reordenar.
+        </p>
       </CardHeader>
       <CardContent className="p-0">
         {entries.length === 0 ? (
