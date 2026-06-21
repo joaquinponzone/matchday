@@ -6,6 +6,7 @@ import {
   useState,
   useTransition,
   type KeyboardEvent,
+  type ReactNode,
 } from "react"
 import Image from "next/image"
 import { Minus, Plus } from "lucide-react"
@@ -17,12 +18,18 @@ import type { WCMatch } from "../types"
 import type { ProdePrediction } from "@/server/db/schema"
 import { savePrediction } from "./actions"
 import { MatchPredictionsDialog } from "./match-predictions-dialog"
-import { dayLabel, groupMatchesByDay, toUtcIso } from "../lib"
+import {
+  dayLabel,
+  groupMatchesByDay,
+  pickTodayOrNearestDay,
+  toUtcIso,
+} from "../lib"
 
 interface PredictionsListProps {
   matches: WCMatch[]
   initialPredictions: ProdePrediction[]
   currentUserId: number
+  leaderboard: ReactNode
 }
 
 export function isLocked(match: WCMatch): boolean {
@@ -357,27 +364,30 @@ export function PredictionsList({
   matches,
   initialPredictions,
   currentUserId,
+  leaderboard,
 }: PredictionsListProps) {
   const predByMatch = new Map(initialPredictions.map((p) => [p.matchNumber, p]))
   const todayRef = useRef<HTMLDivElement>(null)
-  const [filter, setFilter] = useState<"pending" | "all">("pending")
+  const [filter, setFilter] = useState<"today" | "pending" | "all">("today")
+  const todayMode = filter === "today"
 
-  // Bring today's matchday into view when the tab opens
+  // Bring today's matchday into view when the tab opens or the filter changes
   useEffect(() => {
     todayRef.current?.scrollIntoView({ block: "start" })
-  }, [])
+  }, [filter])
 
   const validMatches = matches.filter((m) => m.num != null)
-  const filteredMatches =
-    filter === "pending"
-      ? validMatches.filter((m) => !isFinished(m))
-      : validMatches
-  const sortedDays = groupMatchesByDay(filteredMatches)
+  const sortedDays =
+    filter === "today"
+      ? pickTodayOrNearestDay(groupMatchesByDay(validMatches))
+      : filter === "pending"
+        ? groupMatchesByDay(validMatches.filter((m) => !isFinished(m)))
+        : groupMatchesByDay(validMatches)
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-1 self-start rounded-md border border-border p-0.5">
-        {(["pending", "all"] as const).map((f) => (
+        {(["today", "pending", "all"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -388,51 +398,65 @@ export function PredictionsList({
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {f === "pending" ? "Pendientes" : "Todos"}
+            {f === "today" ? "Hoy" : f === "pending" ? "Pendientes" : "Todos"}
           </button>
         ))}
       </div>
 
-      {sortedDays.length === 0 ? (
-        <p className="py-4 text-sm text-muted-foreground">
-          No hay partidos pendientes.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
-          {sortedDays.map(({ key, iso, matches: dayMatches }) => {
-            const today = isToday(iso)
-            return (
-              <Card
-                key={key}
-                ref={today ? todayRef : undefined}
-                className={cn("scroll-mt-4", today && "border-primary")}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center justify-between gap-2 text-sm font-semibold">
-                    <span className={cn(today && "text-primary")}>
-                      {dayLabel(iso)}
-                    </span>
-                    <span className="text-[10px] font-normal text-muted-foreground">
-                      {dayMatches.length}{" "}
-                      {dayMatches.length === 1 ? "partido" : "partidos"}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {dayMatches.map((match) => (
-                    <MatchPredictionRow
-                      key={match.num}
-                      match={match}
-                      prediction={predByMatch.get(match.num!)}
-                      currentUserId={currentUserId}
-                    />
-                  ))}
-                </CardContent>
-              </Card>
-            )
-          })}
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-3">
+        <div
+          className={cn(
+            "grid grid-cols-1 gap-4",
+            todayMode ? "2xl:grid-cols-1" : "2xl:col-span-2 2xl:grid-cols-2"
+          )}
+        >
+          {sortedDays.length === 0 ? (
+            <p className="py-4 text-sm text-muted-foreground">
+              {filter === "today"
+                ? "No hay partidos próximos."
+                : filter === "pending"
+                  ? "No hay partidos pendientes."
+                  : "No hay partidos."}
+            </p>
+          ) : (
+            sortedDays.map(({ key, iso, matches: dayMatches }) => {
+              const today = isToday(iso)
+              return (
+                <Card
+                  key={key}
+                  ref={today ? todayRef : undefined}
+                  className={cn("scroll-mt-4", today && "border-primary")}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center justify-between gap-2 text-sm font-semibold">
+                      <span className={cn(today && "text-primary")}>
+                        {dayLabel(iso)}
+                      </span>
+                      <span className="text-[10px] font-normal text-muted-foreground">
+                        {dayMatches.length}{" "}
+                        {dayMatches.length === 1 ? "partido" : "partidos"}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {dayMatches.map((match) => (
+                      <MatchPredictionRow
+                        key={match.num}
+                        match={match}
+                        prediction={predByMatch.get(match.num!)}
+                        currentUserId={currentUserId}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
+              )
+            })
+          )}
         </div>
-      )}
+        <div className={cn(todayMode && "lb-wide 2xl:col-span-2")}>
+          {leaderboard}
+        </div>
+      </div>
     </div>
   )
 }

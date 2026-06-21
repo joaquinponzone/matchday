@@ -67,6 +67,18 @@ export function groupMatchesByDay(matches: WCMatch[]): MatchDay[] {
   return [...days.values()].sort((a, b) => a.key.localeCompare(b.key))
 }
 
+// De los días agrupados (ordenados asc), devuelve solo el de hoy; si no hay
+// partidos hoy, el próximo día con partidos, o el último jugado si no quedan
+// próximos.
+export function pickTodayOrNearestDay(days: MatchDay[]): MatchDay[] {
+  if (days.length === 0) return []
+  const todayKey = dayKey(new Date().toISOString())
+  const today = days.find((d) => d.key === todayKey)
+  if (today) return [today]
+  const next = days.find((d) => d.key > todayKey)
+  return [next ?? days[days.length - 1]]
+}
+
 export function extractGroupStandings(matches: WCMatch[]): GroupStanding[] {
   const groupMatches = matches.filter((m) => m.group)
 

@@ -149,39 +149,27 @@ export default async function WorldCupPage() {
   const sortedGroups = Object.keys(groupedMatches).sort()
 
   const prodeContent = (
-    <div className="flex flex-col-reverse gap-4 2xl:grid 2xl:grid-cols-3">
-      <div className="mb-2 2xl:col-span-3">
-        <Alert>
-          <Trophy className="size-4" />
-          <AlertTitle>Pozo de premios - Pendiente</AlertTitle>
-          <AlertDescription>
-            Aun no se decidió que premios se repartirán entre los participantes.
-            La idea será que los ganadores sean los 3 primeros puestos.
-          </AlertDescription>
-        </Alert>
-      </div>
-      <div className="2xl:col-span-2">
-        <PredictionsList
-          matches={allMatches}
-          initialPredictions={userPredictions}
-          currentUserId={user.id}
-        />
-      </div>
-      <div className="flex flex-col gap-4">
-        {/* Reserva el alto del toggle Pendientes/Todos para alinear el Ranking
-            con la primera tarjeta de partidos en pantallas grandes */}
-        <div
-          aria-hidden
-          className="invisible hidden items-center gap-1 self-start rounded-md border p-0.5 2xl:flex"
-        >
-          <span className="px-2.5 py-1 text-xs">Pendientes</span>
-        </div>
-        <Leaderboard
-          entries={leaderboard}
-          currentUserId={user.id}
-          isAdmin={user.role === "admin"}
-        />
-      </div>
+    <div className="flex flex-col-reverse gap-4 2xl:flex-col">
+      {/* <Alert className="mb-2">
+        <Trophy className="size-4" />
+        <AlertTitle>Pozo de premios - Pendiente</AlertTitle>
+        <AlertDescription>
+          Aun no se decidió que premios se repartirán entre los participantes. La
+          idea será que los ganadores sean los 3 primeros puestos.
+        </AlertDescription>
+      </Alert> */}
+      <PredictionsList
+        matches={allMatches}
+        initialPredictions={userPredictions}
+        currentUserId={user.id}
+        leaderboard={
+          <Leaderboard
+            entries={leaderboard}
+            currentUserId={user.id}
+            isAdmin={user.role === "admin"}
+          />
+        }
+      />
     </div>
   )
 

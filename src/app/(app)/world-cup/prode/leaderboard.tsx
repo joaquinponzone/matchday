@@ -37,7 +37,7 @@ export function Leaderboard({
     <Card className="border-none bg-transparent 2xl:sticky 2xl:top-4">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold">Ranking</CardTitle>
-        <p className="hidden text-xs text-muted-foreground md:block 2xl:hidden">
+        <p className="hidden text-xs text-muted-foreground md:block 2xl:hidden 2xl:[.lb-wide_&]:block">
           Clickeá los encabezados para reordenar.
         </p>
       </CardHeader>
@@ -48,15 +48,17 @@ export function Leaderboard({
           </p>
         ) : (
           <>
-            {/* Compacta: mobile (<md) y sidebar angosto (>=2xl) */}
-            <div className="block md:hidden 2xl:block">
+            {/* Compacta vs detallada: por viewport en el layout apilado (mobile
+                → compacta; md-xl full-width → detallada). En 2xl la decide el
+                ancho de la columna vía la clase `.lb-wide` que pone
+                PredictionsList en modo "Hoy" (ranking ancho → detallada). */}
+            <div className="block md:hidden 2xl:block 2xl:[.lb-wide_&]:hidden">
               <LeaderboardTable
                 entries={entries}
                 currentUserId={currentUserId}
               />
             </div>
-            {/* Detallada inline: ranking full-width entre md y xl */}
-            <div className="hidden md:block 2xl:hidden">
+            <div className="hidden md:block 2xl:hidden 2xl:[.lb-wide_&]:block">
               <LeaderboardTable
                 entries={entries}
                 currentUserId={currentUserId}
@@ -68,9 +70,8 @@ export function Leaderboard({
       </CardContent>
       {entries.length > 0 && (
         <CardFooter className="flex items-center gap-2 pt-3">
-          {/* El dialog "Ver más datos" solo se justifica donde se ve la tabla
-              compacta: mobile (<md) y sidebar angosto (>=2xl). */}
-          <div className="md:hidden 2xl:block">
+          {/* El dialog "Ver más datos" solo donde se ve la tabla compacta. */}
+          <div className="md:hidden 2xl:block 2xl:[.lb-wide_&]:hidden">
             <LeaderboardDialog
               entries={entries}
               currentUserId={currentUserId}
