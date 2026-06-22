@@ -1,10 +1,15 @@
+import { unstable_cache } from "next/cache"
 import type {
   WCMatch,
   GroupStanding,
   GroupTeam,
+  PlayerStatRow,
+  PlayerLeaderboards,
 } from "@/app/(app)/world-cup/types"
 
 const FIFA_BASE = "https://api.fifa.com/api/v3"
+// FIFA Data Hub: misma fuente que usa la web de fifa.com para stats de jugador.
+const FDH_BASE = "https://fdh-api.fifa.com/v1"
 const COMPETITION_ID = "17"
 const SEASON_ID = "285023"
 const STAGE_ID = "289273"
@@ -37,6 +42,7 @@ interface FIFAStandingEntry {
   Against: number
   GoalsDiference: number
   Points: number
+  TeamConductScore?: number
   Team: FIFATeam
 }
 
@@ -64,6 +70,7 @@ interface FIFAMatch {
   Date: string
   TimeDefined: boolean
   MatchStatus: number // 0=finished, 1=upcoming, 3=live
+  MatchTime: string | null // minuto en vivo, ej "90'+4'"
   HomeTeamScore: number | null
   AwayTeamScore: number | null
   Home: FIFAMatchTeam | null
@@ -333,6 +340,7 @@ export async function fetchWCStandings(): Promise<GroupStanding[]> {
           goalsAgainst: entry.Against,
           goalDifference: entry.GoalsDiference,
           points: entry.Points,
+          conductScore: entry.TeamConductScore,
           flagUrl: getFlagUrl(entry.Team.PictureUrl),
         },
       })
@@ -357,9 +365,10 @@ async function fetchRawWCMatches(opts?: {
   const allMatches: FIFAMatch[] = []
   let token: string | null = null
 
+  // 60s en modo normal para que minuto y marcador en vivo se mantengan frescos.
   const fetchInit: RequestInit & { next?: { revalidate: number } } = opts?.fresh
     ? { cache: "no-store" }
-    : { next: { revalidate: 3600 } }
+    : { next: { revalidate: 60 } }
 
   do {
     const url = new URL(`${FIFA_BASE}/calendar/matches`)
@@ -419,6 +428,7 @@ function mapFIFAMatch(m: FIFAMatch): WCMatch {
     homeScore: m.HomeTeamScore,
     awayScore: m.AwayTeamScore,
     finished: m.MatchStatus === 0,
+    matchTime: m.MatchStatus === 3 ? m.MatchTime : null,
   }
 }
 
@@ -465,3 +475,208 @@ export async function fetchFinishedWCMatchScores(opts?: {
     return []
   }
 }
+
+// --- Estadísticas de jugador (FIFA Data Hub) ---
+
+/** Stats agregadas de un jugador en la temporada (lo que nos interesa rankear). */
+interface PlayerSeasonStat {
+  idPlayer: string
+  goals: number
+  assists: number
+  yellowCards: number
+  redCards: number
+  timePlayed: number
+  passes: number
+  shots: number
+  distance: number
+  saves: number
+}
+
+/** El feed es `{ [idPlayer]: [ [metric, value, bool], ... ] }`. */
+type FdhPlayersResponse = Record<string, [string, number, boolean][]>
+
+/**
+ * Stats por jugador de toda la temporada desde el FIFA Data Hub.
+ * El payload es ~6.8MB → excede el límite de 2MB del Data Cache de Next, por eso
+ * `no-store` (no se puede cachear la respuesta cruda). El resultado *reducido* se
+ * cachea aguas arriba con `unstable_cache` en `fetchWCPlayerLeaderboards`.
+ */
+async function fetchWCPlayerSeasonStats(): Promise<PlayerSeasonStat[]> {
+  try {
+    const res = await fetch(
+      `${FDH_BASE}/stats/season/${SEASON_ID}/players.json`,
+      {
+        cache: "no-store",
+      }
+    )
+    if (!res.ok) return []
+
+    const data: FdhPlayersResponse = await res.json()
+
+    return Object.entries(data).map(([idPlayer, metrics]) => {
+      const get = (name: string): number => {
+        const m = metrics.find((x) => x[0] === name)
+        return typeof m?.[1] === "number" ? m[1] : 0
+      }
+      return {
+        idPlayer,
+        goals: get("Goals"),
+        assists: get("Assists"),
+        yellowCards: get("YellowCards"),
+        redCards: get("RedCards"),
+        timePlayed: get("TimePlayed"),
+        passes: get("Passes"),
+        shots: get("AttemptAtGoal"),
+        distance: get("TotalDistance"),
+        saves: get("GoalkeeperSaves"),
+      }
+    })
+  } catch {
+    return []
+  }
+}
+
+/** Resuelve nombre + país (abreviatura FIFA) de un conjunto de jugadores. */
+async function fetchWCPlayersMeta(
+  ids: string[]
+): Promise<Map<string, { name: string; country: string }>> {
+  const meta = new Map<string, { name: string; country: string }>()
+
+  await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const res = await fetch(`${FIFA_BASE}/players/${id}?language=es`, {
+          next: { revalidate: 3600 },
+        })
+        if (!res.ok) return
+        const data: { Name?: LocalizedString[]; IdCountry?: string } =
+          await res.json()
+        const name = data.Name?.length ? getLocale(data.Name) : id
+        meta.set(id, { name, country: (data.IdCountry ?? "").toUpperCase() })
+      } catch {
+        // Ignoramos fallos individuales de metadata.
+      }
+    })
+  )
+
+  return meta
+}
+
+const PLAYER_TOP_N = 10
+
+/**
+ * Arma los rankings de jugadores (goleadores, asistencias, tarjetas, minutos)
+ * con nombre y bandera resueltos. Solo pide metadata de los jugadores que
+ * aparecen en algún top, para minimizar requests.
+ */
+async function buildWCPlayerLeaderboards(): Promise<PlayerLeaderboards> {
+  const stats = await fetchWCPlayerSeasonStats()
+  if (stats.length === 0) {
+    return {
+      topScorers: [],
+      topAssists: [],
+      topYellowCards: [],
+      topRedCards: [],
+      topMinutes: [],
+      topPasses: [],
+      topShots: [],
+      topDistance: [],
+      topSaves: [],
+    }
+  }
+
+  const top = (
+    pick: (s: PlayerSeasonStat) => number,
+    tiebreak?: (s: PlayerSeasonStat) => number
+  ): PlayerSeasonStat[] =>
+    [...stats]
+      .filter((s) => pick(s) > 0)
+      .sort((a, b) => {
+        const d = pick(b) - pick(a)
+        if (d !== 0) return d
+        return tiebreak ? tiebreak(b) - tiebreak(a) : 0
+      })
+      .slice(0, PLAYER_TOP_N)
+
+  const scorers = top(
+    (s) => s.goals,
+    (s) => s.assists
+  )
+  const assists = top((s) => s.assists)
+  const yellow = top((s) => s.yellowCards)
+  const red = top((s) => s.redCards)
+  const minutes = top((s) => s.timePlayed)
+  const passes = top((s) => s.passes)
+  const shots = top((s) => s.shots)
+  const distance = top((s) => s.distance)
+  const saves = top((s) => s.saves)
+
+  const ids = [
+    ...new Set(
+      [
+        ...scorers,
+        ...assists,
+        ...yellow,
+        ...red,
+        ...minutes,
+        ...passes,
+        ...shots,
+        ...distance,
+        ...saves,
+      ].map((s) => s.idPlayer)
+    ),
+  ]
+
+  const [meta, teams] = await Promise.all([
+    fetchWCPlayersMeta(ids),
+    fetchFifaWCNationalTeamsForSearch(),
+  ])
+
+  const flagByAbbr = new Map<string, string>()
+  for (const t of teams) {
+    if (t.flagUrl) flagByAbbr.set(t.abbreviation.toUpperCase(), t.flagUrl)
+  }
+
+  const toRow = (
+    s: PlayerSeasonStat,
+    value: number,
+    withAssists = false
+  ): PlayerStatRow => {
+    const m = meta.get(s.idPlayer)
+    const country = m?.country ?? ""
+    return {
+      idPlayer: s.idPlayer,
+      name: m?.name ?? s.idPlayer,
+      country,
+      flagUrl: flagByAbbr.get(country),
+      value,
+      ...(withAssists ? { assists: s.assists } : {}),
+    }
+  }
+
+  return {
+    topScorers: scorers.map((s) => toRow(s, s.goals, true)),
+    topAssists: assists.map((s) => toRow(s, s.assists)),
+    topYellowCards: yellow.map((s) => toRow(s, s.yellowCards)),
+    topRedCards: red.map((s) => toRow(s, s.redCards)),
+    topMinutes: minutes.map((s) => toRow(s, Math.round(s.timePlayed))),
+    topPasses: passes.map((s) => toRow(s, s.passes)),
+    topShots: shots.map((s) => toRow(s, s.shots)),
+    topDistance: distance.map((s) =>
+      toRow(s, Math.round(s.distance / 100) / 10)
+    ),
+    topSaves: saves.map((s) => toRow(s, s.saves)),
+  }
+}
+
+/**
+ * Versión cacheada: el feed crudo (~6.8MB) no entra en el Data Cache (límite 2MB),
+ * así que cacheamos el resultado ya reducido (objeto chico) con `unstable_cache`.
+ * El miss (~1 vez/hora) hace la descarga pesada + metadata; los demás requests lo
+ * sirven del cache.
+ */
+export const fetchWCPlayerLeaderboards = unstable_cache(
+  buildWCPlayerLeaderboards,
+  ["wc-player-leaderboards"],
+  { revalidate: 3600 }
+)

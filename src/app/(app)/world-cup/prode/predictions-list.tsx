@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Minus, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -54,7 +55,7 @@ export function isLive(match: WCMatch): boolean {
   )
 }
 
-export function LiveBadge() {
+export function LiveBadge({ minute }: { minute?: string | null }) {
   return (
     <Badge
       variant="outline"
@@ -66,6 +67,7 @@ export function LiveBadge() {
         <span className="relative inline-flex size-1.5 rounded-full bg-red-500" />
       </span>
       EN VIVO
+      {minute && <span className="tabular-nums">{minute}</span>}
     </Badge>
   )
 }
@@ -267,7 +269,7 @@ function MatchPredictionRow({
   ) : (
     <div className="flex items-center gap-1.5">
       {live ? (
-        <LiveBadge />
+        <LiveBadge minute={match.matchTime} />
       ) : (
         <PointsBadge points={prediction?.points ?? null} />
       )}
@@ -370,6 +372,7 @@ export function PredictionsList({
   const todayRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] = useState<"today" | "pending" | "all">("today")
   const todayMode = filter === "today"
+  const router = useRouter()
 
   // Bring today's matchday into view when the tab opens or the filter changes
   useEffect(() => {
@@ -377,6 +380,16 @@ export function PredictionsList({
   }, [filter])
 
   const validMatches = matches.filter((m) => m.num != null)
+  const hasLive = validMatches.some(isLive)
+
+  // Mientras haya un partido en juego, refrescamos los datos del servidor cada
+  // 60s para que el minuto y el marcador en vivo avancen solos.
+  useEffect(() => {
+    if (!hasLive) return
+    const id = setInterval(() => router.refresh(), 60000)
+    return () => clearInterval(id)
+  }, [hasLive, router])
+
   const sortedDays =
     filter === "today"
       ? pickTodayOrNearestDay(groupMatchesByDay(validMatches))

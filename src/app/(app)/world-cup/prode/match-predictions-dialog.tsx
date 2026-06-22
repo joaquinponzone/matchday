@@ -128,7 +128,7 @@ export function MatchPredictionsDialog({
                 >
                   {match.homeScore} - {match.awayScore}
                 </span>
-                {live && <LiveBadge />}
+                {live && <LiveBadge minute={match.matchTime} />}
               </div>
             ) : (
               <span>

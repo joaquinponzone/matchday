@@ -240,105 +240,110 @@ function DesktopBracket({ rounds }: { rounds: BracketRound[] }) {
 
   return (
     <div className="overflow-x-auto pb-4">
-      {/* Column labels */}
-      <div className="mb-2 flex text-[9px] font-medium text-muted-foreground">
-        {leftRounds.map((_, i) => (
-          <div
-            key={`ll-${i}`}
-            className="shrink-0 text-center"
-            style={{ width: i < leftRounds.length - 1 ? 118 + 20 : 118 }}
-          >
-            {ROUND_LABELS_LEFT[i]}
-          </div>
-        ))}
-        <div className="shrink-0 text-center" style={{ width: 20 + 130 + 20 }}>
-          Final
-        </div>
-        {rightRounds.map((_, i) => (
-          <div
-            key={`rl-${i}`}
-            className="shrink-0 text-center"
-            style={{ width: i > 0 ? 118 + 20 : 118 }}
-          >
-            {ROUND_LABELS_RIGHT[i]}
-          </div>
-        ))}
-      </div>
-
-      {/* Bracket row */}
-      <div className="flex">
-        {/* Left side: R32 → SF */}
-        {leftRounds.map((round, i) => (
-          <div key={`left-${i}`} className="flex">
-            <BracketCol matches={round.matches} round={i} />
-            {i < leftRounds.length - 1 && (
-              <Connector leftCount={round.matches.length} leftRound={i} />
-            )}
-          </div>
-        ))}
-
-        {/* Left SF → center gap */}
-        <div
-          className="relative shrink-0"
-          style={{ width: 20, height: TOTAL_H }}
-        >
-          <svg
-            className="pointer-events-none absolute top-0 left-0"
-            width={20}
-            height={TOTAL_H}
-          >
-            <line
-              x1={0}
-              y1={TOTAL_H / 2}
-              x2={20}
-              y2={TOTAL_H / 2}
-              className="stroke-border"
-              strokeWidth="1"
-            />
-          </svg>
-        </div>
-
-        {/* Center */}
-        <CenterCol centerRound={centerRound} />
-
-        {/* Right SF → center gap */}
-        <div
-          className="relative shrink-0"
-          style={{ width: 20, height: TOTAL_H }}
-        >
-          <svg
-            className="pointer-events-none absolute top-0 left-0"
-            width={20}
-            height={TOTAL_H}
-          >
-            <line
-              x1={0}
-              y1={TOTAL_H / 2}
-              x2={20}
-              y2={TOTAL_H / 2}
-              className="stroke-border"
-              strokeWidth="1"
-            />
-          </svg>
-        </div>
-
-        {/* Right side: SF → R32 (center to edge) */}
-        {rightRounds.map((round, i) => {
-          const colRound = rightRounds.length - 1 - i // SF=3, QF=2, R16=1, R32=0
-          return (
-            <div key={`right-${i}`} className="flex">
-              {/* Connector BEFORE this column (between previous and current) */}
-              {i > 0 && (
-                <Connector
-                  leftCount={rightRounds[i].matches.length}
-                  leftRound={colRound}
-                  mirrored={true}
-                />
-              )}
-              <BracketCol matches={round.matches} round={colRound} />
+      <div className="mx-auto w-fit">
+        {/* Column labels */}
+        <div className="mb-2 flex text-[9px] font-medium text-muted-foreground">
+          {leftRounds.map((_, i) => (
+            <div
+              key={`ll-${i}`}
+              className="shrink-0 text-center"
+              style={{ width: i < leftRounds.length - 1 ? 118 + 20 : 118 }}
+            >
+              {ROUND_LABELS_LEFT[i]}
             </div>
-          )
-        })}
+          ))}
+          <div
+            className="shrink-0 text-center"
+            style={{ width: 20 + 130 + 20 }}
+          >
+            Final
+          </div>
+          {rightRounds.map((_, i) => (
+            <div
+              key={`rl-${i}`}
+              className="shrink-0 text-center"
+              style={{ width: i > 0 ? 118 + 20 : 118 }}
+            >
+              {ROUND_LABELS_RIGHT[i]}
+            </div>
+          ))}
+        </div>
+
+        {/* Bracket row */}
+        <div className="flex">
+          {/* Left side: R32 → SF */}
+          {leftRounds.map((round, i) => (
+            <div key={`left-${i}`} className="flex">
+              <BracketCol matches={round.matches} round={i} />
+              {i < leftRounds.length - 1 && (
+                <Connector leftCount={round.matches.length} leftRound={i} />
+              )}
+            </div>
+          ))}
+
+          {/* Left SF → center gap */}
+          <div
+            className="relative shrink-0"
+            style={{ width: 20, height: TOTAL_H }}
+          >
+            <svg
+              className="pointer-events-none absolute top-0 left-0"
+              width={20}
+              height={TOTAL_H}
+            >
+              <line
+                x1={0}
+                y1={TOTAL_H / 2}
+                x2={20}
+                y2={TOTAL_H / 2}
+                className="stroke-border"
+                strokeWidth="1"
+              />
+            </svg>
+          </div>
+
+          {/* Center */}
+          <CenterCol centerRound={centerRound} />
+
+          {/* Right SF → center gap */}
+          <div
+            className="relative shrink-0"
+            style={{ width: 20, height: TOTAL_H }}
+          >
+            <svg
+              className="pointer-events-none absolute top-0 left-0"
+              width={20}
+              height={TOTAL_H}
+            >
+              <line
+                x1={0}
+                y1={TOTAL_H / 2}
+                x2={20}
+                y2={TOTAL_H / 2}
+                className="stroke-border"
+                strokeWidth="1"
+              />
+            </svg>
+          </div>
+
+          {/* Right side: SF → R32 (center to edge) */}
+          {rightRounds.map((round, i) => {
+            const colRound = rightRounds.length - 1 - i // SF=3, QF=2, R16=1, R32=0
+            return (
+              <div key={`right-${i}`} className="flex">
+                {/* Connector BEFORE this column (between previous and current) */}
+                {i > 0 && (
+                  <Connector
+                    leftCount={rightRounds[i].matches.length}
+                    leftRound={colRound}
+                    mirrored={true}
+                  />
+                )}
+                <BracketCol matches={round.matches} round={colRound} />
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
