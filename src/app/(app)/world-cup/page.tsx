@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 
+import { Suspense } from "react"
 import Image from "next/image"
 import {
   getUserPredictions,
@@ -10,9 +11,16 @@ import { WcTabs } from "./wc-tabs"
 import { GroupStandings } from "./group-standings"
 import { GroupsTab } from "./groups-tab"
 import { KnockoutBracket } from "./knockout-bracket"
+import { StatisticsTab } from "./statistics-tab"
+import { TeamStatistics } from "./team-statistics"
+import {
+  PlayerStatisticsSection,
+  PlayerStatisticsFallback,
+} from "./player-statistics"
 import {
   extractGroupStandings,
   buildBracketRounds,
+  computeTournamentStats,
   toUtcIso,
   formatMatchDate,
 } from "./lib"
@@ -24,7 +32,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Trophy } from "lucide-react"
-import type { WCMatch } from "./types"
+import type { WCMatch, FairPlayTeam } from "./types"
 import { PredictionsList } from "./prode/predictions-list"
 import { Leaderboard } from "./prode/leaderboard"
 import { WorldCupCountdown } from "./countdown"
@@ -124,6 +132,20 @@ export default async function WorldCupPage() {
   // Bracket from knockout matches returned by the API
   const bracketRounds = buildBracketRounds(allMatches)
 
+  // Estadísticas del torneo computadas de los partidos finalizados + fair play
+  // (TeamConductScore) que viene en el endpoint de standings.
+  const tournamentStats = computeTournamentStats(allMatches)
+  // `TeamStatistics` deriva su propio orden (más sancionados), así que acá solo
+  // aplanamos las selecciones con conductScore disponible.
+  const fairPlay: FairPlayTeam[] = standings
+    .flatMap((s) => s.teams)
+    .filter((t) => typeof t.conductScore === "number")
+    .map((t) => ({
+      name: t.name,
+      flagUrl: t.flagUrl,
+      conductScore: t.conductScore as number,
+    }))
+
   const firstMatch = allMatches[0]
   const firstMatchDate = firstMatch
     ? toUtcIso(firstMatch.date, firstMatch.time)
@@ -198,6 +220,18 @@ export default async function WorldCupPage() {
         }
         bracketContent={<KnockoutBracket rounds={bracketRounds} />}
         prodeContent={prodeContent}
+        statisticsContent={
+          <StatisticsTab
+            teamContent={
+              <TeamStatistics stats={tournamentStats} fairPlay={fairPlay} />
+            }
+            playerContent={
+              <Suspense fallback={<PlayerStatisticsFallback />}>
+                <PlayerStatisticsSection />
+              </Suspense>
+            }
+          />
+        }
       />
     </div>
   )

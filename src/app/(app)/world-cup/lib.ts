@@ -5,6 +5,9 @@ import type {
   GroupTeam,
   BracketMatch,
   BracketRound,
+  TeamStat,
+  RecordMatch,
+  TournamentStats,
 } from "./types"
 
 // Parses "13:00 UTC-6" → UTC ISO string for the given date
@@ -110,6 +113,108 @@ export function extractGroupStandings(matches: WCMatch[]): GroupStanding[] {
     })
 
   return standings
+}
+
+// Agrega los partidos finalizados (grupos + eliminatorias) en stats por equipo
+// y récords del torneo. Los nombres ya vienen normalizados desde mapFIFAMatch,
+// así que se agregan por nombre de equipo.
+export function computeTournamentStats(matches: WCMatch[]): TournamentStats {
+  const finished = matches.filter(
+    (m) =>
+      m.finished === true &&
+      typeof m.homeScore === "number" &&
+      typeof m.awayScore === "number"
+  )
+
+  const teamMap = new Map<string, TeamStat>()
+  const ensure = (name: string, flagUrl?: string): TeamStat => {
+    let t = teamMap.get(name)
+    if (!t) {
+      t = {
+        name,
+        flagUrl,
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDifference: 0,
+        cleanSheets: 0,
+      }
+      teamMap.set(name, t)
+    }
+    if (!t.flagUrl && flagUrl) t.flagUrl = flagUrl
+    return t
+  }
+
+  let totalGoals = 0
+  let blowouts = 0
+  let biggestWin: RecordMatch | null = null
+  let highestScoring: RecordMatch | null = null
+
+  for (const m of finished) {
+    const home = m.homeScore as number
+    const away = m.awayScore as number
+    const matchGoals = home + away
+    totalGoals += matchGoals
+
+    const t1 = ensure(m.team1, m.team1FlagUrl)
+    const t2 = ensure(m.team2, m.team2FlagUrl)
+
+    t1.played++
+    t2.played++
+    t1.goalsFor += home
+    t1.goalsAgainst += away
+    t2.goalsFor += away
+    t2.goalsAgainst += home
+    if (away === 0) t1.cleanSheets++
+    if (home === 0) t2.cleanSheets++
+
+    if (home > away) {
+      t1.won++
+      t2.lost++
+    } else if (away > home) {
+      t2.won++
+      t1.lost++
+    } else {
+      t1.drawn++
+      t2.drawn++
+    }
+
+    const margin = Math.abs(home - away)
+    if (margin >= 3) blowouts++
+    const record: RecordMatch = {
+      team1: m.team1,
+      team2: m.team2,
+      team1FlagUrl: m.team1FlagUrl,
+      team2FlagUrl: m.team2FlagUrl,
+      homeScore: home,
+      awayScore: away,
+      round: m.round,
+      date: m.date,
+      totalGoals: matchGoals,
+      margin,
+    }
+    if (!biggestWin || margin > biggestWin.margin) biggestWin = record
+    if (!highestScoring || matchGoals > highestScoring.totalGoals)
+      highestScoring = record
+  }
+
+  for (const t of teamMap.values()) {
+    t.goalDifference = t.goalsFor - t.goalsAgainst
+  }
+
+  return {
+    teams: [...teamMap.values()],
+    totalGoals,
+    matchesPlayed: finished.length,
+    totalMatches: matches.length,
+    avgGoals: finished.length > 0 ? totalGoals / finished.length : 0,
+    blowouts,
+    biggestWin,
+    highestScoring,
+  }
 }
 
 // Translates bracket placeholder codes to readable labels
