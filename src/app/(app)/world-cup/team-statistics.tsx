@@ -14,73 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Flag } from "./stat-flag"
-import type {
-  TournamentStats,
-  TeamStat,
-  RecordMatch,
-  FairPlayTeam,
-} from "./types"
-
-function SummaryCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string
-  value: string
-  hint?: string
-}) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col gap-1 p-4">
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          {label}
-        </span>
-        <span className="text-2xl font-semibold tabular-nums">{value}</span>
-        {hint && (
-          <span className="text-[10px] text-muted-foreground">{hint}</span>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function RecordCard({
-  title,
-  match,
-}: {
-  title: string
-  match: RecordMatch | null
-}) {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        {match ? (
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <span className="flex flex-1 items-center justify-end gap-1.5 truncate">
-              <span className="truncate">{match.team1}</span>
-              <Flag flagUrl={match.team1FlagUrl} />
-            </span>
-            <span className="shrink-0 font-mono text-base font-semibold tabular-nums">
-              {match.homeScore} - {match.awayScore}
-            </span>
-            <span className="flex flex-1 items-center gap-1.5 truncate">
-              <Flag flagUrl={match.team2FlagUrl} />
-              <span className="truncate">{match.team2}</span>
-            </span>
-          </div>
-        ) : (
-          <p className="text-center text-xs text-muted-foreground">
-            Sin datos aún
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
+import type { TournamentStats, TeamStat, FairPlayTeam } from "./types"
 
 function RankingCard({
   title,
@@ -181,36 +115,6 @@ export function TeamStatistics({
 
   return (
     <div className="space-y-4">
-      {/* Resumen del torneo */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <SummaryCard
-          label="Goles totales"
-          value={String(stats.totalGoals)}
-          hint={`en ${stats.matchesPlayed} partidos`}
-        />
-        <SummaryCard
-          label="Promedio por partido"
-          value={stats.avgGoals.toFixed(2)}
-          hint="goles/partido"
-        />
-        <SummaryCard
-          label="Partidos jugados"
-          value={`${stats.matchesPlayed} / ${stats.totalMatches}`}
-          hint={`${stats.totalMatches - stats.matchesPlayed} restantes`}
-        />
-        <SummaryCard
-          label="Goleadas"
-          value={String(stats.blowouts)}
-          hint="diferencia de 3+ goles"
-        />
-      </div>
-
-      {/* Récords */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <RecordCard title="Mayor goleada" match={stats.biggestWin} />
-        <RecordCard title="Partido con más goles" match={stats.highestScoring} />
-      </div>
-
       {/* Rankings de equipos */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <RankingCard
