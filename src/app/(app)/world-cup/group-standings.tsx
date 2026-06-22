@@ -19,7 +19,7 @@ function positionColor(index: number) {
 
 function GroupTable({ standing }: { standing: GroupStanding }) {
   return (
-    <Card className="w-96">
+    <Card className="w-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold">
           {standing.group}
