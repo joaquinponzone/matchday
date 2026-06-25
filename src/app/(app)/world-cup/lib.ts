@@ -318,6 +318,8 @@ export function buildBracketRounds(matches: WCMatch[]): BracketRound[] {
       time: m.time,
       team1: m.team1,
       team2: m.team2,
+      team1FlagUrl: m.team1FlagUrl,
+      team2FlagUrl: m.team2FlagUrl,
       ground: m.ground,
     }
   }
@@ -346,6 +348,8 @@ export function buildBracketRounds(matches: WCMatch[]): BracketRound[] {
                 time: finalMatch.time,
                 team1: finalMatch.team1,
                 team2: finalMatch.team2,
+                team1FlagUrl: finalMatch.team1FlagUrl,
+                team2FlagUrl: finalMatch.team2FlagUrl,
                 ground: finalMatch.ground,
               },
             ]
@@ -359,6 +363,8 @@ export function buildBracketRounds(matches: WCMatch[]): BracketRound[] {
                 time: thirdMatch.time,
                 team1: thirdMatch.team1,
                 team2: thirdMatch.team2,
+                team1FlagUrl: thirdMatch.team1FlagUrl,
+                team2FlagUrl: thirdMatch.team2FlagUrl,
                 ground: thirdMatch.ground,
               },
             ]

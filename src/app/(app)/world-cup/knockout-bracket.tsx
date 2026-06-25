@@ -8,6 +8,7 @@ import {
   getFeedsInto,
 } from "./lib"
 import type { BracketMatch, BracketRound } from "./types"
+import { Flag } from "./stat-flag"
 import { useState, useRef } from "react"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -40,19 +41,23 @@ function TreeCard({ match }: { match: BracketMatch }) {
         isSpecial && "border-yellow-500/60 bg-yellow-500/5"
       )}
     >
-      <div className="mb-0.5 truncate font-mono text-muted-foreground">
+      <div className="truncate font-mono text-muted-foreground">
         {isSpecial
           ? match.round === "Final"
             ? "Final"
             : "3er puesto"
-          : `P${match.num}`}{" "}
-        · {dateStr}
+          : `P${match.num}`}
       </div>
-      <div className="truncate font-medium">
-        {resolveTeamLabel(match.team1)}
+      <div className="mb-0.5 truncate font-mono text-muted-foreground">
+        {dateStr}
       </div>
-      <div className="mt-0.5 truncate border-t border-dashed pt-0.5 font-medium">
-        {resolveTeamLabel(match.team2)}
+      <div className="flex items-center gap-1 truncate font-medium">
+        <Flag flagUrl={match.team1FlagUrl} />
+        <span className="truncate">{resolveTeamLabel(match.team1)}</span>
+      </div>
+      <div className="mt-0.5 flex items-center gap-1 truncate border-t border-dashed pt-0.5 font-medium">
+        <Flag flagUrl={match.team2FlagUrl} />
+        <span className="truncate">{resolveTeamLabel(match.team2)}</span>
       </div>
     </div>
   )
@@ -384,12 +389,14 @@ function MobileMatchCard({ match }: { match: BracketMatch }) {
         <span className="text-[10px] text-muted-foreground">{dateStr}</span>
       </div>
       <div className="flex items-center gap-2 text-xs">
-        <span className="flex-1 truncate font-medium">
-          {resolveTeamLabel(match.team1)}
+        <span className="flex flex-1 items-center gap-1 truncate font-medium">
+          <Flag flagUrl={match.team1FlagUrl} />
+          <span className="truncate">{resolveTeamLabel(match.team1)}</span>
         </span>
         <span className="shrink-0 text-[10px] text-muted-foreground">vs</span>
-        <span className="flex-1 truncate text-right font-medium">
-          {resolveTeamLabel(match.team2)}
+        <span className="flex flex-1 items-center justify-end gap-1 truncate font-medium">
+          <span className="truncate">{resolveTeamLabel(match.team2)}</span>
+          <Flag flagUrl={match.team2FlagUrl} />
         </span>
       </div>
       <div className="mt-1 flex items-center justify-between">

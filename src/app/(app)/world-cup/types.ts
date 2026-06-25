@@ -42,6 +42,8 @@ export interface BracketMatch {
   time: string
   team1: string
   team2: string
+  team1FlagUrl?: string
+  team2FlagUrl?: string
   ground: string
 }
 
