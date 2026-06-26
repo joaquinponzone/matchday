@@ -31,6 +31,9 @@ function GroupTable({ standing }: { standing: GroupStanding }) {
             <TableRow className="text-[10px]">
               <TableHead className="w-6 px-2">#</TableHead>
               <TableHead className="px-2">Equipo</TableHead>
+              <TableHead className="w-8 border-x border-border px-1 text-center font-bold text-foreground">
+                Pts
+              </TableHead>
               <TableHead className="w-7 px-1 text-center">PJ</TableHead>
               <TableHead className="w-7 px-1 text-center">G</TableHead>
               <TableHead className="w-7 px-1 text-center">E</TableHead>
@@ -42,9 +45,6 @@ function GroupTable({ standing }: { standing: GroupStanding }) {
                 GC
               </TableHead>
               <TableHead className="w-7 px-1 text-center">DG</TableHead>
-              <TableHead className="w-8 px-1 text-center font-bold">
-                Pts
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -71,6 +71,9 @@ function GroupTable({ standing }: { standing: GroupStanding }) {
                     {team.name}
                   </span>
                 </TableCell>
+                <TableCell className="border-x border-border bg-muted/30 px-1 py-1.5 text-center font-bold">
+                  {team.points}
+                </TableCell>
                 <TableCell className="px-1 py-1.5 text-center text-muted-foreground">
                   {team.played}
                 </TableCell>
@@ -91,9 +94,6 @@ function GroupTable({ standing }: { standing: GroupStanding }) {
                 </TableCell>
                 <TableCell className="px-1 py-1.5 text-center text-muted-foreground">
                   {team.goalDifference}
-                </TableCell>
-                <TableCell className="px-1 py-1.5 text-center font-bold">
-                  {team.points}
                 </TableCell>
               </TableRow>
             ))}
