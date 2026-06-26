@@ -9,8 +9,9 @@ import {
   type ReactNode,
 } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Minus, Plus } from "lucide-react"
+import { BookText, Minus, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -399,21 +400,30 @@ export function PredictionsList({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-1 self-start rounded-md border border-border p-0.5">
-        {(["today", "pending", "all"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              "rounded-sm px-2.5 py-1 text-xs transition-colors",
-              filter === f
-                ? "bg-foreground font-medium text-background"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {f === "today" ? "Hoy" : f === "pending" ? "Pendientes" : "Todos"}
-          </button>
-        ))}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
+          {(["today", "pending", "all"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "rounded-sm px-2.5 py-1 text-xs transition-colors",
+                filter === f
+                  ? "bg-foreground font-medium text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {f === "today" ? "Hoy" : f === "pending" ? "Pendientes" : "Todos"}
+            </button>
+          ))}
+        </div>
+        <Link
+          href="/world-cup/prode/reglamento"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <BookText className="size-3.5" />
+          Reglamento
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-4 2xl:grid-cols-3">
