@@ -38,7 +38,7 @@ function PointsBadge({ points }: { points: number }) {
 
 export default function ReglamentoPage() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-6xl mx-auto">
       <Link
         href="/world-cup"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
