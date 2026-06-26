@@ -10,6 +10,15 @@ import type {
   TournamentStats,
 } from "./types"
 
+// WC2026: partidos 1–72 son fase de grupos, 73–104 son fase de llave.
+export const KNOCKOUT_FIRST_MATCH = 73
+
+// True si el número de partido corresponde a la fase de llave (knockout),
+// donde un empate se define por penales.
+export function isKnockout(num: number): boolean {
+  return num >= KNOCKOUT_FIRST_MATCH
+}
+
 // Parses "13:00 UTC-6" → UTC ISO string for the given date
 export function toUtcIso(date: string, time: string): string {
   const m = time.match(/(\d+):(\d+)\s+UTC([+-]\d+)/)

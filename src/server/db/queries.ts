@@ -334,7 +334,9 @@ export async function getMatchPredictions(matchNumber: number) {
       matchNumber: prodePredictions.matchNumber,
       homeScore: prodePredictions.homeScore,
       awayScore: prodePredictions.awayScore,
+      advancingTeam: prodePredictions.advancingTeam,
       points: prodePredictions.points,
+      bonus: prodePredictions.bonus,
       userName: sql<string>`COALESCE(${users.nickname}, ${users.name})`,
       email: users.email,
     })
@@ -349,9 +351,12 @@ export async function getProdeLeaderboard() {
       userId: users.id,
       name: sql<string>`COALESCE(${users.nickname}, ${users.name})`,
       email: users.email,
-      totalPoints: sql<number>`COALESCE(SUM(${prodePredictions.points}), 0)`,
+      totalPoints: sql<number>`COALESCE(SUM(${prodePredictions.points}), 0) + COALESCE(SUM(${prodePredictions.bonus}), 0)`,
       exactCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`,
       correctCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 1 THEN 1 END)`,
+      // Fallados de verdad: evaluados que no sumaron nada (ni marcador ni bonus).
+      // Una predicción que sumó solo por el bonus de "quién pasa" NO es un fallo.
+      missedCount: sql<number>`COUNT(CASE WHEN ${prodePredictions.points} = 0 AND COALESCE(${prodePredictions.bonus}, 0) = 0 THEN 1 END)`,
       // Total de pronósticos cargados y, de esos, cuántos ya se jugaron
       // (COUNT ignora los NULL → points es NULL hasta que el partido termina).
       totalPredictions: sql<number>`COUNT(${prodePredictions.id})`,
@@ -362,7 +367,9 @@ export async function getProdeLeaderboard() {
     .where(eq(users.status, "active"))
     .groupBy(users.id, users.name, users.nickname, users.email)
     .orderBy(
-      desc(sql`COALESCE(SUM(${prodePredictions.points}), 0)`),
+      desc(
+        sql`COALESCE(SUM(${prodePredictions.points}), 0) + COALESCE(SUM(${prodePredictions.bonus}), 0)`
+      ),
       desc(sql`COUNT(CASE WHEN ${prodePredictions.points} = 2 THEN 1 END)`)
     )
 }
@@ -383,6 +390,7 @@ export async function getProdeLeaderboardDetailed(matchOrder?: number[]) {
         userId: prodePredictions.userId,
         matchNumber: prodePredictions.matchNumber,
         points: prodePredictions.points,
+        bonus: prodePredictions.bonus,
       })
       .from(prodePredictions)
       .where(isNotNull(prodePredictions.points)),
@@ -397,7 +405,7 @@ export async function getProdeLeaderboardDetailed(matchOrder?: number[]) {
   // cronológicamente para calcular la corrida vigente de cada uno.
   const byUser = new Map<
     number,
-    { matchNumber: number; points: number | null }[]
+    { matchNumber: number; points: number | null; bonus: number | null }[]
   >()
   for (const row of scored) {
     const list = byUser.get(row.userId) ?? []
@@ -410,9 +418,10 @@ export async function getProdeLeaderboardDetailed(matchOrder?: number[]) {
     rows.sort((a, b) => rankOf(a.matchNumber) - rankOf(b.matchNumber))
     let current = 0
     let longest = 0
-    for (const { points } of rows) {
-      // La racha se reinicia al fallar (points === 0) y crece mientras se sume.
-      current = points && points > 0 ? current + 1 : 0
+    for (const { points, bonus } of rows) {
+      // La racha se reinicia al fallar (0 pts, sin bonus) y crece al sumar algo.
+      const total = (points ?? 0) + (bonus ?? 0)
+      current = total > 0 ? current + 1 : 0
       // `longest` guarda la mejor corrida histórica, aunque después se corte.
       longest = Math.max(longest, current)
     }
@@ -431,16 +440,19 @@ export async function upsertProdePrediction(data: {
   matchNumber: number
   homeScore: number
   awayScore: number
+  advancingTeam?: "home" | "away" | null
 }) {
   const now = new Date().toISOString()
+  const advancingTeam = data.advancingTeam ?? null
   await db
     .insert(prodePredictions)
-    .values({ ...data, createdAt: now, updatedAt: now })
+    .values({ ...data, advancingTeam, createdAt: now, updatedAt: now })
     .onConflictDoUpdate({
       target: [prodePredictions.userId, prodePredictions.matchNumber],
       set: {
         homeScore: data.homeScore,
         awayScore: data.awayScore,
+        advancingTeam,
         updatedAt: now,
       },
     })
@@ -449,7 +461,8 @@ export async function upsertProdePrediction(data: {
 export async function calculateMatchPoints(
   matchNumber: number,
   realHome: number,
-  realAway: number
+  realAway: number,
+  penaltyWinner?: "home" | "away" | null
 ) {
   const preds = await db
     .select()
@@ -462,6 +475,7 @@ export async function calculateMatchPoints(
     )
 
   for (const pred of preds) {
+    // Puntos por el marcador (igual para grupos y llave): 2 exacto / 1 por 1X2.
     let points = 0
     if (pred.homeScore === realHome && pred.awayScore === realAway) {
       points = 2
@@ -474,9 +488,26 @@ export async function calculateMatchPoints(
         points = 1
       }
     }
+
+    // Bonus de "quién pasa": solo cuando el partido de llave terminó empatado
+    // y se definió por penales. El clasificado predicho es el pick explícito si
+    // se predijo empate, o el ganador del marcador si se predijo un no-empate.
+    const predictedAdvancer =
+      pred.homeScore === pred.awayScore
+        ? pred.advancingTeam
+        : pred.homeScore > pred.awayScore
+          ? "home"
+          : "away"
+    const bonus =
+      penaltyWinner != null &&
+      realHome === realAway &&
+      predictedAdvancer === penaltyWinner
+        ? 1
+        : 0
+
     await db
       .update(prodePredictions)
-      .set({ points, updatedAt: new Date().toISOString() })
+      .set({ points, bonus, updatedAt: new Date().toISOString() })
       .where(eq(prodePredictions.id, pred.id))
   }
 }
@@ -487,8 +518,8 @@ export async function calculateMatchPoints(
 export async function syncProdeResults(opts?: { fresh?: boolean }) {
   const finished = await fetchFinishedWCMatchScores(opts)
   let calculated = 0
-  for (const { matchNumber, homeScore, awayScore } of finished) {
-    await calculateMatchPoints(matchNumber, homeScore, awayScore)
+  for (const { matchNumber, homeScore, awayScore, penaltyWinner } of finished) {
+    await calculateMatchPoints(matchNumber, homeScore, awayScore, penaltyWinner)
     calculated++
   }
   return { calculated, matches: finished.length }

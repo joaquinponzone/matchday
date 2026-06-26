@@ -8,7 +8,7 @@ import {
   syncProdeResults,
   upsertProdePrediction,
 } from "@/server/db/queries"
-import { toUtcIso } from "../lib"
+import { isKnockout, toUtcIso } from "../lib"
 
 export type MatchPrediction = Awaited<
   ReturnType<typeof getMatchPredictions>
@@ -21,7 +21,8 @@ type MatchPredictionsResult =
 export async function savePrediction(
   matchNumber: number,
   homeScore: number,
-  awayScore: number
+  awayScore: number,
+  advancingTeam?: "home" | "away" | null
 ) {
   const user = await getUser()
 
@@ -32,11 +33,19 @@ export async function savePrediction(
   const kickoff = new Date(toUtcIso(match.date, match.time))
   if (new Date() >= kickoff) return { error: "El partido ya comenzó" }
 
+  // El pick de "quién pasa" solo aplica a la fase de llave y cuando se predice
+  // empate; en grupos o con un ganador predicho, el clasificado se infiere.
+  const advancing =
+    isKnockout(matchNumber) && homeScore === awayScore
+      ? (advancingTeam ?? null)
+      : null
+
   await upsertProdePrediction({
     userId: user.id,
     matchNumber,
     homeScore,
     awayScore,
+    advancingTeam: advancing,
   })
 
   return { success: true }

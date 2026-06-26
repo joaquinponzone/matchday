@@ -35,7 +35,7 @@ export function avg(points: number, scored: number): string {
 // cuando no hay partidos evaluados ("—") para mandar esas filas al final.
 function sortValue(entry: LeaderboardEntry, key: string): number | null {
   const scored = entry.scoredPredictions
-  const missed = scored - entry.exactCount - entry.correctCount
+  const missed = entry.missedCount
   switch (key) {
     case "pts":
       return entry.totalPoints
@@ -166,8 +166,7 @@ export function LeaderboardTable({
         <TableBody>
           {rows.map((entry, i) => {
             const mine = entry.userId === currentUserId
-            const missed =
-              entry.scoredPredictions - entry.exactCount - entry.correctCount
+            const missed = entry.missedCount
             return (
               <TableRow
                 key={entry.userId}

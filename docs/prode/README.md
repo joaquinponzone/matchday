@@ -56,7 +56,9 @@ Los partidos de eliminación directa se van habilitando a medida que se confirma
 
 ## Reglas de knockout (eliminación directa)
 
-En partidos de eliminación directa que se definen por alargue o penales, **tu predicción se evalúa contra el resultado de los 90 minutos reglamentarios**. Es decir, si el partido termina 1-1 en los 90 minutos y después se define por penales, el resultado que se usa para calcular tus puntos es el 1-1.
+En partidos de eliminación directa **el marcador se evalúa contra el resultado de los 90 minutos reglamentarios** (no cuenta el alargue). Es decir, si el partido termina 1-1 en los 90 minutos y después se define por penales, el marcador que se usa para calcular tus puntos es el 1-1.
+
+Además, si predecís un **empate** en un partido de llave, elegís **quién pasa**. Si el partido se define por **penales**, sumás un **bonus de +1** por acertar el equipo que clasifica. (Si predecís un ganador, el clasificado ya queda implícito en tu marcador.) El bonus es aparte del marcador, así que un acierto de llave con penales puede valer hasta **3 pts** (2 por el marcador exacto + 1 por el bonus). Si el partido no va a penales no hay bonus, porque el ganador del 1X2 ya dice quién pasó.
 
 ## Tips
 

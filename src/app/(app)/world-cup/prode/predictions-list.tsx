@@ -23,6 +23,7 @@ import { MatchPredictionsDialog } from "./match-predictions-dialog"
 import {
   dayLabel,
   groupMatchesByDay,
+  isKnockout,
   pickTodayOrNearestDay,
   toUtcIso,
 } from "../lib"
@@ -81,12 +82,13 @@ export function PointsBadge({ points }: { points: number | null }) {
       title="Puntos que sumaste en este partido"
       className={cn(
         "shrink-0 gap-0.5 font-mono text-[10px]",
+        points >= 3 && "border-emerald-400 text-emerald-400",
         points === 2 && "border-green-500 text-green-500",
         points === 1 && "border-yellow-500 text-yellow-500",
         points === 0 && "border-muted-foreground text-muted-foreground"
       )}
     >
-      {points === 2 ? "+2" : points === 1 ? "+1" : "0"}
+      {points > 0 ? `+${points}` : "0"}
       <span className="opacity-60">pts</span>
     </Badge>
   )
@@ -171,35 +173,57 @@ function MatchPredictionRow({
   const locked = isLocked(match)
   const finished = isFinished(match)
   const live = isLive(match)
+  // Fase de llave con equipos ya definidos (no placeholders): se puede predecir
+  // quién pasa. Las banderas solo existen para equipos reales.
+  const knockout =
+    isKnockout(match.num!) && !!match.team1FlagUrl && !!match.team2FlagUrl
   const initialHome = prediction?.homeScore ?? 0
   const initialAway = prediction?.awayScore ?? 0
+  const initialAdvancing =
+    (prediction?.advancingTeam as "home" | "away" | null | undefined) ?? null
   const [home, setHome] = useState(initialHome)
   const [away, setAway] = useState(initialAway)
+  const [advancing, setAdvancing] = useState<"home" | "away" | null>(
+    initialAdvancing
+  )
   const [lastSavedHome, setLastSavedHome] = useState(initialHome)
   const [lastSavedAway, setLastSavedAway] = useState(initialAway)
+  const [lastSavedAdvancing, setLastSavedAdvancing] = useState<
+    "home" | "away" | null
+  >(initialAdvancing)
   const [saved, setSaved] = useState(!!prediction)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
+  // El pick de "quién pasa" solo aplica si predecís empate. En un no-empate, el
+  // clasificado queda implícito en el marcador (el que gana), así que no se guarda.
+  const isDraw = home === away
+  const effectiveAdvancing = isDraw ? advancing : null
+
   const handleSave = () => {
     const h = clampGoal(home)
     const a = clampGoal(away)
+    const adv = h === a ? advancing : null
     setHome(h)
     setAway(a)
     setError(null)
     startTransition(async () => {
-      const res = await savePrediction(match.num!, h, a)
+      const res = await savePrediction(match.num!, h, a, adv)
       if (res?.error) {
         setError(res.error)
       } else {
         setLastSavedHome(h)
         setLastSavedAway(a)
+        setLastSavedAdvancing(adv)
         setSaved(true)
       }
     })
   }
 
-  const dirty = home !== lastSavedHome || away !== lastSavedAway
+  const dirty =
+    home !== lastSavedHome ||
+    away !== lastSavedAway ||
+    effectiveAdvancing !== lastSavedAdvancing
   const kickoff = formatMatchTimeOnly(toUtcIso(match.date, match.time))
 
   // Score steppers, real result, or locked prediction display — shared between
@@ -272,11 +296,59 @@ function MatchPredictionRow({
       {live ? (
         <LiveBadge minute={match.matchTime} />
       ) : (
-        <PointsBadge points={prediction?.points ?? null} />
+        <PointsBadge
+          points={
+            prediction?.points == null
+              ? null
+              : prediction.points + (prediction.bonus ?? 0)
+          }
+        />
       )}
       <MatchPredictionsDialog match={match} currentUserId={currentUserId} />
     </div>
   )
+
+  // Pick de "quién pasa" — solo en partidos de llave con equipos definidos y
+  // cuando predecís empate. Si se define por penales, acertar el clasificado
+  // suma +1. En un no-empate el clasificado se infiere del marcador.
+  const advancesArea =
+    !knockout || !isDraw || (locked && advancing == null) ? null : (
+      <div className="flex items-center gap-1 text-[10px]">
+        <span className="text-muted-foreground">Pasa:</span>
+        {(["home", "away"] as const).map((side) => {
+          const teamName = side === "home" ? match.team1 : match.team2
+          const selected = advancing === side
+          if (locked) {
+            return selected ? (
+              <span
+                key={side}
+                className="rounded border border-primary/50 px-1.5 py-0.5 font-medium text-primary"
+              >
+                {teamName}
+              </span>
+            ) : null
+          }
+          return (
+            <button
+              key={side}
+              type="button"
+              onClick={() => {
+                setAdvancing(side)
+                setSaved(false)
+              }}
+              className={cn(
+                "rounded border px-1.5 py-0.5 transition-colors",
+                selected
+                  ? "border-primary bg-primary/10 font-medium text-primary"
+                  : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+              )}
+            >
+              {teamName}
+            </button>
+          )
+        })}
+      </div>
+    )
 
   return (
     <div className="border-b last:border-0">
@@ -355,6 +427,10 @@ function MatchPredictionRow({
           <div className="flex justify-end">{actionArea}</div>
         </div>
       </div>
+
+      {advancesArea && (
+        <div className="flex justify-center px-3 pb-2">{advancesArea}</div>
+      )}
 
       {error && (
         <div className="px-3 pb-2 text-[10px] text-destructive">{error}</div>

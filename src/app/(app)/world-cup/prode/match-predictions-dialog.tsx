@@ -27,9 +27,10 @@ function sortPredictions(
   predictions: MatchPrediction[],
   byPoints: boolean
 ): MatchPrediction[] {
+  const total = (p: MatchPrediction) => (p.points ?? 0) + (p.bonus ?? 0)
   return [...predictions].sort((a, b) => {
     if (byPoints) {
-      const diff = (b.points ?? 0) - (a.points ?? 0)
+      const diff = total(b) - total(a)
       if (diff !== 0) return diff
     }
     return a.userName.localeCompare(b.userName, "es")
@@ -181,12 +182,20 @@ export function MatchPredictionsDialog({
                       {p.email}
                     </span>
                   </span>
-                  <span className="shrink-0 font-mono text-sm tabular-nums">
-                    {p.homeScore} - {p.awayScore}
+                  <span className="flex shrink-0 flex-col items-center">
+                    <span className="font-mono text-sm tabular-nums">
+                      {p.homeScore} - {p.awayScore}
+                    </span>
+                    {p.advancingTeam && (
+                      <span className="text-[10px] text-muted-foreground">
+                        pasa{" "}
+                        {p.advancingTeam === "home" ? match.team1 : match.team2}
+                      </span>
+                    )}
                   </span>
                   {p.points !== null && (
                     <span className="flex shrink-0 justify-end">
-                      <PointsBadge points={p.points} />
+                      <PointsBadge points={p.points + (p.bonus ?? 0)} />
                     </span>
                   )}
                 </li>

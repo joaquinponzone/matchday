@@ -85,6 +85,13 @@
       "when": 1775948941538,
       "tag": "0011_nervous_vindicator",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1782510375674,
+      "tag": "0012_certain_vanisher",
+      "breakpoints": true
     }
   ]
 }

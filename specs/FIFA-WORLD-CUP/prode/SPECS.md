@@ -15,7 +15,9 @@ CREATE TABLE prode_predictions (
   match_number INTEGER NOT NULL,   -- campo "match" del 2026.json (1–104)
   home_score   INTEGER NOT NULL,   -- goles predichos equipo local
   away_score   INTEGER NOT NULL,   -- goles predichos equipo visitante
-  points       INTEGER,            -- null = partido no terminó / no calculado aún
+  advancing_team TEXT,             -- "home"/"away" (solo llave); null en grupos
+  points       INTEGER,            -- puntos del marcador (0/1/2); null = no calculado
+  bonus        INTEGER,            -- +1 por acertar quién pasa por penales; null = no calculado
   created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   updated_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   UNIQUE (user_id, match_number)
@@ -198,7 +200,9 @@ CREATE TABLE prode_predictions (
   match_number INTEGER NOT NULL,
   home_score   INTEGER NOT NULL,
   away_score   INTEGER NOT NULL,
+  advancing_team TEXT,
   points       INTEGER,
+  bonus        INTEGER,
   created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   updated_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   UNIQUE (user_id, match_number)
@@ -209,7 +213,7 @@ CREATE TABLE prode_predictions (
 
 ## Consideraciones
 
-- **Fase knockout con alargue/penales:** La predicción es sobre el resultado al final del tiempo reglamentario (90 min). Si hay empate y se define por penales, el "empate" en 90 min se usa para el 1X2.
+- **Fase knockout con alargue/penales:** El marcador se evalúa sobre el resultado al final del tiempo reglamentario (90 min). Además, si el usuario predice un **empate** en un partido de llave, elige **quién pasa** (`advancing_team`: `home`/`away`); si predice un ganador, el clasificado queda implícito en el marcador (no se guarda `advancing_team`). Si el partido termina empatado y se define por **penales**, se suma un **+1 bonus** por acertar el clasificado (columna `bonus`). El clasificado predicho es el pick explícito (si predijo empate) o el ganador del marcador (si predijo un no-empate). En llaves sin penales no hay bonus: el 1X2 ya define quién pasó. El bonus es independiente del marcador → máximo 3 pts en un partido de llave con penales (2 exacto + 1 bonus).
 - **Partidos suspendidos/reprogramados:** Las predicciones quedan en espera (`points = null`); no se anulan.
 - **Usuarios sin predicción:** No suman ni restan; no aparecen en el ranking hasta hacer al menos una predicción.
 

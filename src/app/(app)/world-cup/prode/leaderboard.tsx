@@ -16,6 +16,7 @@ export interface LeaderboardEntry {
   totalPoints: number
   exactCount: number
   correctCount: number
+  missedCount: number
   totalPredictions: number
   scoredPredictions: number
   currentStreak: number

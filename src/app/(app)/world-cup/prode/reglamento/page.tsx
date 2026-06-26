@@ -24,12 +24,13 @@ function PointsBadge({ points }: { points: number }) {
       variant="outline"
       className={cn(
         "shrink-0 gap-0.5 font-mono text-[10px]",
+        points >= 3 && "border-emerald-400 text-emerald-400",
         points === 2 && "border-green-500 text-green-500",
         points === 1 && "border-yellow-500 text-yellow-500",
         points === 0 && "border-muted-foreground text-muted-foreground"
       )}
     >
-      {points === 2 ? "+2" : points === 1 ? "+1" : "0"}
+      {points > 0 ? `+${points}` : "0"}
       <span className="opacity-60">pts</span>
     </Badge>
   )
@@ -148,12 +149,42 @@ export default function ReglamentoPage() {
             Fase eliminatoria
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
-            En los partidos de eliminación directa, la predicción se evalúa sobre
-            el resultado al final de los 90 minutos reglamentarios. No se cuentan
-            el alargue ni los penales.
+            En los partidos de eliminación directa el marcador se evalúa igual
+            que siempre: sobre el resultado al final de los 90 minutos
+            reglamentarios (no se cuenta el alargue).
           </p>
+          <p>
+            Además, si en un partido de llave predecís un{" "}
+            <span className="font-medium text-foreground">empate</span>, elegís{" "}
+            <span className="font-medium text-foreground">quién pasa</span>. Si
+            el partido termina empatado y se define por penales, sumás un{" "}
+            <span className="font-medium text-foreground">bonus de +1</span> por
+            acertar el equipo que clasifica. (Si predecís un ganador, el
+            clasificado ya queda implícito en tu marcador.) Si el partido no va a
+            penales no hay bonus: el resultado 1X2 ya define quién pasó.
+          </p>
+          <div className="space-y-1">
+            <p className="font-medium text-foreground">
+              Ejemplo (1-1 en 90&apos;, gana por penales el local):
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                Predijiste <span className="font-mono">1-1</span> y “pasa el
+                local” → 2 (marcador exacto) + 1 (bonus) ={" "}
+                <PointsBadge points={3} />
+              </li>
+              <li>
+                Predijiste <span className="font-mono">0-0</span> y “pasa el
+                local” → 1 (acertaste el empate) + 1 (bonus) ={" "}
+                <PointsBadge points={2} />
+              </li>
+              <li>
+                Acertaste el empate pero elegiste mal quién pasa → sin bonus.
+              </li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
 

@@ -73,6 +73,9 @@ interface FIFAMatch {
   MatchTime: string | null // minuto en vivo, ej "90'+4'"
   HomeTeamScore: number | null
   AwayTeamScore: number | null
+  // Marcador de penales (solo en knockout decidido por penales); ausente si no hubo.
+  HomeTeamPenaltyScore?: number | null
+  AwayTeamPenaltyScore?: number | null
   Home: FIFAMatchTeam | null
   Away: FIFAMatchTeam | null
   Stadium: FIFAStadium | null
@@ -456,7 +459,16 @@ export async function fetchAllWCMatches(): Promise<WCMatch[]> {
 
 export async function fetchFinishedWCMatchScores(opts?: {
   fresh?: boolean
-}): Promise<{ matchNumber: number; homeScore: number; awayScore: number }[]> {
+}): Promise<
+  {
+    matchNumber: number
+    homeScore: number
+    awayScore: number
+    // Ganador por penales: solo no-null cuando el marcador quedó empatado
+    // y se definió por penales. Permite el bonus de "quién pasa" del prode.
+    penaltyWinner: "home" | "away" | null
+  }[]
+> {
   try {
     const allMatches = await fetchRawWCMatches(opts)
     return allMatches
@@ -466,11 +478,35 @@ export async function fetchFinishedWCMatchScores(opts?: {
           m.HomeTeamScore !== null &&
           m.AwayTeamScore !== null
       )
-      .map((m) => ({
-        matchNumber: m.MatchNumber,
-        homeScore: m.HomeTeamScore!,
-        awayScore: m.AwayTeamScore!,
-      }))
+      .flatMap((m) => {
+        const homePen = m.HomeTeamPenaltyScore
+        const awayPen = m.AwayTeamPenaltyScore
+        const draw = m.HomeTeamScore === m.AwayTeamScore
+        const isKnockout = m.IdGroup === null
+
+        let penaltyWinner: "home" | "away" | null = null
+        if (draw && homePen != null && awayPen != null && homePen !== awayPen) {
+          penaltyWinner = homePen > awayPen ? "home" : "away"
+        }
+
+        // Un partido de llave que terminó empatado se define por penales. Si la
+        // API todavía no trae el ganador por penales, NO lo scoreamos aún: lo
+        // dejamos pendiente (points = NULL) para reintentar en el próximo sync.
+        // Así no clavamos bonus=0 de forma permanente. Los empates de grupo
+        // (IdGroup !== null) sí se scorean normal.
+        if (isKnockout && draw && penaltyWinner === null) {
+          return []
+        }
+
+        return [
+          {
+            matchNumber: m.MatchNumber,
+            homeScore: m.HomeTeamScore!,
+            awayScore: m.AwayTeamScore!,
+            penaltyWinner,
+          },
+        ]
+      })
   } catch {
     return []
   }

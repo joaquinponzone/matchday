@@ -112,7 +112,14 @@ export const prodePredictions = sqliteTable(
     matchNumber: integer("match_number").notNull(),
     homeScore: integer("home_score").notNull(),
     awayScore: integer("away_score").notNull(),
+    // Solo fase de llave: equipo que el usuario cree que clasifica
+    // ("home" | "away"); null en fase de grupos.
+    advancingTeam: text("advancing_team"),
+    // Puntos del marcador (0/1/2). null = partido no calculado aún.
     points: integer("points"),
+    // Bonus "quién pasa": +1 si acertó el ganador por penales (solo llave con
+    // penales), si no 0. null hasta que el partido se calcula.
+    bonus: integer("bonus"),
     createdAt: text("created_at")
       .notNull()
       .$defaultFn(() => new Date().toISOString()),
