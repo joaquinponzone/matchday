@@ -181,7 +181,11 @@ export default function ReglamentoPage() {
                 <PointsBadge points={2} />
               </li>
               <li>
-                Acertaste el empate pero elegiste mal quién pasa → sin bonus.
+                Acertaste el empate pero elegiste mal quién pasa → sin bonus,
+                pero conservás los puntos del marcador:{" "}
+                <PointsBadge points={2} /> si era exacto,{" "}
+                <PointsBadge points={1} /> si no. El bonus solo suma, nunca
+                resta.
               </li>
             </ul>
           </div>
