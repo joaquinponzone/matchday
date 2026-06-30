@@ -158,16 +158,20 @@ export default function ReglamentoPage() {
           <p>
             Además, si en un partido de llave predecís un{" "}
             <span className="font-medium text-foreground">empate</span>, elegís{" "}
-            <span className="font-medium text-foreground">quién pasa</span>. Si
-            el partido termina empatado y se define por penales, sumás un{" "}
-            <span className="font-medium text-foreground">bonus de +1</span> por
-            acertar el equipo que clasifica. (Si predecís un ganador, el
-            clasificado ya queda implícito en tu marcador.) Si el partido no va a
-            penales no hay bonus: el resultado 1X2 ya define quién pasó.
+            <span className="font-medium text-foreground">quién pasa</span>. Ese
+            pick de “quién pasa”{" "}
+            <span className="font-medium text-foreground">
+              solo otorga el bonus de +1 si el partido termina realmente
+              empatado y se define por penales
+            </span>
+            , y vos acertaste el equipo que clasifica. Si en cambio el partido
+            lo gana un equipo en los 90 minutos (no hay penales), no hay bonus:
+            el resultado 1X2 ya define quién pasó, y tu marcador se evalúa como
+            en cualquier otro partido.
           </p>
           <div className="space-y-1">
             <p className="font-medium text-foreground">
-              Ejemplo (1-1 en 90&apos;, gana por penales el local):
+              Ejemplo A — se define por penales (1-1 en 90&apos;, gana el local):
             </p>
             <ul className="list-disc space-y-1 pl-5">
               <li>
@@ -188,6 +192,36 @@ export default function ReglamentoPage() {
                 resta.
               </li>
             </ul>
+          </div>
+          <div className="space-y-1 rounded-md border border-border/60 bg-muted/30 p-3">
+            <p className="font-medium text-foreground">
+              Ejemplo B — se resuelve en los 90&apos; (gana la visita 1-2):
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                Predijiste <span className="font-mono">1-2</span> → 2 (marcador
+                exacto) = <PointsBadge points={2} />. Acertar que pasaba la
+                visita ya está incluido en el marcador, no hay bonus aparte.
+              </li>
+              <li>
+                Predijiste <span className="font-mono">1-1</span> y “pasa la
+                visita” → <PointsBadge points={0} />. Aunque la visita
+                efectivamente clasificó, el partido{" "}
+                <span className="font-medium text-foreground">
+                  no terminó empatado
+                </span>{" "}
+                (perdiste el 1X2) y{" "}
+                <span className="font-medium text-foreground">
+                  no hubo penales
+                </span>
+                , así que el pick de “quién pasa” no aplica.
+              </li>
+            </ul>
+            <p className="text-xs">
+              El bonus de “quién pasa” es exclusivo de las definiciones por
+              penales. Si querés cubrirte ante un partido parejo, conviene jugar
+              el 1X2 que creas más probable en el marcador.
+            </p>
           </div>
         </CardContent>
       </Card>
