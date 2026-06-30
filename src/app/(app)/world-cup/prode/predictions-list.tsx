@@ -314,7 +314,7 @@ function MatchPredictionRow({
   const advancesArea =
     !knockout || !isDraw || (locked && advancing == null) ? null : (
       <div className="flex items-center gap-1 text-[10px]">
-        <span className="text-muted-foreground">Pasa:</span>
+        <span className="text-muted-foreground">Predicción en caso de empate:</span>
         {(["home", "away"] as const).map((side) => {
           const teamName = side === "home" ? match.team1 : match.team2
           const selected = advancing === side
