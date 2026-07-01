@@ -126,7 +126,7 @@ export function LeaderboardTable({
                 return (
                   <TableHead
                     key={col.key}
-                    className="px-2 text-right text-xs whitespace-nowrap"
+                    className="px-2 text-center text-xs whitespace-nowrap"
                   >
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -154,11 +154,11 @@ export function LeaderboardTable({
               })
             ) : (
               <>
-                <TableHead className="px-2 text-right text-xs">Pts</TableHead>
-                <TableHead className="px-2 text-right text-xs">
+                <TableHead className="px-2 text-center text-xs">Pts</TableHead>
+                <TableHead className="px-2 text-center text-xs">
                   Exacto
                 </TableHead>
-                <TableHead className="px-2 text-right text-xs">Bien</TableHead>
+                <TableHead className="px-2 text-center text-xs">Bien</TableHead>
               </>
             )}
           </TableRow>
@@ -188,42 +188,42 @@ export function LeaderboardTable({
                     ({entry.email})
                   </div>
                 </TableCell>
-                <TableCell className="px-2 text-right font-mono font-semibold tabular-nums">
+                <TableCell className="px-2 text-center font-mono font-semibold tabular-nums">
                   {entry.totalPoints}
                 </TableCell>
-                <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                   {entry.exactCount}
                 </TableCell>
-                <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                   {entry.correctCount}
                 </TableCell>
                 {detailed && (
                   <>
-                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                       {missed}
                     </TableCell>
-                    <TableCell className="px-2 text-right font-mono tabular-nums">
+                    <TableCell className="px-2 text-center font-mono tabular-nums">
                       {pct(
                         entry.exactCount + entry.correctCount,
                         entry.scoredPredictions
                       )}
                     </TableCell>
-                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                       {pct(entry.exactCount, entry.scoredPredictions)}
                     </TableCell>
-                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                       {avg(entry.totalPoints, entry.scoredPredictions)}
                     </TableCell>
-                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                       {entry.totalPredictions}
                     </TableCell>
-                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                       {entry.scoredPredictions}
                     </TableCell>
-                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                       {entry.currentStreak}
                     </TableCell>
-                    <TableCell className="px-2 text-right font-mono text-muted-foreground tabular-nums">
+                    <TableCell className="px-2 text-center font-mono text-muted-foreground tabular-nums">
                       {entry.longestStreak}
                     </TableCell>
                   </>
