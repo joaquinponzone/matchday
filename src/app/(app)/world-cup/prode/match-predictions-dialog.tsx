@@ -120,7 +120,7 @@ export function MatchPredictionsDialog({
           </DialogTitle>
           <DialogDescription asChild className="text-center">
             {finished || live ? (
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex flex-col items-center justify-center gap-2">
                 <span
                   className={cn(
                     "font-mono text-lg font-semibold text-foreground tabular-nums",
