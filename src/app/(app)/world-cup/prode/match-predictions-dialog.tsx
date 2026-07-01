@@ -182,7 +182,7 @@ export function MatchPredictionsDialog({
                       {p.email}
                     </span>
                   </span>
-                  <span className="flex shrink-0 flex-col items-center">
+                  <span className="flex shrink-0 flex-col items-end">
                     <span className="font-mono text-sm tabular-nums">
                       {p.homeScore} - {p.awayScore}
                     </span>
