@@ -87,7 +87,7 @@ export function MatchPredictionsDialog({
         </TooltipTrigger>
         <TooltipContent>Ver todas las predicciones</TooltipContent>
       </Tooltip>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-center gap-2 text-sm">
             <span className="flex items-center gap-1.5">
@@ -190,6 +190,7 @@ export function MatchPredictionsDialog({
                       <span className="text-[10px] text-muted-foreground">
                         pasa{" "}
                         {p.advancingTeam === "home" ? match.team1 : match.team2}
+                        {" "}+90&apos; 
                       </span>
                     )}
                   </span>
