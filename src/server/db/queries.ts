@@ -462,7 +462,7 @@ export async function calculateMatchPoints(
   matchNumber: number,
   realHome: number,
   realAway: number,
-  penaltyWinner?: "home" | "away" | null
+  advancingWinner?: "home" | "away" | null
 ) {
   const preds = await db
     .select()
@@ -476,6 +476,7 @@ export async function calculateMatchPoints(
 
   for (const pred of preds) {
     // Puntos por el marcador (igual para grupos y llave): 2 exacto / 1 por 1X2.
+    // En partidos de llave, realHome/realAway representan el marcador a los 90'.
     let points = 0
     if (pred.homeScore === realHome && pred.awayScore === realAway) {
       points = 2
@@ -489,9 +490,10 @@ export async function calculateMatchPoints(
       }
     }
 
-    // Bonus de "quién pasa": solo cuando el partido de llave terminó empatado
-    // y se definió por penales. El clasificado predicho es el pick explícito si
-    // se predijo empate, o el ganador del marcador si se predijo un no-empate.
+    // Bonus de "quién pasa": cuando el partido de llave terminó empatado a los
+    // 90' y se definió en el alargue o por penales. El clasificado predicho es
+    // el pick explícito si se predijo empate, o el ganador del marcador si se
+    // predijo un no-empate.
     const predictedAdvancer =
       pred.homeScore === pred.awayScore
         ? pred.advancingTeam
@@ -499,9 +501,9 @@ export async function calculateMatchPoints(
           ? "home"
           : "away"
     const bonus =
-      penaltyWinner != null &&
+      advancingWinner != null &&
       realHome === realAway &&
-      predictedAdvancer === penaltyWinner
+      predictedAdvancer === advancingWinner
         ? 1
         : 0
 
@@ -512,14 +514,23 @@ export async function calculateMatchPoints(
   }
 }
 
+// Resetea los puntos de un partido para que el próximo sync los recalcule.
+// Útil para corregir partidos mal puntuados (ej. cambio de regla de alargue).
+export async function resetMatchPoints(matchNumber: number) {
+  await db
+    .update(prodePredictions)
+    .set({ points: null, bonus: null, updatedAt: new Date().toISOString() })
+    .where(eq(prodePredictions.matchNumber, matchNumber))
+}
+
 // Fetch finished WC matches and award prode points for any pending predictions.
 // Used by the daily cron (cached fetch) and the admin manual-sync button
 // (fresh fetch, to pick up matches that just finished).
 export async function syncProdeResults(opts?: { fresh?: boolean }) {
   const finished = await fetchFinishedWCMatchScores(opts)
   let calculated = 0
-  for (const { matchNumber, homeScore, awayScore, penaltyWinner } of finished) {
-    await calculateMatchPoints(matchNumber, homeScore, awayScore, penaltyWinner)
+  for (const { matchNumber, homeScore, awayScore, advancingWinner } of finished) {
+    await calculateMatchPoints(matchNumber, homeScore, awayScore, advancingWinner)
     calculated++
   }
   return { calculated, matches: finished.length }

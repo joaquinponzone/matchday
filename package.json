@@ -15,7 +15,8 @@
     "db:push": "drizzle-kit push",
     "db:nuke": "bun run src/server/db/nuke.ts",
     "db:seed": "bun run src/server/db/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "rescore-match": "bun run scripts/rescore-match.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",

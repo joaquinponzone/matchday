@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 export const fetchCache = "force-no-store"
+// El sync del prode suma fetches de timeline de FIFA por cada partido de llave
+// definido después de los 90' → margen por encima del default de Vercel.
+export const maxDuration = 60
 
 import { processDailyDigestNotifications } from "@/lib/notifications"
 import { syncProdeResults } from "@/server/db/queries"

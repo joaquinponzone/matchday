@@ -130,6 +130,19 @@ export function MatchPredictionsDialog({
                   {match.homeScore} - {match.awayScore}
                 </span>
                 {live && <LiveBadge minute={match.matchTime} />}
+                {finished &&
+                  (match.resultType === 2 || match.resultType === 3) && (
+                    <>
+                      <span className="text-xs text-muted-foreground">
+                        {match.resultType === 2
+                          ? "def. por penales"
+                          : "def. en alargue"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        Los puntos se calculan sobre el marcador a los 90&apos;
+                      </span>
+                    </>
+                  )}
               </div>
             ) : (
               <span>

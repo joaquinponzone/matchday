@@ -309,7 +309,7 @@ function MatchPredictionRow({
   )
 
   // Pick de "quién pasa" — solo en partidos de llave con equipos definidos y
-  // cuando predecís empate. Si se define por penales, acertar el clasificado
+  // cuando predecís empate. Si se define en el alargue o por penales, acertar el clasificado
   // suma +1. En un no-empate el clasificado se infiere del marcador.
   const advancesArea =
     !knockout || !isDraw || (locked && advancing == null) ? null : (

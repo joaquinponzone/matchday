@@ -14,6 +14,8 @@ export interface WCMatch {
   finished?: boolean
   /** Minuto en vivo desde FIFA, ej "90'+4'"; null si no está en juego. */
   matchTime?: string | null
+  /** 1 = resuelto en 90', 2 = penales, 3 = alargue (grupos siempre 1). */
+  resultType?: number
 }
 
 export interface GroupTeam {

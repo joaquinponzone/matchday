@@ -51,6 +51,7 @@ interface FIFAStandingsResponse {
 }
 
 interface FIFAMatchTeam {
+  IdTeam?: string
   TeamName?: LocalizedString[]
   ShortClubName: string
   Abbreviation: string
@@ -63,6 +64,8 @@ interface FIFAStadium {
 }
 
 interface FIFAMatch {
+  IdMatch: string
+  IdStage: string
   IdGroup: string | null
   GroupName: LocalizedString[]
   StageName: LocalizedString[]
@@ -76,11 +79,26 @@ interface FIFAMatch {
   // Marcador de penales (solo en knockout decidido por penales); ausente si no hubo.
   HomeTeamPenaltyScore?: number | null
   AwayTeamPenaltyScore?: number | null
+  // 1=resuelto en 90', 2=penales, 3=alargue
+  ResultType: number
+  // IdTeam del equipo clasificado; null en partidos de grupo
+  Winner: string | null
   Home: FIFAMatchTeam | null
   Away: FIFAMatchTeam | null
   Stadium: FIFAStadium | null
   PlaceHolderA: string | null
   PlaceHolderB: string | null
+}
+
+interface FIFATimelineEvent {
+  Period: number
+  Timestamp: string
+  HomeGoals?: number | null
+  AwayGoals?: number | null
+}
+
+interface FIFATimelineResponse {
+  Event: FIFATimelineEvent[]
 }
 
 interface FIFAMatchesResponse {
@@ -362,6 +380,39 @@ export async function fetchWCStandings(): Promise<GroupStanding[]> {
   }
 }
 
+// Reconstruye el marcador al final de los 90 minutos reglamentarios consultando
+// la timeline del partido. Necesario para partidos de llave con alargue, donde
+// HomeTeamScore/AwayTeamScore incluyen los goles del extra time.
+async function fetch90MinScore(
+  idStage: string,
+  idMatch: string
+): Promise<{ home: number; away: number } | null> {
+  try {
+    const res = await fetch(
+      `${FIFA_BASE}/timelines/${COMPETITION_ID}/${SEASON_ID}/${idStage}/${idMatch}?language=es`,
+      // La timeline de un partido terminado es inmutable.
+      { next: { revalidate: 3600 } }
+    )
+    if (!res.ok) return null
+    const data: FIFATimelineResponse = await res.json()
+    // Period 3 = 1er tiempo, Period 5 = 2do tiempo (reglamentario). El array
+    // NO viene garantizado en orden cronológico → ordenar por Timestamp.
+    const regEvents = data.Event.filter(
+      (e) =>
+        (e.Period === 3 || e.Period === 5) &&
+        e.HomeGoals != null &&
+        e.AwayGoals != null
+    ).sort(
+      (a, b) => new Date(a.Timestamp).getTime() - new Date(b.Timestamp).getTime()
+    )
+    if (!regEvents.length) return null
+    const last = regEvents[regEvents.length - 1]
+    return { home: last.HomeGoals!, away: last.AwayGoals! }
+  } catch {
+    return null
+  }
+}
+
 async function fetchRawWCMatches(opts?: {
   fresh?: boolean
 }): Promise<FIFAMatch[]> {
@@ -432,6 +483,7 @@ function mapFIFAMatch(m: FIFAMatch): WCMatch {
     awayScore: m.AwayTeamScore,
     finished: m.MatchStatus === 0,
     matchTime: m.MatchStatus === 3 ? m.MatchTime : null,
+    resultType: m.ResultType,
   }
 }
 
@@ -464,49 +516,87 @@ export async function fetchFinishedWCMatchScores(opts?: {
     matchNumber: number
     homeScore: number
     awayScore: number
-    // Ganador por penales: solo no-null cuando el marcador quedó empatado
-    // y se definió por penales. Permite el bonus de "quién pasa" del prode.
-    penaltyWinner: "home" | "away" | null
+    // Clasificado del partido de llave: no-null cuando se definió después de los
+    // 90 minutos (alargue o penales). Habilita el bonus de "quién pasa" del prode.
+    advancingWinner: "home" | "away" | null
   }[]
 > {
   try {
     const allMatches = await fetchRawWCMatches(opts)
-    return allMatches
-      .filter(
-        (m) =>
-          m.MatchStatus === 0 &&
-          m.HomeTeamScore !== null &&
-          m.AwayTeamScore !== null
-      )
-      .flatMap((m) => {
-        const homePen = m.HomeTeamPenaltyScore
-        const awayPen = m.AwayTeamPenaltyScore
-        const draw = m.HomeTeamScore === m.AwayTeamScore
+    const finished = allMatches.filter(
+      (m) =>
+        m.MatchStatus === 0 &&
+        m.HomeTeamScore !== null &&
+        m.AwayTeamScore !== null
+    )
+
+    const results = await Promise.all(
+      finished.map(async (m) => {
         const isKnockout = m.IdGroup === null
 
-        let penaltyWinner: "home" | "away" | null = null
-        if (draw && homePen != null && awayPen != null && homePen !== awayPen) {
-          penaltyWinner = homePen > awayPen ? "home" : "away"
-        }
-
-        // Un partido de llave que terminó empatado se define por penales. Si la
-        // API todavía no trae el ganador por penales, NO lo scoreamos aún: lo
-        // dejamos pendiente (points = NULL) para reintentar en el próximo sync.
-        // Así no clavamos bonus=0 de forma permanente. Los empates de grupo
-        // (IdGroup !== null) sí se scorean normal.
-        if (isKnockout && draw && penaltyWinner === null) {
-          return []
-        }
-
-        return [
-          {
+        // Partidos de grupo o de llave resueltos en los 90': score final = score
+        // a los 90', no hay bonus de "quién pasa".
+        if (!isKnockout || m.ResultType === 1) {
+          return {
             matchNumber: m.MatchNumber,
             homeScore: m.HomeTeamScore!,
             awayScore: m.AwayTeamScore!,
-            penaltyWinner,
-          },
-        ]
+            advancingWinner: null as "home" | "away" | null,
+          }
+        }
+
+        // Partido de llave definido después de los 90' (alargue o penales).
+        // Derivar el clasificado desde el campo Winner de la API.
+        const homeId = m.Home?.IdTeam
+        const awayId = m.Away?.IdTeam
+        let advancingWinner: "home" | "away" | null = null
+
+        if (m.Winner && homeId && awayId) {
+          advancingWinner =
+            m.Winner === homeId
+              ? "home"
+              : m.Winner === awayId
+                ? "away"
+                : null
+        }
+        if (advancingWinner === null && m.ResultType === 2) {
+          // Fallback para penales: comparar marcadores de tandas.
+          const homePen = m.HomeTeamPenaltyScore
+          const awayPen = m.AwayTeamPenaltyScore
+          if (homePen != null && awayPen != null && homePen !== awayPen) {
+            advancingWinner = homePen > awayPen ? "home" : "away"
+          }
+        }
+        if (advancingWinner === null && m.ResultType === 3) {
+          // Fallback para alargue: el marcador final (con extra time) nunca es
+          // empate en ResultType 3 → define por sí solo quién clasificó.
+          if (m.HomeTeamScore !== m.AwayTeamScore) {
+            advancingWinner = m.HomeTeamScore! > m.AwayTeamScore! ? "home" : "away"
+          }
+        }
+
+        // Si todavía no podemos determinar quién clasificó, dejar pendiente para
+        // el próximo sync (no clavar bonus=0 de forma permanente).
+        if (advancingWinner === null) return null
+
+        // Tanto en alargue (ResultType 3) como en penales (ResultType 2),
+        // HomeTeamScore/AwayTeamScore incluyen los goles del extra time →
+        // reconstruir el marcador de los 90' desde la timeline.
+        const score90 = await fetch90MinScore(m.IdStage, m.IdMatch)
+        if (!score90) return null // Timeline no disponible aún → reintentar.
+
+        return {
+          matchNumber: m.MatchNumber,
+          homeScore: score90.home,
+          awayScore: score90.away,
+          advancingWinner,
+        }
       })
+    )
+
+    return results.filter(
+      (r): r is NonNullable<typeof r> => r !== null
+    )
   } catch {
     return []
   }

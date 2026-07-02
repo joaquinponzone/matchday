@@ -14,7 +14,7 @@ import type {
 export const KNOCKOUT_FIRST_MATCH = 73
 
 // True si el número de partido corresponde a la fase de llave (knockout),
-// donde un empate se define por penales.
+// donde un empate a los 90' se define en el alargue o por penales.
 export function isKnockout(num: number): boolean {
   return num >= KNOCKOUT_FIRST_MATCH
 }
