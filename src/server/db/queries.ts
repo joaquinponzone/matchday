@@ -491,18 +491,15 @@ export async function calculateMatchPoints(
     }
 
     // Bonus de "quién pasa": cuando el partido de llave terminó empatado a los
-    // 90' y se definió en el alargue o por penales. El clasificado predicho es
-    // el pick explícito si se predijo empate, o el ganador del marcador si se
-    // predijo un no-empate.
+    // 90' y se definió en el alargue o por penales. Exclusivo del pick
+    // explícito: solo quien predijo empate (y eligió quién pasa) puede
+    // cobrarlo. Un no-empate se evalúa únicamente por el 1X2 de los 90'.
     const predictedAdvancer =
-      pred.homeScore === pred.awayScore
-        ? pred.advancingTeam
-        : pred.homeScore > pred.awayScore
-          ? "home"
-          : "away"
+      pred.homeScore === pred.awayScore ? pred.advancingTeam : null
     const bonus =
       advancingWinner != null &&
       realHome === realAway &&
+      predictedAdvancer != null &&
       predictedAdvancer === advancingWinner
         ? 1
         : 0

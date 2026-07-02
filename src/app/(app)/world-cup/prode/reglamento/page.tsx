@@ -164,10 +164,14 @@ export default function ReglamentoPage() {
               solo otorga el bonus de +1 si el partido termina realmente
               empatado en los 90 minutos y se define en el alargue o por penales
             </span>
-            , y vos acertaste el equipo que clasifica. Si en cambio el partido
-            lo gana un equipo en los 90 minutos, no hay bonus: el resultado 1X2
-            ya define quién pasó, y tu marcador se evalúa como en cualquier otro
-            partido.
+            , y vos acertaste el equipo que clasifica. El bonus es{" "}
+            <span className="font-medium text-foreground">
+              exclusivo de quien predijo empate
+            </span>
+            : si predijiste un ganador, tu predicción se evalúa únicamente por
+            el marcador de los 90 minutos, sin bonus posible. Y si el partido lo
+            gana un equipo en los 90 minutos, tampoco hay bonus para nadie: el
+            resultado 1X2 ya define quién pasó.
           </p>
           <div className="space-y-1">
             <p className="font-medium text-foreground">
@@ -191,6 +195,12 @@ export default function ReglamentoPage() {
                 <PointsBadge points={2} /> si era exacto,{" "}
                 <PointsBadge points={1} /> si no. El bonus solo suma, nunca
                 resta.
+              </li>
+              <li>
+                Predijiste <span className="font-mono">2-1</span> (victoria del
+                local) → <PointsBadge points={0} />. A los 90&apos; fue empate
+                (perdiste el 1X2) y, aunque el local terminó clasificando, el
+                bonus es solo para quien predijo empate y eligió quién pasa.
               </li>
             </ul>
           </div>
@@ -219,10 +229,9 @@ export default function ReglamentoPage() {
               </li>
             </ul>
             <p className="text-xs">
-              El bonus de &ldquo;quién pasa&rdquo; es exclusivo de los partidos que terminan
-              empatados en los 90 minutos. Si querés cubrirte ante un partido
-              parejo, conviene jugar el 1X2 que creas más probable en el
-              marcador.
+              El bonus de &ldquo;quién pasa&rdquo; es exclusivo de las
+              predicciones de empate en partidos que terminan empatados a los 90
+              minutos. Si predecís un ganador, jugás todo al 1X2 del marcador.
             </p>
           </div>
         </CardContent>

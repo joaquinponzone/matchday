@@ -34,7 +34,7 @@ export async function savePrediction(
   if (new Date() >= kickoff) return { error: "El partido ya comenzó" }
 
   // El pick de "quién pasa" solo aplica a la fase de llave y cuando se predice
-  // empate; en grupos o con un ganador predicho, el clasificado se infiere.
+  // empate; en grupos o con un ganador predicho no hay pick (ni bonus).
   const advancing =
     isKnockout(matchNumber) && homeScore === awayScore
       ? (advancingTeam ?? null)

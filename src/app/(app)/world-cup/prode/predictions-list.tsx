@@ -195,8 +195,8 @@ function MatchPredictionRow({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
-  // El pick de "quién pasa" solo aplica si predecís empate. En un no-empate, el
-  // clasificado queda implícito en el marcador (el que gana), así que no se guarda.
+  // El pick de "quién pasa" solo aplica si predecís empate. En un no-empate no
+  // hay pick ni bonus posible, así que no se guarda.
   const isDraw = home === away
   const effectiveAdvancing = isDraw ? advancing : null
 
@@ -309,8 +309,8 @@ function MatchPredictionRow({
   )
 
   // Pick de "quién pasa" — solo en partidos de llave con equipos definidos y
-  // cuando predecís empate. Si se define en el alargue o por penales, acertar el clasificado
-  // suma +1. En un no-empate el clasificado se infiere del marcador.
+  // cuando predecís empate. Si se define en el alargue o por penales, acertar
+  // el clasificado suma +1. En un no-empate no hay pick ni bonus.
   const advancesArea =
     !knockout || !isDraw || (locked && advancing == null) ? null : (
       <div className="flex items-center gap-1 text-[10px]">
