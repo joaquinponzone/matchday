@@ -48,17 +48,18 @@ export interface ProdeFunFacts {
   jinxTeamByUser: UserTeamFact[]
   // Selecciones con más plenos acertados (agregado, todos los usuarios).
   mostExactByTeam: TeamValue[]
-  // Reyes del empate (acertados) y del empate exacto.
+  // Rey del empate: más empates acertados (resultado real empatado).
   drawKings: UserValue[]
-  exactDrawKings: UserValue[]
   // Reyes de la victoria (aciertos) y de la derrota (fallos) en partidos que
   // terminaron con ganador (resultado decisivo, no empate).
   victoryKings: UserValue[]
   defeatKings: UserValue[]
-  // Reyes de la victoria/derrota exacta: acertaron el marcador exacto de un
-  // partido que ganó el local (a favor) o el visitante (en contra).
-  exactVictoryKings: UserValue[]
-  exactDefeatKings: UserValue[]
+  // Rey del pleno: más marcadores exactos acertados en total.
+  plenoKings: UserValue[]
+  // Rey de la sorpresa: aciertos en partidos donde menos de la mitad acertó.
+  surpriseKings: UserValue[]
+  // Rey de la racha: racha más larga de partidos seguidos sumando puntos.
+  streakKings: UserValue[]
   // Partido con más plenos y partido con más fallos.
   mostAccuratedMatch: RecordMatchFact | null
   cursedMatch: RecordMatchFact | null
@@ -84,11 +85,11 @@ const emptyFacts: ProdeFunFacts = {
   jinxTeamByUser: [],
   mostExactByTeam: [],
   drawKings: [],
-  exactDrawKings: [],
   victoryKings: [],
   defeatKings: [],
-  exactVictoryKings: [],
-  exactDefeatKings: [],
+  plenoKings: [],
+  surpriseKings: [],
+  streakKings: [],
   mostAccuratedMatch: null,
   cursedMatch: null,
   topScorer: null,
@@ -163,11 +164,17 @@ export function computeProdeFunFacts(
   const missByUserTeam = new Map<string, Map<string, number>>()
   const exactByTeam = new Map<string, number>()
   const drawsCorrect = new Map<string, number>()
-  const drawsExact = new Map<string, number>()
   const decisiveCorrect = new Map<string, number>()
   const decisiveMissed = new Map<string, number>()
-  const exactVictoryWins = new Map<string, number>()
-  const exactDefeatWins = new Map<string, number>()
+  const plenos = new Map<string, number>()
+  // Para la sorpresa: por partido, cuántos lo evaluaron y cuántos acertaron.
+  const matchPredictors = new Map<number, number>()
+  const matchHitters = new Map<number, number>()
+  // Predicciones evaluadas por usuario (para racha y sorpresa).
+  const evaluatedByUser = new Map<
+    string,
+    { matchNumber: number; pts: number }[]
+  >()
   const exactPerMatch = new Map<number, number>()
   const missPerMatch = new Map<number, number>()
   // Goles pronosticados por usuario (todas las predicciones cargadas).
@@ -204,6 +211,16 @@ export function computeProdeFunFacts(
       { name: info.team2 },
     ]
 
+    // Agregados por partido (sorpresa) y lista por usuario (racha/sorpresa).
+    bump(matchPredictors, p.matchNumber)
+    if (pts > 0) bump(matchHitters, p.matchNumber)
+    const evList = evaluatedByUser.get(p.userName) ?? []
+    evList.push({ matchNumber: p.matchNumber, pts })
+    evaluatedByUser.set(p.userName, evList)
+
+    // Rey del pleno: cualquier marcador exacto (empate o definido).
+    if (p.points === 2) bump(plenos, p.userName)
+
     // Selección fetiche / yeta: acreditamos a ambos equipos del partido.
     for (const t of teams) {
       if (pts > 0) bump(ensureUser(pointsByUserTeam, p.userName), t.name, pts)
@@ -227,7 +244,6 @@ export function computeProdeFunFacts(
       info.homeScore === info.awayScore
     ) {
       if (pts > 0) bump(drawsCorrect, p.userName)
-      if (p.points === 2) bump(drawsExact, p.userName)
     }
 
     // Reyes de la victoria/derrota: el resultado real tuvo ganador (no empate).
@@ -239,14 +255,6 @@ export function computeProdeFunFacts(
     ) {
       if (pts > 0) bump(decisiveCorrect, p.userName)
       if (p.points === 0 && (p.bonus ?? 0) === 0) bump(decisiveMissed, p.userName)
-
-      // Victoria/derrota exacta: acertó el marcador exacto (points === 2) de un
-      // partido definido. El signo del margen separa a favor del local
-      // (victoria) o del visitante (derrota).
-      if (p.points === 2) {
-        if (info.homeScore > info.awayScore) bump(exactVictoryWins, p.userName)
-        else bump(exactDefeatWins, p.userName)
-      }
     }
   }
 
@@ -292,6 +300,42 @@ export function computeProdeFunFacts(
     }
   }
 
+  // Rey de la sorpresa y de la racha, ambos sobre las predicciones evaluadas
+  // de cada usuario. La racha necesita el orden cronológico real (el
+  // matchNumber de FIFA no lo es), que sacamos del orden de `matches`.
+  const chronoRank = new Map<number, number>()
+  matches.forEach((m, i) => {
+    if (m.num !== undefined) chronoRank.set(m.num, i)
+  })
+  const rankOf = (num: number) => chronoRank.get(num) ?? num
+
+  const surprise = new Map<string, number>()
+  const streak = new Map<string, number>()
+  for (const [userName, rows] of evaluatedByUser) {
+    // Sorpresa: aciertos en partidos donde menos de la mitad de los que lo
+    // jugaron acertó (hitters * 2 < predictors).
+    let rare = 0
+    for (const { matchNumber, pts } of rows) {
+      if (pts <= 0) continue
+      const predictors = matchPredictors.get(matchNumber) ?? 0
+      const hitters = matchHitters.get(matchNumber) ?? 0
+      if (hitters * 2 < predictors) rare++
+    }
+    if (rare > 0) surprise.set(userName, rare)
+
+    // Racha: corrida más larga de partidos consecutivos sumando puntos.
+    const ordered = [...rows].sort(
+      (a, b) => rankOf(a.matchNumber) - rankOf(b.matchNumber)
+    )
+    let current = 0
+    let longest = 0
+    for (const { pts } of ordered) {
+      current = pts > 0 ? current + 1 : 0
+      longest = Math.max(longest, current)
+    }
+    if (longest > 0) streak.set(userName, longest)
+  }
+
   // Goleadores del prode (mínimo 5 partidos cargados para que el promedio
   // sea representativo).
   const scorerRows = [...goalsByUser.entries()]
@@ -305,11 +349,11 @@ export function computeProdeFunFacts(
     jinxTeamByUser: topPerUser(missByUserTeam, teamFlag),
     mostExactByTeam,
     drawKings: toUserRanking(drawsCorrect),
-    exactDrawKings: toUserRanking(drawsExact),
     victoryKings: toUserRanking(decisiveCorrect),
     defeatKings: toUserRanking(decisiveMissed),
-    exactVictoryKings: toUserRanking(exactVictoryWins),
-    exactDefeatKings: toUserRanking(exactDefeatWins),
+    plenoKings: toUserRanking(plenos),
+    surpriseKings: toUserRanking(surprise),
+    streakKings: toUserRanking(streak),
     mostAccuratedMatch: toRecordMatch(exactPerMatch),
     cursedMatch: toRecordMatch(missPerMatch),
     topScorer: scorerRows[0] ?? null,

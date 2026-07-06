@@ -305,15 +305,9 @@ export function FunFactsSection({ facts }: { facts: ProdeFunFacts }) {
       />
       <UserRankingCard
         title="Rey de la victoria"
-        subtitle="Más aciertos en partidos que terminaron con ganador"
+        subtitle="Más aciertos en partidos que terminaron con algún ganador"
         metricLabel="Vic"
         rows={facts.victoryKings}
-      />
-      <UserRankingCard
-        title="Rey de la victoria exacta"
-        subtitle="Marcador exacto de un partido que ganó el local"
-        metricLabel="Ex"
-        rows={facts.exactVictoryKings}
       />
       <UserRankingCard
         title="Rey del empate"
@@ -322,22 +316,28 @@ export function FunFactsSection({ facts }: { facts: ProdeFunFacts }) {
         rows={facts.drawKings}
       />
       <UserRankingCard
-        title="Rey del empate exacto"
-        subtitle="Más empates con el marcador exacto"
-        metricLabel="Ex"
-        rows={facts.exactDrawKings}
-      />
-      <UserRankingCard
         title="Rey de la derrota"
-        subtitle="Más fallos en partidos que terminaron con ganador"
+        subtitle="Más fallos en partidos que terminaron con algún ganador"
         metricLabel="Der"
         rows={facts.defeatKings}
       />
       <UserRankingCard
-        title="Rey de la derrota exacta"
-        subtitle="Marcador exacto de un partido que ganó el visitante"
-        metricLabel="Ex"
-        rows={facts.exactDefeatKings}
+        title="Rey de la sorpresa"
+        subtitle="Aciertos en partidos donde menos de la mitad acertó"
+        metricLabel="Sor"
+        rows={facts.surpriseKings}
+      />
+      <UserRankingCard
+        title="Rey del pleno"
+        subtitle="Más marcadores exactos acertados en total"
+        metricLabel="Plen"
+        rows={facts.plenoKings}
+      />
+      <UserRankingCard
+        title="Rey de la racha"
+        subtitle="Racha más larga de partidos seguidos sumando puntos"
+        metricLabel="Máx"
+        rows={facts.streakKings}
       />
     </div>
   )
