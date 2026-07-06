@@ -1,6 +1,7 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useWcTabs } from "./wc-tabs-context"
 
 interface WcTabsProps {
   standingsContent: React.ReactNode
@@ -15,8 +16,9 @@ export function WcTabs({
   prodeContent,
   statisticsContent,
 }: WcTabsProps) {
+  const { mainTab, setMainTab } = useWcTabs()
   return (
-    <Tabs defaultValue="prode">
+    <Tabs id="world-cup-tabs" value={mainTab} onValueChange={setMainTab}>
       <TabsList className="w-full">
         <TabsTrigger value="prode" className="flex-1 text-xs sm:text-sm">
           Prode

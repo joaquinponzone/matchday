@@ -435,6 +435,25 @@ export async function getProdeLeaderboardDetailed(matchOrder?: number[]) {
   }))
 }
 
+// Todas las predicciones de usuarios activos (jugadas y no jugadas). Se usa
+// para computar los "datos curiosos" del prode, cruzando cada predicción con
+// los equipos del partido (que viven en la API de FIFA, no en la DB).
+export async function getAllProdePredictions() {
+  return db
+    .select({
+      userId: prodePredictions.userId,
+      matchNumber: prodePredictions.matchNumber,
+      homeScore: prodePredictions.homeScore,
+      awayScore: prodePredictions.awayScore,
+      points: prodePredictions.points,
+      bonus: prodePredictions.bonus,
+      userName: sql<string>`COALESCE(${users.nickname}, ${users.name})`,
+    })
+    .from(prodePredictions)
+    .innerJoin(users, eq(prodePredictions.userId, users.id))
+    .where(eq(users.status, "active"))
+}
+
 export async function upsertProdePrediction(data: {
   userId: number
   matchNumber: number

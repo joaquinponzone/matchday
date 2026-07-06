@@ -8,6 +8,7 @@ import {
 import { SyncResultsButton } from "./sync-results-button"
 import { LeaderboardDialog } from "./leaderboard-dialog"
 import { LeaderboardTable } from "./leaderboard-table"
+import { FunFactsLink } from "./fun-facts-link"
 
 export interface LeaderboardEntry {
   userId: number
@@ -37,7 +38,10 @@ export function Leaderboard({
   return (
     <Card className="border-none bg-transparent 2xl:sticky 2xl:top-4">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold">Ranking</CardTitle>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-sm font-semibold">Ranking</CardTitle>
+          <FunFactsLink />
+        </div>
         <p className="hidden text-xs text-muted-foreground md:block 2xl:hidden 2xl:[.lb-wide_&]:block">
           Clickeá los encabezados para reordenar.
         </p>

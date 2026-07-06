@@ -5,9 +5,11 @@ import Image from "next/image"
 import {
   getUserPredictions,
   getProdeLeaderboardDetailed,
+  getAllProdePredictions,
 } from "@/server/db/queries"
 import { getUser } from "@/lib/dal"
 import { WcTabs } from "./wc-tabs"
+import { WcTabsProvider } from "./wc-tabs-context"
 import { GroupStandings } from "./group-standings"
 import { GroupsTab } from "./groups-tab"
 import { KnockoutBracket } from "./knockout-bracket"
@@ -35,6 +37,8 @@ import { Trophy } from "lucide-react"
 import type { WCMatch, FairPlayTeam } from "./types"
 import { PredictionsList } from "./prode/predictions-list"
 import { Leaderboard } from "./prode/leaderboard"
+import { computeProdeFunFacts } from "./prode/fun-facts"
+import { FunFactsSection } from "./prode/fun-facts-section"
 import { WorldCupCountdown } from "./countdown"
 
 function MatchRow({ match }: { match: WCMatch }) {
@@ -114,13 +118,19 @@ export default async function WorldCupPage() {
   const user = await getUser()
 
   // Live data from FIFA API + prode data
-  const [standings, apiGroupMatches, allMatches, userPredictions] =
-    await Promise.all([
-      fetchWCStandings(),
-      fetchWCGroupMatches(),
-      fetchAllWCMatches(),
-      getUserPredictions(user.id),
-    ])
+  const [
+    standings,
+    apiGroupMatches,
+    allMatches,
+    userPredictions,
+    allPredictions,
+  ] = await Promise.all([
+    fetchWCStandings(),
+    fetchWCGroupMatches(),
+    fetchAllWCMatches(),
+    getUserPredictions(user.id),
+    getAllProdePredictions(),
+  ])
 
   // `allMatches` viene ordenado cronológicamente: lo usamos para que la racha
   // del leaderboard se calcule en el orden real de juego (el matchNumber de
@@ -135,6 +145,9 @@ export default async function WorldCupPage() {
   // Estadísticas del torneo computadas de los partidos finalizados + fair play
   // (TeamConductScore) que viene en el endpoint de standings.
   const tournamentStats = computeTournamentStats(allMatches)
+  // Datos curiosos del prode: cruza las predicciones con los equipos de cada
+  // partido (que viven en la API de FIFA, no en la DB).
+  const funFacts = computeProdeFunFacts(allPredictions, allMatches)
   // `TeamStatistics` deriva su propio orden (más sancionados), así que acá solo
   // aplanamos las selecciones con conductScore disponible.
   const fairPlay: FairPlayTeam[] = standings
@@ -206,33 +219,36 @@ export default async function WorldCupPage() {
           firstMatchLabel={firstMatchLabel}
         />
       )}
-      <WcTabs
-        standingsContent={
-          <GroupsTab
-            standingsContent={<GroupStandings standings={activeStandings} />}
-            matchesContent={
-              <MatchesView
-                groupedMatches={groupedMatches}
-                sortedGroups={sortedGroups}
-              />
-            }
-          />
-        }
-        bracketContent={<KnockoutBracket rounds={bracketRounds} />}
-        prodeContent={prodeContent}
-        statisticsContent={
-          <StatisticsTab
-            teamContent={
-              <TeamStatistics stats={tournamentStats} fairPlay={fairPlay} />
-            }
-            playerContent={
-              <Suspense fallback={<PlayerStatisticsFallback />}>
-                <PlayerStatisticsSection />
-              </Suspense>
-            }
-          />
-        }
-      />
+      <WcTabsProvider>
+        <WcTabs
+          standingsContent={
+            <GroupsTab
+              standingsContent={<GroupStandings standings={activeStandings} />}
+              matchesContent={
+                <MatchesView
+                  groupedMatches={groupedMatches}
+                  sortedGroups={sortedGroups}
+                />
+              }
+            />
+          }
+          bracketContent={<KnockoutBracket rounds={bracketRounds} />}
+          prodeContent={prodeContent}
+          statisticsContent={
+            <StatisticsTab
+              teamContent={
+                <TeamStatistics stats={tournamentStats} fairPlay={fairPlay} />
+              }
+              playerContent={
+                <Suspense fallback={<PlayerStatisticsFallback />}>
+                  <PlayerStatisticsSection />
+                </Suspense>
+              }
+              funFactsContent={<FunFactsSection facts={funFacts} />}
+            />
+          }
+        />
+      </WcTabsProvider>
     </div>
   )
 }
