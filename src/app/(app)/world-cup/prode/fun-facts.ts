@@ -1,3 +1,4 @@
+import { isKnockout } from "../lib"
 import type { WCMatch } from "../types"
 
 // Predicción tal como la devuelve `getAllProdePredictions()`.
@@ -70,6 +71,14 @@ export interface ProdeFunFacts {
     points: number
     total: number
   }[]
+  // Rey del mata-mata: mejor promedio de puntos en fase eliminatoria
+  // (mínimo 3 partidos knockout evaluados).
+  knockoutKings: {
+    userName: string
+    avg: number
+    points: number
+    total: number
+  }[]
   // Partido con más plenos y partido con más fallos.
   mostAccuratedMatch: RecordMatchFact | null
   cursedMatch: RecordMatchFact | null
@@ -102,6 +111,7 @@ const emptyFacts: ProdeFunFacts = {
   streakKings: [],
   accuracyKings: [],
   efficiencyKings: [],
+  knockoutKings: [],
   mostAccuratedMatch: null,
   cursedMatch: null,
   topScorer: null,
@@ -383,6 +393,21 @@ export function computeProdeFunFacts(
     )
     .slice(0, 5)
 
+  // Rey del mata-mata: promedio de puntos en fase eliminatoria (mín. 3 knockout).
+  const knockoutKings = [...evaluatedByUser.entries()]
+    .map(([userName, rows]) => {
+      const ko = rows.filter((r) => isKnockout(r.matchNumber))
+      const total = ko.length
+      const points = ko.reduce((sum, r) => sum + r.pts, 0)
+      return { userName, points, total, avg: total > 0 ? points / total : 0 }
+    })
+    .filter((r) => r.total >= 3)
+    .sort(
+      (a, b) =>
+        b.avg - a.avg || b.total - a.total || a.userName.localeCompare(b.userName)
+    )
+    .slice(0, 5)
+
   return {
     hasData: true,
     favouriteTeamByUser: topPerUser(pointsByUserTeam, teamFlag),
@@ -396,6 +421,7 @@ export function computeProdeFunFacts(
     streakKings: toUserRanking(streak),
     accuracyKings,
     efficiencyKings,
+    knockoutKings,
     mostAccuratedMatch: toRecordMatch(exactPerMatch),
     cursedMatch: toRecordMatch(missPerMatch),
     topScorer: scorerRows[0] ?? null,

@@ -447,7 +447,7 @@ export function FunFactsSection({ facts }: { facts: ProdeFunFacts }) {
       />
       <AccuracyRankingCard
         title="Rey del acierto"
-        subtitle="Mayor % de aciertos (mínimo 5 pronósticos)"
+        subtitle="Mayor % de aciertos"
         metricLabel="% Ac"
         rows={facts.accuracyKings}
       />
@@ -456,6 +456,12 @@ export function FunFactsSection({ facts }: { facts: ProdeFunFacts }) {
         subtitle="Promedio de puntos por pronóstico evaluado"
         metricLabel="Prom"
         rows={facts.efficiencyKings}
+      />
+      <EfficiencyRankingCard
+        title="Rey del mata-mata"
+        subtitle="Mejor promedio de puntos en fase eliminatoria"
+        metricLabel="Prom"
+        rows={facts.knockoutKings}
       />
     </div>
   )
