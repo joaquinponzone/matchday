@@ -178,6 +178,112 @@ function UserRankingCard({
   )
 }
 
+function AccuracyRankingCard({
+  title,
+  subtitle,
+  metricLabel,
+  rows,
+}: {
+  title: string
+  subtitle: string
+  metricLabel: string
+  rows: ProdeFunFacts["accuracyKings"]
+}) {
+  if (rows.length === 0) return null
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+        <CardDescription className="text-[11px]">{subtitle}</CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow className="text-[10px]">
+              <TableHead className="w-6 px-2">#</TableHead>
+              <TableHead className="px-2">Usuario</TableHead>
+              <TableHead className="w-12 px-2 text-center">
+                {metricLabel}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r, i) => (
+              <TableRow key={r.userName} className="text-xs">
+                <TableCell className="px-2 py-1.5 text-muted-foreground">
+                  {i + 1}
+                </TableCell>
+                <TableCell className="max-w-[160px] truncate px-2 py-1.5 font-medium">
+                  {r.userName}
+                  <span className="ml-1 text-[10px] text-muted-foreground tabular-nums">
+                    {r.hits}/{r.total}
+                  </span>
+                </TableCell>
+                <TableCell className="px-2 py-1.5 text-center font-semibold tabular-nums">
+                  {r.pct.toFixed(0)}%
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  )
+}
+
+function EfficiencyRankingCard({
+  title,
+  subtitle,
+  metricLabel,
+  rows,
+}: {
+  title: string
+  subtitle: string
+  metricLabel: string
+  rows: ProdeFunFacts["efficiencyKings"]
+}) {
+  if (rows.length === 0) return null
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+        <CardDescription className="text-[11px]">{subtitle}</CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow className="text-[10px]">
+              <TableHead className="w-6 px-2">#</TableHead>
+              <TableHead className="px-2">Usuario</TableHead>
+              <TableHead className="w-12 px-2 text-center">
+                {metricLabel}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r, i) => (
+              <TableRow key={r.userName} className="text-xs">
+                <TableCell className="px-2 py-1.5 text-muted-foreground">
+                  {i + 1}
+                </TableCell>
+                <TableCell className="max-w-[160px] truncate px-2 py-1.5 font-medium">
+                  {r.userName}
+                  <span className="ml-1 text-[10px] text-muted-foreground tabular-nums">
+                    {r.points} pts · {r.total} ev
+                  </span>
+                </TableCell>
+                <TableCell className="px-2 py-1.5 text-center font-semibold tabular-nums">
+                  {r.avg.toFixed(3)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  )
+}
+
 function RecordMatchCard({
   title,
   subtitle,
@@ -338,6 +444,18 @@ export function FunFactsSection({ facts }: { facts: ProdeFunFacts }) {
         subtitle="Racha más larga de partidos seguidos sumando puntos"
         metricLabel="Máx"
         rows={facts.streakKings}
+      />
+      <AccuracyRankingCard
+        title="Rey del acierto"
+        subtitle="Mayor % de aciertos (mínimo 5 pronósticos)"
+        metricLabel="% Ac"
+        rows={facts.accuracyKings}
+      />
+      <EfficiencyRankingCard
+        title="Rey de la eficiencia"
+        subtitle="Promedio de puntos por pronóstico evaluado"
+        metricLabel="Prom"
+        rows={facts.efficiencyKings}
       />
     </div>
   )

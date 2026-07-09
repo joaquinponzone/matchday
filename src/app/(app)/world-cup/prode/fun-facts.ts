@@ -60,6 +60,16 @@ export interface ProdeFunFacts {
   surpriseKings: UserValue[]
   // Rey de la racha: racha más larga de partidos seguidos sumando puntos.
   streakKings: UserValue[]
+  // Rey del acierto: mayor % de aciertos (mínimo 5 predicciones evaluadas).
+  accuracyKings: { userName: string; pct: number; hits: number; total: number }[]
+  // Rey de la eficiencia: mayor promedio de puntos por partido evaluado
+  // (mínimo 5 predicciones evaluadas).
+  efficiencyKings: {
+    userName: string
+    avg: number
+    points: number
+    total: number
+  }[]
   // Partido con más plenos y partido con más fallos.
   mostAccuratedMatch: RecordMatchFact | null
   cursedMatch: RecordMatchFact | null
@@ -90,6 +100,8 @@ const emptyFacts: ProdeFunFacts = {
   plenoKings: [],
   surpriseKings: [],
   streakKings: [],
+  accuracyKings: [],
+  efficiencyKings: [],
   mostAccuratedMatch: null,
   cursedMatch: null,
   topScorer: null,
@@ -343,6 +355,34 @@ export function computeProdeFunFacts(
     .map(([userName, g]) => ({ userName, avg: g.total / g.count }))
     .sort((a, b) => b.avg - a.avg)
 
+  // Rey del acierto: % de aciertos con mínimo 5 predicciones evaluadas.
+  const accuracyKings = [...evaluatedByUser.entries()]
+    .map(([userName, rows]) => {
+      const total = rows.length
+      const hits = rows.filter((r) => r.pts > 0).length
+      return { userName, hits, total, pct: (hits / total) * 100 }
+    })
+    .filter((r) => r.total >= 5)
+    .sort(
+      (a, b) =>
+        b.pct - a.pct || b.total - a.total || a.userName.localeCompare(b.userName)
+    )
+    .slice(0, 5)
+
+  // Rey de la eficiencia: promedio de puntos por partido evaluado (mín. 5).
+  const efficiencyKings = [...evaluatedByUser.entries()]
+    .map(([userName, rows]) => {
+      const total = rows.length
+      const points = rows.reduce((sum, r) => sum + r.pts, 0)
+      return { userName, points, total, avg: points / total }
+    })
+    .filter((r) => r.total >= 5)
+    .sort(
+      (a, b) =>
+        b.avg - a.avg || b.total - a.total || a.userName.localeCompare(b.userName)
+    )
+    .slice(0, 5)
+
   return {
     hasData: true,
     favouriteTeamByUser: topPerUser(pointsByUserTeam, teamFlag),
@@ -354,6 +394,8 @@ export function computeProdeFunFacts(
     plenoKings: toUserRanking(plenos),
     surpriseKings: toUserRanking(surprise),
     streakKings: toUserRanking(streak),
+    accuracyKings,
+    efficiencyKings,
     mostAccuratedMatch: toRecordMatch(exactPerMatch),
     cursedMatch: toRecordMatch(missPerMatch),
     topScorer: scorerRows[0] ?? null,
