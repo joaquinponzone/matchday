@@ -19,6 +19,16 @@ export function isKnockout(num: number): boolean {
   return num >= KNOCKOUT_FIRST_MATCH
 }
 
+// True si la final (partido 104) ya se jugó, o en su defecto si todos los
+// partidos están finalizados. Activa el modo "cierre" del prode. No existe un
+// flag de torneo terminado en la DB: se deriva de la data de FIFA en runtime.
+export function isTournamentFinished(matches: WCMatch[]): boolean {
+  if (matches.length === 0) return false
+  const final = matches.find((m) => m.num === 104)
+  if (final) return final.finished === true
+  return matches.every((m) => m.finished === true)
+}
+
 // Parses "13:00 UTC-6" → UTC ISO string for the given date
 export function toUtcIso(date: string, time: string): string {
   const m = time.match(/(\d+):(\d+)\s+UTC([+-]\d+)/)

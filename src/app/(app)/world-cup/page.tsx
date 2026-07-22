@@ -23,6 +23,7 @@ import {
   extractGroupStandings,
   buildBracketRounds,
   computeTournamentStats,
+  isTournamentFinished,
   toUtcIso,
   formatMatchDate,
 } from "./lib"
@@ -37,6 +38,7 @@ import { Trophy } from "lucide-react"
 import type { WCMatch, FairPlayTeam } from "./types"
 import { PredictionsList } from "./prode/predictions-list"
 import { Leaderboard } from "./prode/leaderboard"
+import { ProdeClosing } from "./prode/prode-closing"
 import { computeProdeFunFacts } from "./prode/fun-facts"
 import { FunFactsSection } from "./prode/fun-facts-section"
 import { WorldCupCountdown } from "./countdown"
@@ -148,6 +150,8 @@ export default async function WorldCupPage() {
   // Datos curiosos del prode: cruza las predicciones con los equipos de cada
   // partido (que viven en la API de FIFA, no en la DB).
   const funFacts = computeProdeFunFacts(allPredictions, allMatches)
+  // ¿El Mundial ya terminó? Activa el hero de cierre arriba del tab Prode.
+  const tournamentFinished = isTournamentFinished(allMatches)
   // `TeamStatistics` deriva su propio orden (más sancionados), así que acá solo
   // aplanamos las selecciones con conductScore disponible.
   const fairPlay: FairPlayTeam[] = standings
@@ -184,27 +188,36 @@ export default async function WorldCupPage() {
   const sortedGroups = Object.keys(groupedMatches).sort()
 
   const prodeContent = (
-    <div className="flex flex-col-reverse gap-4 2xl:flex-col">
-      {/* <Alert className="mb-2">
-        <Trophy className="size-4" />
-        <AlertTitle>Pozo de premios - Pendiente</AlertTitle>
-        <AlertDescription>
-          Aun no se decidió que premios se repartirán entre los participantes. La
-          idea será que los ganadores sean los 3 primeros puestos.
-        </AlertDescription>
-      </Alert> */}
-      <PredictionsList
-        matches={allMatches}
-        initialPredictions={userPredictions}
-        currentUserId={user.id}
-        leaderboard={
-          <Leaderboard
-            entries={leaderboard}
-            currentUserId={user.id}
-            isAdmin={user.role === "admin"}
-          />
-        }
-      />
+    <div className="space-y-4">
+      {tournamentFinished && (
+        <ProdeClosing
+          entries={leaderboard}
+          facts={funFacts}
+          currentUserId={user.id}
+        />
+      )}
+      <div className="flex flex-col-reverse gap-4 2xl:flex-col">
+        {/* <Alert className="mb-2">
+          <Trophy className="size-4" />
+          <AlertTitle>Pozo de premios - Pendiente</AlertTitle>
+          <AlertDescription>
+            Aun no se decidió que premios se repartirán entre los participantes.
+            La idea será que los ganadores sean los 3 primeros puestos.
+          </AlertDescription>
+        </Alert> */}
+        <PredictionsList
+          matches={allMatches}
+          initialPredictions={userPredictions}
+          currentUserId={user.id}
+          leaderboard={
+            <Leaderboard
+              entries={leaderboard}
+              currentUserId={user.id}
+              isAdmin={user.role === "admin"}
+            />
+          }
+        />
+      </div>
     </div>
   )
 
